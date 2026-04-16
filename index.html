@@ -312,6 +312,26 @@
     .btn-save-hours { width: 100%; padding: 15px; background: linear-gradient(135deg, #B45309, #92400E); color: white; border: none; border-radius: 12px; font-family: 'Kodchasan', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 18px; box-shadow: 0 4px 14px rgba(180,83,9,0.3); transition: opacity 0.15s; }
     .btn-save-hours:active { opacity: 0.8; }
 
+    /* ── Validation ── */
+    .input-err {
+      border-color: var(--danger) !important;
+      background: var(--danger-bg) !important;
+      box-shadow: 0 0 0 3px rgba(192,57,43,0.12) !important;
+    }
+    .field-err-msg {
+      font-size: 0.75rem; color: var(--danger); margin-top: 5px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .check-grid-err {
+      border: 1.5px solid var(--danger); border-radius: 10px;
+      padding: 8px; background: var(--danger-bg);
+    }
+    .photo-btn-err {
+      border-color: var(--danger) !important;
+      background: var(--danger-bg) !important;
+      color: var(--danger) !important;
+    }
+
     /* Toast */
     .toast { position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: white; padding: 10px 22px; border-radius: 30px; font-size: 0.87rem; font-weight: 500; font-family: 'Kodchasan', sans-serif; opacity: 0; pointer-events: none; transition: all 0.28s cubic-bezier(0.4,0,0.2,1); white-space: nowrap; z-index: 300; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -410,12 +430,12 @@
         <div class="input-row">
           <div class="ig">
             <label class="field-label">เวลาเปลี่ยนอัก (นาที)</label>
-            <input type="number" id="changeTime" placeholder="0" min="0">
+            <input type="number" id="changeTime" placeholder="0" min="0" oninput="clearErr('changeTime')">
           </div>
         </div>
         <div class="input-row">
-          <div class="ig"><label class="field-label">จำนวนรอบ</label><input type="number" id="rounds" placeholder="0" min="0"></div>
-          <div class="ig"><label class="field-label">จำนวนอัก</label><input type="number" id="totalAuk" placeholder="0" min="0"></div>
+          <div class="ig"><label class="field-label">จำนวนรอบ</label><input type="number" id="rounds" placeholder="0" min="0" oninput="clearErr('rounds')"></div>
+          <div class="ig"><label class="field-label">จำนวนอัก</label><input type="number" id="totalAuk" placeholder="0" min="0" oninput="clearErr('totalAuk')"></div>
         </div>
         <label class="field-label" style="margin-bottom:6px;">รูปถ่ายจำนวนรอบ</label>
         <button class="photo-btn" id="photoBtnEl" onclick="document.getElementById('photoInput').click()">
@@ -653,6 +673,7 @@
     document.getElementById('s2').classList.remove('done');
     document.querySelectorAll('.check-pill').forEach(p => { p.classList.remove('on'); p.querySelector('input').checked = false; });
     ['changeTime','rounds','totalAuk'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    clearAllErr();
     retakePhoto(); killScan('prod');
   }
 
@@ -680,6 +701,13 @@
   function togglePill(el) {
     el.classList.toggle('on');
     el.querySelector('input').checked = el.classList.contains('on');
+    // clear checkbox error if any item is now checked
+    if (el.classList.contains('on')) {
+      const cg = document.querySelector('.check-grid');
+      if (cg) cg.classList.remove('check-grid-err');
+      const ce = document.querySelector('.check-grid-err-msg');
+      if (ce) ce.remove();
+    }
   }
 
   // ── Photo ──
@@ -697,6 +725,10 @@
         document.getElementById('photoImg').src = photoBase64;
         document.getElementById('photoPreview').style.display = 'block';
         document.getElementById('photoBtnEl').style.display = 'none';
+        // clear photo error if any
+        document.getElementById('photoBtnEl').classList.remove('photo-btn-err');
+        const pe = document.querySelector('.photo-btn-err-msg');
+        if (pe) pe.remove();
       };
       img.src = e.target.result;
     };
@@ -773,8 +805,96 @@
     } catch(e) { toast('เชื่อมต่อไม่ได้', 'err'); }
   }
 
+  // ── Validation helpers ──
+  function setErr(elId, msg) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.classList.add('input-err');
+    // remove old msg
+    const old = el.parentNode.querySelector('.field-err-msg');
+    if (old) old.remove();
+    if (msg) {
+      const d = document.createElement('div');
+      d.className = 'field-err-msg';
+      d.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>' + msg;
+      el.parentNode.insertBefore(d, el.nextSibling);
+    }
+  }
+  function clearErr(elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.classList.remove('input-err');
+    const old = el.parentNode.querySelector('.field-err-msg');
+    if (old) old.remove();
+  }
+  function clearAllErr() {
+    ['changeTime','rounds','totalAuk'].forEach(clearErr);
+    const cg = document.getElementById('checkGridWrap');
+    if (cg) cg.classList.remove('check-grid-err');
+    const pb = document.getElementById('photoBtnEl');
+    if (pb) pb.classList.remove('photo-btn-err');
+    document.querySelectorAll('.field-err-msg').forEach(e => e.remove());
+  }
+
   async function handleSave() {
+    clearAllErr();
     const checks = [...document.querySelectorAll('.check-pill.on input')].map(c => c.value);
+
+    // ── Validation (เฉพาะโหมดหยุดผลิต) ──
+    if (prodMode === 'stop') {
+      let hasErr = false;
+      const ct = document.getElementById('changeTime')?.value;
+      const rd = document.getElementById('rounds')?.value;
+      const ak = document.getElementById('totalAuk')?.value;
+
+      if (!ct || ct === '' || Number(ct) < 0) {
+        setErr('changeTime', 'กรุณากรอกเวลาเปลี่ยนอัก'); hasErr = true;
+      }
+      if (!rd || rd === '' || Number(rd) <= 0) {
+        setErr('rounds', 'กรุณากรอกจำนวนรอบ'); hasErr = true;
+      }
+      if (!ak || ak === '' || Number(ak) <= 0) {
+        setErr('totalAuk', 'กรุณากรอกจำนวนอัก'); hasErr = true;
+      }
+      if (!photoBase64) {
+        const pb = document.getElementById('photoBtnEl');
+        if (pb) {
+          pb.classList.add('photo-btn-err');
+          // add err msg after btn
+          const old = pb.parentNode.querySelector('.photo-btn-err-msg');
+          if (!old) {
+            const d = document.createElement('div');
+            d.className = 'field-err-msg photo-btn-err-msg';
+            d.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>กรุณาถ่ายรูปจำนวนรอบ';
+            pb.parentNode.insertBefore(d, pb.nextSibling);
+          }
+        }
+        hasErr = true;
+      }
+      if (checks.length === 0) {
+        const cg = document.querySelector('.check-grid');
+        if (cg) {
+          cg.classList.add('check-grid-err');
+          const old = cg.parentNode.querySelector('.check-grid-err-msg');
+          if (!old) {
+            const d = document.createElement('div');
+            d.className = 'field-err-msg check-grid-err-msg';
+            d.style.marginTop = '8px';
+            d.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>กรุณาเลือกสถานะรังและน้ำอย่างน้อย 1 รายการ';
+            cg.parentNode.appendChild(d);
+          }
+        }
+        hasErr = true;
+      }
+      if (hasErr) {
+        toast('กรุณากรอกข้อมูลให้ครบ', 'err');
+        // scroll to first error
+        const firstErr = document.querySelector('.input-err, .photo-btn-err, .check-grid-err');
+        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+
     const sb = document.getElementById('submitBtn');
     sb.disabled = true;
     sb.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
