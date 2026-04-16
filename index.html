@@ -1,1 +1,1621 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Kodchasan', sans-serif; background-color: #f8fafc; } 
+    ::-webkit-scrollbar { width: 4px; background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    
+    .task-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid #e2e8f0; background-color: #ffffff; cursor: pointer; }
+    .task-btn:hover { border-color: #bfdbfe; background-color: #f0fdfa; }
+    .task-btn.selected { background-color: #eff6ff; border-color: #3b82f6; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.25); transform: translateY(-3px); }
+    .task-btn.selected .icon-wrapper { background-color: #3b82f6; color: white; transform: scale(1.1); }
+    .task-btn.selected .icon-wrapper i { color: white; }
+    .task-btn.selected .task-text { color: #1d4ed8; font-weight: 700; }
 
+    input[type="date"]:not(.wage-input-inline), input[type="number"]:not(.wage-input-inline), input[type="text"]:not(.wage-input-inline), select { -webkit-appearance: none; display: block; width: 100%; transition: all 0.2s; }
+    
+    .loader { border: 4px solid #e0e7ff; border-top: 4px solid #3b82f6; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .menu-item { transition: all 0.2s; border-left: 4px solid transparent; cursor: pointer; }
+    .menu-item:hover { background-color: rgba(255,255,255,0.1); border-left-color: #60a5fa; }
+    .menu-item.active { background-color: rgba(255,255,255,0.15); border-left-color: #ffffff; font-weight: 600; }
+    
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .wage-banner-shine {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b, #fbbf24);
+      background-size: 200% auto;
+      animation: shimmer 3s linear infinite;
+    }
+
+    /* ★ Wage edit inline styles ★ */
+    .wage-edit-row { transition: all 0.3s ease; }
+    .wage-input-inline {
+      display: inline-block !important;
+      border: 2px solid #f59e0b;
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-family: 'Kodchasan', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: #92400e;
+      background: #fffbeb;
+      outline: none;
+      width: auto !important;
+      min-width: 100px;
+      text-align: center;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+    }
+    .wage-input-inline:focus { border-color: #d97706; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); background: #fff; }
+    @keyframes wageRowIn { from { opacity:0; max-height:0; } to { opacity:1; max-height:500px; } }
+    .wage-edit-expand { animation: wageRowIn 0.35s ease forwards; }
+  </style>
+</head>
+<body class="text-gray-800 antialiased h-screen w-screen overflow-hidden flex bg-gray-50">
+
+  <!-- Loader Overlay -->
+  <div id="loaderOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden transition-opacity">
+    <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center border border-blue-50">
+      <div class="loader mb-4"></div>
+      <div id="loaderText" class="text-blue-700 font-semibold tracking-wide">กำลังประมวลผล...</div>
+    </div>
+  </div>
+
+  <!-- Custom Popup -->
+  <div id="customPopupOverlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[90] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div id="customPopupBox" class="bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 text-center border border-blue-50 relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
+      <div id="popupIcon" class="mb-4 relative z-10"></div>
+      <h3 id="popupTitle" class="text-2xl font-bold text-gray-800 mb-2 relative z-10">หัวข้อ</h3>
+      <p id="popupMessage" class="text-gray-500 font-medium mb-8 relative z-10 leading-relaxed text-sm">ข้อความรายละเอียด</p>
+      <div class="flex gap-3 relative z-10 w-full">
+        <button id="popupBtnCancel" class="hidden shrink-0 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-colors whitespace-nowrap">ยกเลิก</button>
+        <button id="popupBtnConfirm" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="absolute inset-0 z-40 bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center p-4 transition-all duration-300">
+    <div class="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-blue-900/10 border border-white p-8 relative z-10">
+      <div class="text-center mb-10">
+        <div class="w-24 h-24 bg-gradient-to-tr from-blue-600 to-cyan-400 text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/30 transform rotate-3">
+          <i class="fas fa-fingerprint text-5xl"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-800 tracking-tight">เข้าสู่ระบบ</h2>
+        <p class="text-sm text-blue-600/80 font-medium mt-2 uppercase tracking-widest">Dyeing Department</p>
+      </div>
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-600 mb-2 text-center">รหัสประจำตัวพนักงาน</label>
+          <input type="text" id="empIdInput" class="w-full px-4 py-4 rounded-2xl border-2 border-gray-100 focus:bg-white focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-2xl text-center font-bold tracking-[0.3em] bg-gray-50/50 text-blue-900 transition-all shadow-inner" placeholder="••••••" autocomplete="off">
+        </div>
+        <button onclick="doLogin()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-blue-600/20 transition-all flex justify-center items-center gap-2 text-lg">
+          เข้าใช้งานระบบ <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="mainApp" class="hidden flex w-full h-full relative">
+    
+    <div id="sidebarOverlay" class="fixed inset-0 bg-blue-900/40 backdrop-blur-sm z-20 hidden transition-all duration-300 opacity-0" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-72 bg-gradient-to-b from-blue-800 to-blue-900 text-white flex flex-col shadow-[20px_0_30px_-15px_rgba(0,0,0,0.3)] transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-out">
+      
+      <div class="p-6 border-b border-blue-700/50">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="bg-white/10 p-2.5 rounded-xl text-cyan-300 shadow-inner"><i class="fas fa-tint text-xl"></i></div>
+          <span class="text-xl font-bold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-200">Dyeing Dept.</span>
+          <button class="ml-auto text-blue-200 hover:text-white hover:bg-white/10 p-2 rounded-lg transition-colors focus:outline-none lg:hidden" onclick="toggleSidebar()"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="bg-gradient-to-br from-white/10 to-transparent rounded-2xl p-4 border border-white/10 backdrop-blur-md shadow-lg">
+          <p class="text-cyan-200 text-[10px] uppercase tracking-widest mb-1.5 font-semibold">ผู้ปฏิบัติงาน</p>
+          <h3 id="displayEmpName" class="text-lg font-bold truncate">ชื่อ-สกุล</h3>
+          <div class="flex items-center mt-1">
+            <span id="displayEmpPos" class="text-xs text-blue-100/80 truncate">ตำแหน่ง</span>
+            <span id="badgeAdmin" class="hidden bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest ml-2 shadow-sm border border-white/20">ADMIN</span>
+          </div>
+          <input type="hidden" id="hiddenEmpId">
+        </div>
+      </div>
+      
+      <nav class="flex-1 overflow-y-auto py-6">
+        <div class="px-6 py-2 text-[10px] font-bold text-blue-300/60 uppercase tracking-widest mb-2">เมนูพนักงานทั่วไป</div>
+        
+        <div onclick="switchSection('workSection', 'บันทึกเวลาทำงาน', this)" class="menu-item active flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl">
+          <i class="fas fa-user-clock w-8 text-cyan-300 text-lg"></i> <span class="font-medium tracking-wide">บันทึกเวลาทำงาน</span>
+        </div>
+        <div onclick="switchSection('historySection', 'ประวัติการทำงานตนเอง', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl">
+          <i class="fas fa-history w-8 text-cyan-300 text-lg"></i> <span class="font-medium tracking-wide">ประวัติการทำงาน</span>
+        </div>
+        <div onclick="switchSection('summarySection', 'สรุปผลงานของฉัน', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl">
+          <i class="fas fa-clipboard-check w-8 text-cyan-300 text-lg"></i> <span class="font-medium tracking-wide">สรุปผลงานของฉัน</span>
+        </div>
+        <div onclick="switchSection('wageSection', 'ค่าแรงของฉัน', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl">
+          <i class="fas fa-coins w-8 text-yellow-300 text-lg"></i> <span class="font-medium tracking-wide">ค่าแรงของฉัน</span>
+        </div>
+
+        <div id="menuAdmin" class="hidden">
+          <div class="px-6 py-2 mt-6 text-[10px] font-bold text-orange-300/80 uppercase tracking-widest mb-2">ผู้ดูแลระบบ (Admin)</div>
+          
+          <div onclick="switchSection('adminSection', 'บันทึกยอดผลผลิต', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl text-orange-50 hover:text-white">
+            <i class="fas fa-chart-pie w-8 text-orange-400 text-lg drop-shadow-sm"></i> <span class="font-medium tracking-wide">บันทึกยอดผลผลิต</span>
+          </div>
+          <div onclick="switchSection('adminHistorySection', 'ประวัติและประสิทธิภาพ', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl text-orange-50 hover:text-white">
+            <i class="fas fa-chart-line w-8 text-orange-400 text-lg drop-shadow-sm"></i> <span class="font-medium tracking-wide">ประวัติและประสิทธิภาพ</span>
+          </div>
+          <div onclick="switchSection('adminEditLogSection', 'แก้ไข Log พนักงาน', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mb-1 mx-2 rounded-xl text-orange-50 hover:text-white">
+            <i class="fas fa-user-edit w-8 text-orange-400 text-lg drop-shadow-sm"></i> <span class="font-medium tracking-wide">แก้ไข Log พนักงาน</span>
+          </div>
+          <div onclick="switchSection('manageEmpSection', 'จัดการระบบพนักงาน', this)" class="menu-item flex items-center px-6 py-3.5 text-sm mx-2 rounded-xl text-orange-50 hover:text-white">
+            <i class="fas fa-users-cog w-8 text-orange-400 text-lg drop-shadow-sm"></i> <span class="font-medium tracking-wide">จัดการพนักงาน</span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="p-4 border-t border-blue-700/50">
+        <button onclick="logout()" class="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-rose-500 border border-white/10 text-blue-100 hover:text-white py-3.5 rounded-xl transition-all text-sm font-bold shadow-sm"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-100 w-full relative lg:ml-72">
+      
+      <header class="h-16 lg:h-20 bg-white/80 backdrop-blur-md border-b border-blue-100/50 border-t-4 border-t-blue-500 flex items-center px-4 md:px-8 shadow-sm shrink-0 w-full relative z-10">
+        <button onclick="toggleSidebar()" class="text-blue-600 hover:text-blue-800 hover:bg-blue-50 focus:outline-none p-2.5 rounded-xl transition-colors mr-4 lg:hidden"><i class="fas fa-bars text-xl"></i></button>
+        <div class="flex items-center gap-3">
+           <div id="headerIconBg" class="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0"><i id="headerIcon" class="fas fa-user-clock text-blue-600 text-lg"></i></div>
+           <h2 id="pageTitle" class="text-xl font-bold text-gray-800 tracking-tight">บันทึกเวลาทำงาน</h2>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoNTksIDEzMCwgMjQ2LCAwLjA1KSIvPjwvc3ZnPg==')]">
+        <div class="max-w-lg mx-auto pb-10">
+
+          <!-- ════ บันทึกเวลาทำงาน ════ -->
+          <div id="workSection" class="transition-all block animate-fade-in-up">
+            <div class="bg-white rounded-[2rem] shadow-xl shadow-blue-900/10 border border-blue-100 relative overflow-hidden">
+              <input type="hidden" id="editRowNumber" value="">
+              <div id="formHeader" class="bg-gradient-to-r from-blue-50 to-blue-100/50 px-6 py-6 md:px-8 md:py-7 border-b border-blue-100 relative overflow-hidden transition-all">
+                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-white rounded-full opacity-40 blur-2xl"></div>
+                 <h3 id="formTitle" class="text-xl font-bold text-blue-900 relative z-10 flex items-center gap-2"><i class="fas fa-clipboard-list text-blue-500"></i> ฟอร์มบันทึกการทำงาน</h3>
+                 <p id="formSubtitle" class="text-sm text-blue-600/80 mt-1.5 font-medium relative z-10">กรุณาเลือกงานและระบุเวลาตามความจริง</p>
+                 <button id="cancelEditBtn" onclick="cancelEditMode()" class="hidden absolute top-4 right-4 md:top-6 md:right-6 z-20 bg-white border border-rose-200 text-rose-500 px-3 py-2 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm flex items-center gap-1"><i class="fas fa-times"></i> ยกเลิก</button>
+              </div>
+              <div class="p-6 md:p-8 space-y-7 bg-gradient-to-b from-white to-blue-50/30">
+                <div>
+                  <label class="block text-sm font-bold text-blue-900 mb-2">วันที่ปฏิบัติงาน</label>
+                  <div class="relative">
+                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fas fa-calendar-alt text-blue-400"></i></div>
+                     <input type="date" id="workDate" class="pl-11 pr-4 py-3.5 bg-blue-50/50 rounded-2xl border border-blue-200 outline-none focus:bg-white focus:border-blue-500 text-blue-900 font-bold w-full transition-all shadow-sm">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-blue-900 mb-3">รายละเอียดงานที่ทำ <span class="text-rose-500">*</span></label>
+                  <div class="grid grid-cols-2 gap-4">
+                    <button onclick="selectTask('ย้อมสี', this)" class="task-btn rounded-2xl p-4 flex flex-col items-center gap-3 relative overflow-hidden group"><div class="icon-wrapper w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center transition-all"><i class="fas fa-fill-drip text-2xl text-blue-500"></i></div><span class="task-text text-sm font-semibold text-gray-600">ย้อมสี</span></button>
+                    <button onclick="selectTask('อบเส้นไหม', this)" class="task-btn rounded-2xl p-4 flex flex-col items-center gap-3 relative overflow-hidden group"><div class="icon-wrapper w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center transition-all"><i class="fas fa-temperature-high text-2xl text-blue-500"></i></div><span class="task-text text-sm font-semibold text-gray-600">อบเส้นไหม</span></button>
+                    <button onclick="selectTask('กระตุก', this)" class="task-btn rounded-2xl p-4 flex flex-col items-center gap-3 relative overflow-hidden group"><div class="icon-wrapper w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center transition-all"><i class="fas fa-hands text-2xl text-blue-500"></i></div><span class="task-text text-sm font-semibold text-gray-600">กระตุก</span></button>
+                    <button onclick="selectTask('บรรจุ', this)" class="task-btn rounded-2xl p-4 flex flex-col items-center gap-3 relative overflow-hidden group"><div class="icon-wrapper w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center transition-all"><i class="fas fa-box-open text-2xl text-blue-500"></i></div><span class="task-text text-sm font-semibold text-gray-600">บรรจุ</span></button>
+                  </div>
+                  <input type="hidden" id="selectedTask">
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-blue-900 mb-2">จำนวนชั่วโมงที่ทำงาน <span class="text-rose-500">*</span></label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fas fa-clock text-blue-400"></i></div>
+                    <input type="number" id="workHours" step="0.5" min="0.5" class="pl-11 pr-16 py-3.5 bg-blue-50/50 rounded-2xl border border-blue-200 outline-none focus:bg-white focus:border-blue-500 text-blue-700 text-2xl font-bold text-center w-full transition-all shadow-sm" placeholder="0">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-5 pointer-events-none"><span class="text-blue-400/80 font-bold text-sm">ชม.</span></div>
+                  </div>
+                </div>
+                <div class="pt-4">
+                   <button id="submitDataBtn" onclick="submitLog()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2 text-lg transform hover:-translate-y-1"><i class="fas fa-paper-plane"></i> ส่งข้อมูลเวลาทำงาน</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ════ ประวัติการทำงาน ════ -->
+          <div id="historySection" class="transition-all hidden">
+             <div class="flex justify-between items-end mb-4 px-2">
+                <div><h3 class="text-xl font-bold text-gray-800">ประวัติล่าสุด 10 รายการ</h3><p class="text-sm text-gray-500" id="historySubtitle">ตรวจสอบประวัติการทำงาน</p></div>
+                <button onclick="loadHistory()" class="bg-white border border-gray-200 text-blue-600 p-2 rounded-xl shadow-sm hover:bg-blue-50 transition"><i class="fas fa-sync-alt"></i></button>
+             </div>
+             <div id="historyList" class="space-y-4"></div>
+          </div>
+
+          <!-- ════ สรุปผลงาน ════ -->
+          <div id="summarySection" class="transition-all hidden">
+             <div class="flex justify-between items-end mb-4 px-2">
+                <div><h3 class="text-xl font-bold text-gray-800">สรุปเวลาและผลผลิต</h3><p class="text-sm text-gray-500">ดูประสิทธิภาพ (กก./แรง) ในแต่ละวัน</p></div>
+                <button onclick="loadMySummary()" class="bg-white border border-gray-200 text-blue-600 p-2 rounded-xl shadow-sm hover:bg-blue-50 transition"><i class="fas fa-sync-alt"></i></button>
+             </div>
+             <div id="summaryListContainer" class="space-y-5"></div>
+          </div>
+
+          <!-- ════ ★ ค่าแรงของฉัน ★ ════ -->
+          <div id="wageSection" class="transition-all hidden">
+            <div class="flex justify-between items-end mb-4 px-2">
+              <div>
+                <h3 class="text-xl font-bold text-gray-800">ค่าแรงของฉัน</h3>
+                <p class="text-sm text-gray-500">คำนวณจากยอดบรรจุ ÷ แรงรวม × อัตราค่าแรง</p>
+              </div>
+              <div class="flex gap-2 items-center">
+                <button onclick="loadMyWage()" class="bg-white border border-gray-200 text-yellow-600 p-2 rounded-xl shadow-sm hover:bg-yellow-50 transition" title="รีโหลดข้อมูล"><i class="fas fa-sync-alt"></i></button>
+                <button id="exportWageBtn" onclick="exportWagePDF()" class="hidden bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white px-4 py-2 rounded-xl shadow-md transition-all flex items-center gap-2 text-sm font-bold transform hover:-translate-y-0.5">
+                  <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+              </div>
+            </div>
+
+            <div id="wageSummaryBanner" class="hidden rounded-2xl p-5 mb-5 shadow-lg relative overflow-hidden" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+              <div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 12px 12px;"></div>
+              <div class="relative z-10 flex items-center justify-between">
+                <div>
+                  <p class="text-yellow-100 text-xs font-semibold uppercase tracking-wider mb-1">รวมค่าแรงสะสม (30 วันล่าสุด)</p>
+                  <p id="wageTotalText" class="text-3xl font-bold text-white">0.00 บาท</p>
+                  <p id="wageRateText" class="text-yellow-200 text-xs mt-1 font-medium"></p>
+                </div>
+                <div class="bg-white/20 rounded-2xl p-4 backdrop-blur-sm border border-white/30">
+                  <i class="fas fa-coins text-3xl text-white drop-shadow"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 mb-5 flex items-start gap-3">
+              <div class="bg-amber-400 rounded-full w-8 h-8 flex items-center justify-center shrink-0 mt-0.5">
+                <i class="fas fa-info text-white text-xs"></i>
+              </div>
+              <div>
+                <p class="text-amber-900 text-sm font-bold mb-1">สูตรคำนวณค่าแรง</p>
+                <p class="text-amber-700 text-xs leading-relaxed">
+                  <span class="font-bold">แรงรวม</span> = (ชม.ทุกหน่วยงาน + ชม.แรงงานมาช่วย กระตุก + ชม.แรงงานมาช่วย แพ็ค) ÷ 8<br>
+                  <span class="font-bold">ค่าแรง/วัน</span> = (ยอดบรรจุ ÷ แรงรวม) × อัตราค่าแรง
+                </p>
+              </div>
+            </div>
+
+            <div id="wageListContainer" class="space-y-4"></div>
+          </div>
+
+          <!-- ════ Admin: บันทึกยอดผลผลิต ════ -->
+          <div id="adminSection" class="transition-all hidden">
+            <div class="bg-white rounded-[2rem] shadow-xl shadow-indigo-900/10 border border-indigo-100 relative overflow-hidden">
+              <input type="hidden" id="editAdminRowNumber" value="">
+              <div id="adminHeader" class="bg-gradient-to-r from-indigo-50 to-purple-50/50 px-6 py-6 md:px-8 md:py-7 border-b border-indigo-100 relative overflow-hidden">
+                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-white rounded-full opacity-40 blur-2xl"></div>
+                 <h3 id="adminTitle" class="text-xl font-bold text-indigo-900 relative z-10 flex items-center gap-2"><i class="fas fa-chart-pie text-indigo-500"></i> ฟอร์มบันทึกยอดผลผลิต</h3>
+                 <p id="adminSubtitle" class="text-sm text-indigo-600/80 mt-1.5 font-medium relative z-10">สรุปยอดประจำวันของแผนกฟอกย้อม</p>
+                 <button id="cancelAdminEditBtn" onclick="cancelAdminEditMode()" class="hidden absolute top-4 right-4 md:top-6 md:right-6 z-20 bg-white border border-rose-200 text-rose-500 px-3 py-2 rounded-xl text-xs font-bold hover:bg-rose-50 transition shadow-sm flex items-center gap-1"><i class="fas fa-times"></i> ยกเลิก</button>
+              </div>
+              <div class="p-6 md:p-8 space-y-6 bg-gradient-to-b from-white to-indigo-50/20">
+                <div>
+                  <label class="block text-sm font-bold text-indigo-900 mb-2">วันที่ผลิต</label>
+                  <input type="date" id="adminDate" class="px-4 py-3.5 bg-indigo-50/50 rounded-2xl border border-indigo-200 outline-none focus:bg-white focus:border-indigo-500 text-indigo-900 font-bold w-full">
+                </div>
+                <div class="bg-gradient-to-br from-indigo-50/80 to-blue-50/50 p-5 rounded-2xl border border-indigo-100">
+                   <h4 class="font-bold text-indigo-900 mb-4 text-sm">1. แผนกย้อมสี (kg / ล็อต)</h4>
+                   <div class="grid grid-cols-2 gap-4">
+                     <input type="number" id="adminStripping" placeholder="ลอกกาว (0)" class="px-4 py-3 bg-white rounded-xl border border-indigo-200 text-center font-bold w-full">
+                     <input type="number" id="adminDyeing" placeholder="ย้อมสี (0)" class="px-4 py-3 bg-white rounded-xl border border-indigo-200 text-center font-bold w-full">
+                   </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                   <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                      <h4 class="font-bold text-slate-700 mb-3 text-xs">2. ยอดกระตุก</h4>
+                      <input type="number" id="adminShaking" placeholder="0" class="px-3 py-3 bg-white rounded-xl border border-slate-200 text-center font-bold w-full">
+                   </div>
+                   <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                      <h4 class="font-bold text-slate-700 mb-3 text-xs">3. ยอดบรรจุ</h4>
+                      <input type="number" id="adminPacking" placeholder="0" class="px-3 py-3 bg-white rounded-xl border border-slate-200 text-center font-bold w-full">
+                   </div>
+                </div>
+                <!-- 4. แรงงานมาช่วย แยก กระตุก / แพ็ค -->
+                <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-200">
+                   <h4 class="font-bold text-emerald-800 mb-1 text-sm">4. ชั่วโมงแรงงานมาช่วย</h4>
+                   <p class="text-[10px] text-emerald-600 font-semibold mb-3"><i class="fas fa-check-circle mr-1"></i>นำไปคิดค่าแรงและประสิทธิภาพของหน่วยนั้น</p>
+                   <div class="grid grid-cols-2 gap-3">
+                      <div>
+                         <label class="block text-[11px] font-bold text-emerald-700 mb-1.5 text-center"><i class="fas fa-hands mr-1"></i>หน่วยกระตุก (ชม.)</label>
+                         <input type="number" id="adminCentralHoursShake" placeholder="0" step="0.5" min="0" class="px-3 py-3 bg-white rounded-xl border border-emerald-300 text-center font-bold text-lg w-full focus:outline-none focus:border-emerald-500">
+                      </div>
+                      <div>
+                         <label class="block text-[11px] font-bold text-emerald-700 mb-1.5 text-center"><i class="fas fa-box-open mr-1"></i>หน่วยแพ็ค (ชม.)</label>
+                         <input type="number" id="adminCentralHoursPack" placeholder="0" step="0.5" min="0" class="px-3 py-3 bg-white rounded-xl border border-emerald-300 text-center font-bold text-lg w-full focus:outline-none focus:border-emerald-500">
+                      </div>
+                   </div>
+                </div>
+                <!-- 5. ส่วนกลาง ไม่คิดค่าแรง -->
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                   <h4 class="font-bold text-slate-700 mb-1 text-sm">5. ชั่วโมงส่วนกลาง</h4>
+                   <p class="text-[10px] text-slate-500 font-semibold mb-3"><i class="fas fa-ban mr-1 text-rose-400"></i>ไม่นำไปคิดค่าแรง</p>
+                   <input type="number" id="adminCentralHoursOnly" placeholder="0" step="0.5" min="0" class="px-4 py-3 bg-white rounded-xl border border-slate-200 text-center font-bold text-xl w-full">
+                </div>
+                <div class="pt-4">
+                   <button id="submitAdminDataBtn" onclick="submitAdminLog()" class="w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2 text-lg transform hover:-translate-y-1">
+                     <i class="fas fa-cloud-upload-alt"></i> บันทึกยอดผลผลิตรวม
+                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ════ Admin: ประวัติและประสิทธิภาพ ════ -->
+          <div id="adminHistorySection" class="transition-all hidden">
+             <div class="flex justify-between items-end mb-4 px-2">
+                <div><h3 class="text-xl font-bold text-indigo-900">ประวัติและประสิทธิภาพ</h3><p class="text-sm text-gray-500">คำนวณ กก./แรง จากเวลาพนักงาน</p></div>
+                <button onclick="loadAdminHistory()" class="bg-white border border-gray-200 text-indigo-600 p-2 rounded-xl shadow-sm hover:bg-indigo-50 transition"><i class="fas fa-sync-alt"></i></button>
+             </div>
+             <div id="adminHistoryList" class="space-y-4"></div>
+          </div>
+
+          <!-- ════ Admin: แก้ไข Log พนักงาน ════ -->
+          <div id="adminEditLogSection" class="transition-all hidden">
+            <div class="flex justify-between items-end mb-4 px-2">
+              <div>
+                <h3 class="text-xl font-bold text-orange-900">แก้ไข Log พนักงาน</h3>
+                <p class="text-sm text-gray-500">Admin สามารถแก้ไขบันทึกการทำงานของพนักงานทุกคน</p>
+              </div>
+            </div>
+
+            <!-- ค้นหาพนักงาน -->
+            <div class="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 mb-4">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-2">เลือกพนักงาน</label>
+              <div class="flex gap-3">
+                <select id="adminEditEmpSelect" class="flex-1 border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-orange-400 bg-white">
+                  <option value="">-- เลือกพนักงาน --</option>
+                </select>
+                <button onclick="loadAdminEmpLog()" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                  <i class="fas fa-search"></i> ดูประวัติ
+                </button>
+              </div>
+            </div>
+
+            <!-- ฟอร์มแก้ไข (ซ่อนตอนแรก) -->
+            <div id="adminEditLogForm" class="hidden bg-white rounded-2xl shadow-sm border border-orange-200 p-5 mb-4">
+              <div class="flex items-center justify-between mb-4">
+                <h4 class="font-bold text-orange-800 flex items-center gap-2"><i class="fas fa-edit text-orange-500"></i> แก้ไขรายการ</h4>
+                <button onclick="cancelAdminEditLog()" class="text-gray-400 hover:text-gray-600 text-sm font-bold flex items-center gap-1"><i class="fas fa-times"></i> ยกเลิก</button>
+              </div>
+              <input type="hidden" id="adminEditLogRow">
+              <input type="hidden" id="adminEditLogEmpId">
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="text-xs font-bold text-gray-500 block mb-1">วันที่</label>
+                  <input type="date" id="adminEditLogDate" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:border-orange-400">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-gray-500 block mb-1">ชั่วโมง</label>
+                  <input type="number" id="adminEditLogHours" step="0.5" min="0" max="24" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm font-bold outline-none focus:border-orange-400 text-center">
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="text-xs font-bold text-gray-500 block mb-2">ประเภทงาน</label>
+                <div class="flex flex-wrap gap-2" id="adminEditTaskBtns">
+                  <button onclick="selectAdminEditTask('ย้อมสี')" data-task="ย้อมสี" class="admin-task-btn border border-gray-200 bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition">ย้อมสี</button>
+                  <button onclick="selectAdminEditTask('ลอกกาว')" data-task="ลอกกาว" class="admin-task-btn border border-gray-200 bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition">ลอกกาว</button>
+                  <button onclick="selectAdminEditTask('กระตุก')" data-task="กระตุก" class="admin-task-btn border border-gray-200 bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition">กระตุก</button>
+                  <button onclick="selectAdminEditTask('บรรจุ')" data-task="บรรจุ" class="admin-task-btn border border-gray-200 bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition">บรรจุ</button>
+                  <button onclick="selectAdminEditTask('QC')" data-task="QC" class="admin-task-btn border border-gray-200 bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition">QC</button>
+                  <button onclick="selectAdminEditTask('อื่นๆ')" data-task="อื่นๆ" class="admin-task-btn border border-gray-200 bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition">อื่นๆ</button>
+                </div>
+                <input type="hidden" id="adminEditLogTask">
+              </div>
+              <button onclick="saveAdminEditLog()" class="w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white font-bold py-3.5 rounded-xl shadow flex items-center justify-center gap-2">
+                <i class="fas fa-save"></i> บันทึกการแก้ไข
+              </button>
+            </div>
+
+            <!-- รายการ log -->
+            <div id="adminEditLogList" class="space-y-3"></div>
+          </div>
+
+          <!-- ════ Admin: จัดการพนักงาน ════ -->
+          <div id="manageEmpSection" class="transition-all hidden">
+            <div class="bg-white rounded-[2rem] shadow-xl shadow-orange-900/10 border border-orange-100 relative mb-8">
+              <div class="bg-gradient-to-r from-orange-50 to-red-50/50 px-6 py-6 md:px-8 md:py-7 border-b border-orange-100 relative overflow-hidden">
+                 <div class="absolute -right-6 -top-6 w-32 h-32 bg-white rounded-full opacity-40 blur-2xl"></div>
+                 <h3 class="text-xl font-bold text-orange-900 relative z-10 flex items-center gap-2"><i class="fas fa-user-plus text-orange-500"></i> เพิ่มรายชื่อพนักงาน</h3>
+              </div>
+              <div class="p-6 md:p-8 space-y-5 bg-gradient-to-b from-white to-orange-50/20">
+                <div>
+                  <label class="block text-sm font-bold text-orange-900 mb-2">รหัสพนักงาน <span class="text-rose-500">*</span></label>
+                  <input type="text" id="newEmpId" class="px-4 py-3 bg-orange-50/50 rounded-xl border border-orange-200 outline-none focus:bg-white focus:border-orange-500 text-gray-800 font-bold w-full" placeholder="เช่น 100123">
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-orange-900 mb-2">ชื่อ-นามสกุล <span class="text-rose-500">*</span></label>
+                  <input type="text" id="newEmpName" class="px-4 py-3 bg-orange-50/50 rounded-xl border border-orange-200 outline-none focus:bg-white focus:border-orange-500 text-gray-800 font-bold w-full" placeholder="เช่น นายสมชาย ใจดี">
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-orange-900 mb-2">ตำแหน่ง <span class="text-rose-500">*</span></label>
+                  <input type="text" id="newEmpPos" class="px-4 py-3 bg-orange-50/50 rounded-xl border border-orange-200 outline-none focus:bg-white focus:border-orange-500 text-gray-800 font-bold w-full" placeholder="เช่น พนักงานย้อมสี">
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-orange-900 mb-2">สิทธิ์การใช้งาน <span class="text-rose-500">*</span></label>
+                  <div class="relative">
+                    <select id="newEmpRole" class="px-4 py-3 bg-orange-50/50 rounded-xl border border-orange-200 outline-none focus:bg-white focus:border-orange-500 text-gray-800 font-bold w-full appearance-none">
+                       <option value="User">พนักงานทั่วไป (User)</option>
+                       <option value="Admin">หัวหน้างาน (Admin)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-orange-500"><i class="fas fa-chevron-down"></i></div>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-orange-900 mb-2">อัตราค่าแรง (บาท/กก.) <span class="text-gray-400 font-normal text-xs">— คอลัม E</span></label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fas fa-coins text-orange-400 text-sm"></i></div>
+                    <input type="number" id="newEmpWage" step="0.01" min="0" class="pl-11 pr-16 py-3 bg-orange-50/50 rounded-xl border border-orange-200 outline-none focus:bg-white focus:border-orange-500 text-gray-800 font-bold w-full" placeholder="0.00">
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none"><span class="text-orange-400 text-xs font-bold">บ./กก.</span></div>
+                  </div>
+                </div>
+                <div class="pt-4 border-t border-orange-100 mt-2">
+                   <button onclick="submitNewEmployee()" class="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg transform hover:-translate-y-1 transition-transform"><i class="fas fa-save"></i> บันทึกข้อมูลพนักงาน</button>
+                </div>
+              </div>
+            </div>
+            <div class="mb-4 px-2 flex justify-between items-end">
+               <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-users text-blue-500"></i> รายชื่อพนักงานในระบบ</h3>
+               <button onclick="loadEmployeeList()" class="bg-white border border-gray-200 text-blue-600 p-2 rounded-xl shadow-sm hover:bg-blue-50 transition"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div id="employeeListContainer" class="space-y-3"></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let currentUserRole = 'User'; // ★ role ของผู้ใช้ปัจจุบัน ★
+
+    window.onload = function() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('workDate').value = today;
+      document.getElementById('adminDate').value = today; 
+      document.getElementById('empIdInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') doLogin();
+      });
+    };
+
+    // ════ Popup & Loader ════
+    function showPopup(type, title, message, confirmCallback = null, cancelCallback = null) {
+      const overlay = document.getElementById('customPopupOverlay');
+      const box = document.getElementById('customPopupBox');
+      const icon = document.getElementById('popupIcon');
+      const btnConfirm = document.getElementById('popupBtnConfirm');
+      const btnCancel = document.getElementById('popupBtnCancel');
+
+      document.getElementById('popupTitle').innerText = title;
+      document.getElementById('popupMessage').innerHTML = message;
+      
+      btnCancel.classList.add('hidden');
+      btnCancel.onclick = () => { closePopup(); if(cancelCallback) setTimeout(cancelCallback, 300); };
+      btnConfirm.onclick = closePopup;
+
+      if (type === 'success') {
+          icon.innerHTML = '<div class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center"><i class="fas fa-check text-4xl text-green-500"></i></div>';
+          btnConfirm.className = "w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl transition-colors";
+          btnConfirm.innerText = "ยอดเยี่ยม";
+      } else if (type === 'warning') {
+          icon.innerHTML = '<div class="mx-auto w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center"><i class="fas fa-exclamation text-4xl text-orange-500"></i></div>';
+          btnConfirm.className = "w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-colors";
+          btnConfirm.innerText = "ตกลง";
+      } else if (type === 'confirm') {
+          icon.innerHTML = '<div class="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center"><i class="fas fa-question text-4xl text-blue-500"></i></div>';
+          btnCancel.classList.remove('hidden');
+          btnConfirm.className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md";
+          btnConfirm.innerText = "ยืนยัน";
+          btnConfirm.onclick = () => { closePopup(); if(confirmCallback) setTimeout(confirmCallback, 300); };
+      } else if (type === 'error') {
+          icon.innerHTML = '<div class="mx-auto w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center"><i class="fas fa-times text-4xl text-rose-500"></i></div>';
+          btnConfirm.className = "w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3.5 rounded-xl transition-colors";
+          btnConfirm.innerText = "ตกลง";
+      }
+
+      overlay.classList.remove('hidden');
+      setTimeout(() => { overlay.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
+    }
+
+    function closePopup() {
+      const overlay = document.getElementById('customPopupOverlay');
+      const box = document.getElementById('customPopupBox');
+      overlay.classList.add('opacity-0'); box.classList.add('scale-95');
+      setTimeout(() => { overlay.classList.add('hidden'); }, 300);
+    }
+
+    function showLoader(text) {
+      document.getElementById('loaderText').innerText = text;
+      const loader = document.getElementById('loaderOverlay');
+      loader.classList.remove('hidden');
+      setTimeout(() => loader.classList.remove('opacity-0'), 10);
+    }
+    function hideLoader() {
+      const loader = document.getElementById('loaderOverlay');
+      loader.classList.add('opacity-0');
+      setTimeout(() => loader.classList.add('hidden'), 300);
+    }
+
+    // ════ Helpers ════
+    function formatDateToDDMMYYYY(dateString) {
+      if (!dateString) return "";
+      const parts = dateString.split("-");
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+    function parseDDMMYYYYtoYYYYMMDD(dateString) {
+      if (!dateString) return "";
+      const d = String(dateString).split(" ")[0]; 
+      const parts = d.split("/");
+      if (parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+      return "";
+    }
+
+    // ════ Sidebar ════
+    function toggleSidebar() {
+      if (window.innerWidth >= 1024) return;
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('-translate-x-full');
+      if(sidebar.classList.contains('-translate-x-full')) {
+         overlay.classList.remove('opacity-100');
+         setTimeout(() => overlay.classList.add('hidden'), 300);
+      } else {
+         overlay.classList.remove('hidden');
+         setTimeout(() => overlay.classList.add('opacity-100'), 10);
+      }
+    }
+
+    // ════ Switch Section ════
+    function switchSection(sectionId, titleText, menuEl) {
+      const sections = ['workSection','adminSection','historySection','summarySection','wageSection','adminHistorySection','manageEmpSection','adminEditLogSection'];
+      sections.forEach(id => document.getElementById(id).classList.add('hidden'));
+      
+      const newSection = document.getElementById(sectionId);
+      newSection.classList.remove('hidden');
+      newSection.classList.remove('animate-fade-in-up');
+      void newSection.offsetWidth; 
+      newSection.classList.add('animate-fade-in-up');
+      
+      document.getElementById('pageTitle').innerText = titleText;
+      const headerIcon = document.getElementById('headerIcon');
+      const headerIconBg = document.getElementById('headerIconBg');
+      
+      if (sectionId === 'workSection') {
+         headerIcon.className = "fas fa-user-clock text-blue-600 text-lg";
+         headerIconBg.className = "bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+      } else if (sectionId === 'historySection') {
+         headerIcon.className = "fas fa-history text-cyan-600 text-lg";
+         headerIconBg.className = "bg-cyan-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+         loadHistory(); 
+      } else if (sectionId === 'summarySection') {
+         headerIcon.className = "fas fa-clipboard-check text-cyan-600 text-lg";
+         headerIconBg.className = "bg-cyan-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+         loadMySummary();
+      } else if (sectionId === 'wageSection') {
+         headerIcon.className = "fas fa-coins text-yellow-600 text-lg";
+         headerIconBg.className = "bg-yellow-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+         loadMyWage();
+      } else if (sectionId === 'adminSection') {
+         headerIcon.className = "fas fa-chart-pie text-orange-600 text-lg";
+         headerIconBg.className = "bg-orange-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+      } else if (sectionId === 'adminEditLogSection') {
+         headerIcon.className = "fas fa-user-edit text-orange-600 text-lg";
+         headerIconBg.className = "bg-orange-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+         loadAdminEditEmpList();
+      } else if (sectionId === 'adminHistorySection') {
+         headerIcon.className = "fas fa-chart-line text-indigo-600 text-lg";
+         headerIconBg.className = "bg-indigo-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+         loadAdminHistory();
+      } else if (sectionId === 'manageEmpSection') {
+         headerIcon.className = "fas fa-users-cog text-orange-600 text-lg";
+         headerIconBg.className = "bg-orange-100 w-10 h-10 rounded-full flex items-center justify-center shrink-0";
+         loadEmployeeList();
+      }
+
+      if(menuEl) {
+        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+        menuEl.classList.add('active');
+      }
+
+      if (window.innerWidth < 1024 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) {
+         toggleSidebar();
+      }
+    }
+
+    // ════ Login ════
+    function doLogin() {
+      const empId = document.getElementById('empIdInput').value.trim();
+      if (!empId) return showPopup('warning', 'แจ้งเตือน', 'กรุณากรอกรหัสพนักงานก่อนเข้าสู่ระบบ');
+      showLoader('กำลังตรวจสอบข้อมูล...');
+
+      google.script.run.withSuccessHandler(res => {
+        hideLoader();
+        if (res.success) {
+          document.getElementById('hiddenEmpId').value = res.data.id;
+          document.getElementById('displayEmpName').innerText = res.data.name;
+          document.getElementById('displayEmpPos').innerText = res.data.position;
+          
+          currentUserRole = res.data.role || 'User'; // ★ บันทึก role ★
+          if(res.data.role === "Admin") {
+             document.getElementById('badgeAdmin').classList.remove('hidden'); 
+             document.getElementById('menuAdmin').classList.remove('hidden');  
+          } else {
+             document.getElementById('badgeAdmin').classList.add('hidden');
+             document.getElementById('menuAdmin').classList.add('hidden');
+          }
+          
+          document.getElementById('loginScreen').classList.add('opacity-0', 'pointer-events-none', 'scale-105');
+          setTimeout(() => {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+          }, 300);
+
+          switchSection('workSection', 'บันทึกเวลาทำงาน', document.querySelectorAll('.menu-item')[0]);
+        } else { showPopup('error', 'ข้อผิดพลาด', res.message); }
+      }).checkLogin(empId);
+    }
+
+    // ════ Logout ════
+    function logout() {
+      document.getElementById('mainApp').classList.add('hidden');
+      const loginScreen = document.getElementById('loginScreen');
+      loginScreen.classList.remove('hidden');
+      setTimeout(() => { loginScreen.classList.remove('opacity-0', 'pointer-events-none', 'scale-105'); }, 10);
+      document.getElementById('empIdInput').value = '';
+      
+      try {
+         document.getElementById('editRowNumber').value = '';
+         document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
+         document.getElementById('selectedTask').value = '';
+         document.querySelectorAll('.task-btn').forEach(b => b.classList.remove('selected'));
+         document.getElementById('workHours').value = '';
+         document.getElementById('editAdminRowNumber').value = '';
+         document.getElementById('adminDate').value = new Date().toISOString().split('T')[0];
+         document.getElementById('adminStripping').value = '';
+         document.getElementById('adminDyeing').value = '';
+         document.getElementById('adminShaking').value = '';
+         document.getElementById('adminPacking').value = '';
+         document.getElementById('adminCentralHoursShake').value = ''; document.getElementById('adminCentralHoursPack').value = ''; document.getElementById('adminCentralHoursOnly').value = '';
+         document.getElementById('newEmpId').value = '';
+         document.getElementById('newEmpName').value = '';
+         document.getElementById('newEmpPos').value = '';
+         document.getElementById('newEmpRole').value = 'User';
+         document.getElementById('newEmpWage').value = '';
+         document.getElementById('wageSummaryBanner').classList.add('hidden');
+         document.getElementById('wageListContainer').innerHTML = '';
+         document.getElementById('exportWageBtn').classList.add('hidden');
+         _wageExportData = null;
+
+         document.getElementById('formHeader').classList.replace('from-orange-50', 'from-blue-50');
+         document.getElementById('formHeader').classList.replace('to-orange-100/50', 'to-blue-100/50');
+         document.getElementById('formTitle').innerHTML = '<i class="fas fa-clipboard-list text-blue-500"></i> ฟอร์มบันทึกการทำงาน';
+         document.getElementById('cancelEditBtn').classList.add('hidden');
+         const sb = document.getElementById('submitDataBtn');
+         sb.className = "w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex justify-center items-center gap-2 text-lg transform hover:-translate-y-1";
+         sb.innerHTML = '<i class="fas fa-paper-plane"></i> ส่งข้อมูลเวลาทำงาน';
+      } catch(e) { console.error(e); }
+
+      if (window.innerWidth < 1024 && !document.getElementById('sidebar').classList.contains('-translate-x-full')) toggleSidebar();
+    }
+
+    // ════════════ 🟢 งานพนักงานทั่วไป ════════════
+    function selectTask(taskName, el) {
+      document.querySelectorAll('.task-btn').forEach(btn => btn.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('selectedTask').value = taskName;
+    }
+
+    function submitLog() {
+      const rawDate = document.getElementById('workDate').value;
+      const task = document.getElementById('selectedTask').value;
+      const totalHours = document.getElementById('workHours').value;
+      const editRow = document.getElementById('editRowNumber').value;
+
+      if (!rawDate) return showPopup('warning', 'ข้อมูลไม่ครบถ้วน', 'กรุณาเลือกวันที่ปฏิบัติงาน');
+      if (!task) return showPopup('warning', 'ข้อมูลไม่ครบถ้วน', 'กรุณาเลือกรายละเอียดงานที่ทำ');
+      if (!totalHours || parseFloat(totalHours) <= 0) return showPopup('warning', 'ข้อมูลไม่ถูกต้อง', 'กรุณาระบุจำนวนชั่วโมงทำงาน');
+
+      const isEditing = editRow !== '';
+      const msg = `คุณต้องการ${isEditing?'แก้ไข':'บันทึก'}ข้อมูลใช่หรือไม่?<br><span class="text-blue-600 font-bold">งาน:</span> ${task} | <span class="text-blue-600 font-bold">เวลา:</span> ${totalHours} ชม.`;
+
+      showPopup('confirm', isEditing ? 'ยืนยันการแก้ไข' : 'ยืนยันส่งข้อมูล', msg, () => {
+          showLoader(isEditing ? 'กำลังอัปเดต...' : 'กำลังบันทึก...');
+          const logData = {
+            empId: document.getElementById('hiddenEmpId').value,
+            empName: document.getElementById('displayEmpName').innerText,
+            empPos: document.getElementById('displayEmpPos').innerText.replace('ADMIN', '').trim(), 
+            workDate: formatDateToDDMMYYYY(rawDate), task: task, totalHours: totalHours
+          };
+
+          if (isEditing) {
+             google.script.run.withSuccessHandler(res => {
+                hideLoader();
+                if (res.success) { showPopup('success', 'แก้ไขสำเร็จ!', res.message); cancelEditMode(); } 
+                else { showPopup('error', 'เกิดข้อผิดพลาด', res.message); }
+             }).updateWorkLog(editRow, logData);
+          } else {
+             google.script.run.withSuccessHandler(res => {
+                hideLoader();
+                if (res.success) { showPopup('success', 'บันทึกสำเร็จ!', res.message); cancelEditMode(); } 
+                else { showPopup('error', 'เกิดข้อผิดพลาด', res.message); }
+             }).saveWorkLog(logData);
+          }
+      });
+    }
+
+    function loadHistory() {
+      const empId = document.getElementById('hiddenEmpId').value;
+      const listDiv = document.getElementById('historyList');
+      listDiv.innerHTML = '<div class="text-center py-10"><div class="loader mx-auto mb-3"></div><p class="text-gray-500 text-sm">กำลังโหลดประวัติ...</p></div>';
+
+      google.script.run.withSuccessHandler(res => {
+        if (res.success) {
+          listDiv.innerHTML = '';
+          if (res.data.length === 0) {
+            listDiv.innerHTML = '<div class="text-center py-8 bg-white rounded-2xl shadow-sm text-gray-500">ไม่มีประวัติการทำงาน</div>';
+            return;
+          }
+          res.data.forEach(log => {
+             let icon = 'fa-check-circle';
+             if (log.task.includes('ย้อม')) icon = 'fa-fill-drip';
+             else if (log.task.includes('อบ')) icon = 'fa-temperature-high';
+             else if (log.task.includes('กระตุก')) icon = 'fa-hands';
+             else if (log.task.includes('บรรจุ')) icon = 'fa-box-open';
+             listDiv.innerHTML += `
+              <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 flex justify-between items-center transform hover:-translate-y-1 transition-transform">
+                <div class="flex items-center gap-4">
+                   <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center shrink-0"><i class="fas ${icon} text-xl"></i></div>
+                   <div><p class="text-xs text-gray-400 font-medium mb-0.5">${log.date}</p><h4 class="font-bold text-gray-800">${log.task}</h4><p class="text-sm font-bold text-blue-600 mt-0.5">${log.hours} <span class="text-xs font-normal text-gray-500">ชม.</span></p></div>
+                </div>
+                ${currentUserRole === 'Admin' 
+                  ? `<button onclick="editLog(\${log.row}, '\${log.date}', '\${log.task}', \${log.hours})" class="bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2 rounded-xl text-sm font-bold shrink-0"><i class="fas fa-edit"></i> แก้ไข</button>` 
+                  : `<span class="bg-gray-100 text-gray-400 px-3 py-2 rounded-xl text-xs font-medium shrink-0"><i class="fas fa-lock mr-1"></i>ดูเท่านั้น</span>`}
+              </div>`;
+          });
+        }
+      }).getMyRecentLogs(empId);
+    }
+
+    function editLog(row, date, task, hours) {
+      switchSection('workSection', 'แก้ไขข้อมูลการทำงาน', document.querySelectorAll('.menu-item')[0]);
+      document.getElementById('editRowNumber').value = row;
+      document.getElementById('workDate').value = parseDDMMYYYYtoYYYYMMDD(date);
+      document.querySelectorAll('.task-btn').forEach(btn => { btn.classList.remove('selected'); if(btn.innerText.includes(task)) btn.classList.add('selected'); });
+      document.getElementById('selectedTask').value = task;
+      document.getElementById('workHours').value = hours;
+
+      document.getElementById('formHeader').classList.replace('from-blue-50', 'from-orange-50');
+      document.getElementById('formHeader').classList.replace('to-blue-100/50', 'to-orange-100/50');
+      document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit text-orange-500"></i> โหมดแก้ไขข้อมูล';
+      document.getElementById('cancelEditBtn').classList.remove('hidden');
+      const submitBtn = document.getElementById('submitDataBtn');
+      submitBtn.className = "w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white font-bold py-4 rounded-2xl shadow-lg mt-4";
+      submitBtn.innerHTML = '<i class="fas fa-save"></i> บันทึกการแก้ไข';
+    }
+
+    function cancelEditMode() {
+      document.getElementById('editRowNumber').value = '';
+      document.getElementById('workDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('selectedTask').value = '';
+      document.querySelectorAll('.task-btn').forEach(b => b.classList.remove('selected'));
+      document.getElementById('workHours').value = '';
+      document.getElementById('formHeader').classList.replace('from-orange-50', 'from-blue-50');
+      document.getElementById('formHeader').classList.replace('to-orange-100/50', 'to-blue-100/50');
+      document.getElementById('formTitle').innerHTML = '<i class="fas fa-clipboard-list text-blue-500"></i> ฟอร์มบันทึกการทำงาน';
+      document.getElementById('cancelEditBtn').classList.add('hidden');
+      const submitBtn = document.getElementById('submitDataBtn');
+      submitBtn.className = "w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-4 rounded-2xl shadow-lg mt-4";
+      submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> ส่งข้อมูลเวลาทำงาน';
+      if(document.getElementById('pageTitle').innerText.includes("แก้ไข")) {
+          switchSection('historySection', 'ประวัติการทำงานตนเอง', document.querySelectorAll('.menu-item')[1]);
+      }
+    }
+
+    function loadMySummary() {
+      const empId = document.getElementById('hiddenEmpId').value;
+      const listDiv = document.getElementById('summaryListContainer');
+      listDiv.innerHTML = '<div class="text-center py-10"><div class="loader mx-auto mb-3"></div><p class="text-gray-500 text-sm">กำลังคำนวณข้อมูล...</p></div>';
+
+      google.script.run.withSuccessHandler(res => {
+         if (res.success) {
+            listDiv.innerHTML = '';
+            if (res.data.length === 0) { listDiv.innerHTML = '<div class="text-center py-8 bg-white rounded-2xl shadow-sm text-gray-500">คุณยังไม่มีข้อมูลการทำงาน</div>'; return; }
+            res.data.forEach(item => {
+               let taskListHTML = item.tasks.map(t => `<li class="mb-1">${t}</li>`).join('');
+               let prodHTML = '';
+               if (item.prod) {
+                  prodHTML = `
+                     <div class="grid grid-cols-3 gap-2 text-center text-xs mt-2">
+                        <div class="bg-white p-1.5 rounded-lg border border-slate-100 shadow-sm">
+                           <span class="text-gray-500 block mb-0.5 text-[10px]">ย้อม+ลอก</span>
+                           <span class="font-bold text-gray-800">${item.prod.stripping + item.prod.dyeing}</span><br>
+                           <span class="text-[9px] text-blue-600 font-bold bg-blue-50 px-1 py-0.5 rounded mt-1 inline-block">Eff ${item.eff.dyeing}</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-slate-100 shadow-sm">
+                           <span class="text-gray-500 block mb-0.5 text-[10px]">กระตุก</span>
+                           <span class="font-bold text-gray-800">${item.prod.shaking}</span><br>
+                           <span class="text-[9px] text-blue-600 font-bold bg-blue-50 px-1 py-0.5 rounded mt-1 inline-block">Eff ${item.eff.shaking}</span>
+                        </div>
+                        <div class="bg-white p-1.5 rounded-lg border border-slate-100 shadow-sm">
+                           <span class="text-gray-500 block mb-0.5 text-[10px]">บรรจุ</span>
+                           <span class="font-bold text-gray-800">${item.prod.packing}</span><br>
+                           <span class="text-[9px] text-blue-600 font-bold bg-blue-50 px-1 py-0.5 rounded mt-1 inline-block">Eff ${item.eff.packing}</span>
+                        </div>
+                     </div>`;
+               } else {
+                  prodHTML = `<div class="text-xs text-gray-400 mt-2 bg-white p-2 rounded-lg italic">แอดมินยังไม่ได้สรุปยอดของวันนี้</div>`;
+               }
+               listDiv.innerHTML += `
+                  <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-cyan-100/50 relative overflow-hidden hover:shadow-md transition-shadow">
+                     <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
+                        <span class="font-bold text-cyan-900 flex items-center gap-2"><i class="far fa-calendar-check text-cyan-500 text-lg"></i> วันที่ ${item.date}</span>
+                        <span class="bg-cyan-50 text-cyan-700 px-3 py-1 rounded-full text-xs font-bold shadow-inner">รวม ${item.totalHours} ชม.</span>
+                     </div>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-cyan-50/30 p-3 rounded-xl border border-cyan-50">
+                           <p class="text-xs text-cyan-800 font-bold mb-2 flex items-center gap-1"><i class="fas fa-briefcase text-cyan-400"></i> งานที่คุณทำ</p>
+                           <ul class="text-sm text-gray-700 list-disc pl-5 font-medium">${taskListHTML}</ul>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                           <p class="text-xs text-slate-700 font-bold mb-1 flex items-center gap-1"><i class="fas fa-chart-line text-indigo-400"></i> ยอดผลิตแผนก (กก./แรง)</p>
+                           ${prodHTML}
+                        </div>
+                     </div>
+                  </div>`;
+            });
+         }
+      }).getEmployeeDailySummary(empId);
+    }
+
+    // ════════════ 💰 ค่าแรงพนักงาน ════════════
+    var _wageExportData = null;
+
+    function loadMyWage() {
+      const empId = document.getElementById('hiddenEmpId').value;
+      const listDiv = document.getElementById('wageListContainer');
+      const banner = document.getElementById('wageSummaryBanner');
+      
+      banner.classList.add('hidden');
+      document.getElementById('exportWageBtn').classList.add('hidden');
+      _wageExportData = null;
+      listDiv.innerHTML = '<div class="text-center py-10"><div class="loader mx-auto mb-3"></div><p class="text-gray-500 text-sm">กำลังคำนวณค่าแรงแบบละเอียด...</p></div>';
+
+      google.script.run.withSuccessHandler(res => {
+        if (!res.success) {
+          listDiv.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl shadow-sm border border-rose-100 px-6"><p class="text-rose-600 font-bold text-sm">${res.message}</p></div>`;
+          return;
+        }
+        listDiv.innerHTML = '';
+        if (res.data.length === 0) {
+          listDiv.innerHTML = '<div class="text-center py-8 bg-white rounded-2xl shadow-sm text-gray-500">ยังไม่มีข้อมูลค่าแรง</div>';
+          return;
+        }
+
+        _wageExportData = res;
+        banner.classList.remove('hidden');
+        document.getElementById('exportWageBtn').classList.remove('hidden');
+        document.getElementById('wageTotalText').innerText = res.totalWage.toLocaleString('th-TH', {minimumFractionDigits: 2}) + ' บาท';
+        document.getElementById('wageRateText').innerText = `อัตราปัจจุบัน: ${res.wageRate} บ./กก. • แต่ละวันใช้อัตรา ณ วันที่ทำงาน`;
+
+        res.data.forEach(item => {
+          const hasWage = item.wage > 0;
+          const wageColor = hasWage ? 'text-green-600' : 'text-gray-400';
+          const wageBg = hasWage ? 'bg-green-50' : 'bg-gray-50';
+          const rateDiff = item.wageRate !== res.wageRate;
+          const rateBadge = rateDiff
+            ? `<span class="text-[9px] bg-orange-100 text-orange-700 border border-orange-200 px-1.5 py-0.5 rounded-full font-bold ml-1">อัตราเก่า</span>`
+            : '';
+
+          listDiv.innerHTML += `
+            <div class="bg-white rounded-2xl shadow-sm border border-yellow-100 overflow-hidden mb-4">
+              <div class="bg-amber-50 px-5 py-3 border-b border-yellow-100 flex justify-between items-center flex-wrap gap-2">
+                <span class="font-bold text-gray-800"><i class="far fa-calendar-alt text-amber-500"></i> วันที่ ${item.date}</span>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] bg-white px-2 py-1 rounded-lg border border-amber-200 text-amber-700 font-bold">แรงฉัน: ${item.myForce} แรง</span>
+                  <span class="text-[10px] bg-white px-2 py-1 rounded-lg border border-amber-200 text-amber-800 font-bold flex items-center gap-1">
+                    <i class="fas fa-coins text-amber-400 text-[9px]"></i> ${item.wageRate} บ./กก.${rateBadge}
+                  </span>
+                </div>
+              </div>
+              <div class="p-5">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs mb-4">
+                  <div class="bg-blue-50 rounded-xl p-2 border border-blue-100">
+                    <p class="text-blue-400 mb-1 font-semibold">ยอดบรรจุ</p>
+                    <p class="font-bold text-blue-800 text-lg">${item.packing}</p>
+                    <p class="text-[9px]">กก.</p>
+                  </div>
+                  <div class="bg-slate-50 rounded-xl p-2 border border-slate-100">
+                    <p class="text-slate-400 mb-1 font-semibold">แรงรวมแผนก</p>
+                    <p class="font-bold text-slate-700 text-lg">${item.totalForce}</p>
+                    <p class="text-[9px]">แรง</p>
+                  </div>
+                  <div class="bg-cyan-50 rounded-xl p-2 border border-cyan-100">
+                    <p class="text-cyan-500 mb-1 font-semibold">แรงของฉัน</p>
+                    <p class="font-bold text-cyan-700 text-lg">${item.myForce}</p>
+                    <p class="text-[9px]">แรง</p>
+                  </div>
+                  <div class="${wageBg} rounded-xl p-2 border">
+                    <p class="${wageColor} mb-1 font-semibold">ค่าแรงวันนี้</p>
+                    <p class="font-bold ${wageColor} text-lg">${item.wage.toLocaleString('th-TH', {minimumFractionDigits: 2})}</p>
+                    <p class="text-[9px]">บาท</p>
+                  </div>
+                </div>
+                <div class="bg-slate-50 rounded-lg px-3 py-2 text-[10px] text-slate-500 border border-slate-100 font-mono">
+                  สูตร: (${item.packing} / ${item.totalForce}) × ${item.myForce} × ${item.wageRate} = ${item.wage.toLocaleString('th-TH', {minimumFractionDigits:2})}
+                </div>
+              </div>
+            </div>`;
+        });
+      }).getMyWageSummary(empId);
+    }
+
+    // ════════════ 📄 Export สลิปค่าแรง PDF ════════════
+    function exportWagePDF() {
+      if (!_wageExportData) return showPopup('warning', 'ไม่มีข้อมูล', 'กรุณาโหลดข้อมูลค่าแรงก่อน Export');
+
+      const empName = document.getElementById('displayEmpName').innerText;
+      const empPos  = document.getElementById('displayEmpPos').innerText;
+      const empId   = document.getElementById('hiddenEmpId').value;
+      const res     = _wageExportData;
+      const now     = new Date();
+      const printDate = now.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      let tableRows = '';
+      res.data.forEach((item, idx) => {
+        const rowBg   = idx % 2 === 0 ? '#ffffff' : '#fffbeb';
+        const wageNum = parseFloat(item.wage) || 0;
+        const wageStr = wageNum.toLocaleString('th-TH', {minimumFractionDigits: 2});
+        const wageClr = wageNum > 0 ? '#16a34a' : '#9ca3af';
+        tableRows += `
+          <tr style="background:${rowBg};">
+            <td style="padding:10px 14px;border-bottom:1px solid #fde68a;font-weight:600;color:#1f2937;">${item.date}</td>
+            <td style="padding:10px 14px;border-bottom:1px solid #fde68a;text-align:center;color:#1d4ed8;font-weight:700;">${item.packing}</td>
+            <td style="padding:10px 14px;border-bottom:1px solid #fde68a;text-align:center;color:#374151;font-weight:600;">${item.totalForce}</td>
+            <td style="padding:10px 14px;border-bottom:1px solid #fde68a;text-align:center;color:#0891b2;font-weight:700;">${item.myForce}</td>
+            <td style="padding:10px 14px;border-bottom:1px solid #fde68a;text-align:right;font-weight:700;color:${wageClr};font-size:13px;">${wageStr}</td>
+          </tr>`;
+      });
+
+      const html = `<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8"><title>สลิปค่าแรง — ${empName}</title>
+<link href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Kodchasan',sans-serif;background:#f1f5f9;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{width:210mm;min-height:297mm;margin:0 auto;background:#fff;box-shadow:0 4px 32px rgba(0,0,0,0.12);}.hd{background:linear-gradient(135deg,#1e40af 0%,#0369a1 60%,#0891b2 100%);color:#fff;padding:30px 40px 24px;position:relative;overflow:hidden;}.hd-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;}.hd-logo{display:flex;align-items:center;gap:14px;}.hd-logo .icon-wrap{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:16px;width:52px;height:52px;display:flex;align-items:center;justify-content:center;font-size:26px;}.hd-logo h1{font-size:20px;font-weight:700;letter-spacing:0.3px;}.hd-doctype .tag{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:8px 16px;}.emp-strip{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 20px;margin-top:18px;display:flex;justify-content:space-between;align-items:center;}.summary{display:flex;gap:14px;padding:18px 40px;background:#fffbeb;border-bottom:2px solid #fde68a;}.sc{flex:1;background:#fff;border-radius:12px;padding:12px 16px;border:1px solid #fde68a;}.sc.hl{background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;}.tbl-wrap{padding:18px 40px 10px;}table{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;}thead tr{background:linear-gradient(90deg,#1e40af,#0369a1);}thead th{padding:10px 14px;text-align:left;font-size:10px;color:#fff;font-weight:600;text-transform:uppercase;}tfoot tr{background:#1e3a5f;color:#fff;}.notice{margin:10px 40px 20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 16px;font-size:10px;color:#166534;}@media print{.page{box-shadow:none;margin:0;}@page{size:A4;margin:0;}}</style></head>
+<body><div class="page">
+  <div class="hd"><div class="hd-top"><div class="hd-logo"><div class="icon-wrap">🧵</div><div><h1>แผนกฟอกย้อม</h1><p style="font-size:10px;opacity:0.6;">Dyeing Department</p></div></div><div class="hd-doctype"><div class="tag"><span style="font-size:9px;display:block;opacity:0.7;">ประเภทเอกสาร</span><span style="font-weight:700;">สลิปค่าแรงพนักงาน</span></div></div></div>
+  <div class="emp-strip"><div><div style="font-size:17px;font-weight:700;">${empName}</div><div style="font-size:11px;opacity:0.8;">${empPos} &nbsp;•&nbsp; ID: ${empId}</div></div><div style="background:rgba(255,255,255,0.2);padding:5px 12px;border-radius:8px;font-weight:700;">${empId}</div></div></div>
+  <div class="summary"><div class="sc hl"><div style="font-size:9px;opacity:0.8;">💰 รวมค่าแรงสะสม (30 วัน)</div><div style="font-size:22px;font-weight:700;">${res.totalWage.toLocaleString('th-TH',{minimumFractionDigits:2})} บาท</div><div style="font-size:10px;opacity:0.9;">อัตราค่าแรง: ${res.wageRate} บาท/กก.</div></div><div class="sc"><div style="font-size:9px;color:#92400e;">📅 จำนวนวันที่ทำงาน</div><div style="font-size:19px;font-weight:700;color:#b45309;">${res.data.length} วัน</div></div><div class="sc"><div style="font-size:9px;color:#92400e;">🖨️ วันที่ออกเอกสาร</div><div style="font-size:13px;font-weight:700;color:#b45309;margin-top:5px;">${printDate}</div></div></div>
+  <div class="tbl-wrap"><h2 style="font-size:13px;font-weight:700;margin-bottom:12px;color:#374151;">รายละเอียดค่าแรงรายบุคคล</h2>
+  <table><thead><tr><th>วันที่</th><th style="text-align:center;">ยอดบรรจุ (กก.)</th><th style="text-align:center;">แรงรวมแผนก</th><th style="text-align:center;">แรงของฉัน</th><th style="text-align:right;">ค่าแรง (บาท)</th></tr></thead>
+  <tbody>${tableRows}</tbody>
+  <tfoot><tr><td colspan="4" style="padding:12px;font-weight:700;">รวมค่าแรงสุทธิ</td><td style="padding:12px;text-align:right;font-size:16px;color:#fbbf24;font-weight:700;">${res.totalWage.toLocaleString('th-TH',{minimumFractionDigits:2})}</td></tr></tfoot></table></div>
+  <div class="notice"><strong>หมายเหตุ:</strong> สูตรการคำนวณ = (ยอดบรรจุ ÷ แรงรวมแผนก) × แรงของตัวเอง × อัตราค่าแรงประจำตัว</div>
+  <div style="padding:40px;display:flex;justify-content:space-between;font-size:11px;color:#6b7280;"><div><p>ออกโดยระบบอัตโนมัติ</p><p>พิมพ์เมื่อ: ${new Date().toLocaleString('th-TH')}</p></div><div style="text-align:center;"><div style="width:150px;border-bottom:1px solid #d1d5db;margin-bottom:5px;"></div><p>ลายเซ็นพนักงาน</p></div></div>
+</div><script>window.onload=function(){setTimeout(function(){window.print();},700);};<\/script></body></html>`;
+
+      const win = window.open('', '_blank');
+      win.document.write(html);
+      win.document.close();
+    }
+
+    // ════════════ 🔵 Admin ════════════
+    function submitAdminLog() {
+      const rawDate = document.getElementById('adminDate').value;
+      const editRow = document.getElementById('editAdminRowNumber').value;
+      if (!rawDate) return showPopup('warning', 'ข้อมูลไม่ครบ', 'กรุณาเลือกวันที่');
+
+      const data = {
+         date: formatDateToDDMMYYYY(rawDate), adminId: document.getElementById('hiddenEmpId').value, adminName: document.getElementById('displayEmpName').innerText,
+         strippingQty: document.getElementById('adminStripping').value || 0, dyeingQty: document.getElementById('adminDyeing').value || 0,
+         shakingQty: document.getElementById('adminShaking').value || 0, packingQty: document.getElementById('adminPacking').value || 0,
+         centralHoursShake: document.getElementById('adminCentralHoursShake').value || 0,
+         centralHoursPack:  document.getElementById('adminCentralHoursPack').value  || 0,
+         centralHoursOnly:  document.getElementById('adminCentralHoursOnly').value  || 0
+      };
+
+      const total = parseFloat(data.strippingQty) + parseFloat(data.dyeingQty) + parseFloat(data.shakingQty) + parseFloat(data.packingQty) + parseFloat(data.centralHoursShake) + parseFloat(data.centralHoursPack);
+      if (total === 0) return showPopup('warning', 'ข้อมูลว่างเปล่า', 'กรุณากรอกยอดอย่างน้อย 1 รายการ');
+
+      const isEditing = editRow !== '';
+      const msg = `ยืนยันการ${isEditing?'แก้ไข':'บันทึก'}ยอดผลิตของวันที่ ${data.date} ใช่หรือไม่?`;
+
+      showPopup('confirm', isEditing?'ยืนยันการแก้ไข':'ยืนยันบันทึก', msg, () => {
+          showLoader('กำลังดำเนินการ...');
+          if(isEditing) {
+              google.script.run.withSuccessHandler(res => {
+                hideLoader();
+                if (res.success) { showPopup('success', 'สำเร็จ!', res.message); cancelAdminEditMode(); } 
+                else { showPopup('error', 'ผิดพลาด', res.message); }
+              }).updateAdminProductionLog(editRow, data);
+          } else {
+              google.script.run.withSuccessHandler(res => {
+                hideLoader();
+                if (res.success) { showPopup('success', 'สำเร็จ!', res.message); cancelAdminEditMode(); } 
+                else { showPopup('error', 'ผิดพลาด', res.message); }
+              }).saveAdminProductionLog(data);
+          }
+      });
+    }
+
+    function loadAdminHistory() {
+      const listDiv = document.getElementById('adminHistoryList');
+      listDiv.innerHTML = '<div class="text-center py-10"><div class="loader mx-auto mb-3"></div><p class="text-gray-500">กำลังโหลด...</p></div>';
+
+      google.script.run.withSuccessHandler(res => {
+        if (res.success) {
+          listDiv.innerHTML = '';
+          if (res.data.length === 0) { listDiv.innerHTML = '<div class="text-center py-8 bg-white rounded-2xl text-gray-500">ไม่มีประวัติยอดผลิต</div>'; return; }
+          res.data.forEach(log => {
+             listDiv.innerHTML += `
+              <div class="bg-white rounded-2xl p-4 shadow-sm border border-indigo-100 flex flex-col gap-2 transform hover:-translate-y-1 transition-transform">
+                <div class="flex justify-between border-b border-gray-100 pb-2">
+                   <span class="font-bold text-indigo-900"><i class="far fa-calendar-alt text-indigo-400"></i> ${log.date}</span>
+                   <button onclick="editAdminLog(${log.row}, '${log.date}', ${log.stripping}, ${log.dyeing}, ${log.shaking}, ${log.packing}, ${log.centralHoursShake||0}, ${log.centralHoursOnly||0}, ${log.centralHoursPack||0})" class="text-orange-500 text-xs font-bold hover:bg-orange-50 px-2 py-1 rounded shrink-0"><i class="fas fa-edit"></i> แก้ไข</button>
+                </div>
+                <div class="grid grid-cols-3 text-center text-xs gap-2 pt-1">
+                   <div class="bg-slate-50 rounded-xl p-2 border border-gray-100">
+                      <span class="text-gray-500 text-[10px]">ย้อม+ลอก</span><br>
+                      <span class="font-bold text-gray-800 text-sm">${log.stripping + log.dyeing}</span><br>
+                      <span class="text-[9px] text-blue-600 font-bold bg-blue-100/50 px-1 py-0.5 rounded mt-1 inline-block">Eff ${log.effDye}</span>
+                   </div>
+                   <div class="bg-slate-50 rounded-xl p-2 border border-gray-100">
+                      <span class="text-gray-500 text-[10px]">กระตุก</span><br>
+                      <span class="font-bold text-gray-800 text-sm">${log.shaking}</span><br>
+                      <span class="text-[9px] text-blue-600 font-bold bg-blue-100/50 px-1 py-0.5 rounded mt-1 inline-block">Eff ${log.effShake}</span>
+                   </div>
+                   <div class="bg-slate-50 rounded-xl p-2 border border-gray-100">
+                      <span class="text-gray-500 text-[10px]">บรรจุ</span><br>
+                      <span class="font-bold text-gray-800 text-sm">${log.packing}</span><br>
+                      <span class="text-[9px] text-blue-600 font-bold bg-blue-100/50 px-1 py-0.5 rounded mt-1 inline-block">Eff ${log.effPack}</span>
+                   </div>
+                </div>
+                <div class="bg-indigo-50 text-indigo-700 rounded-lg p-1.5 text-center text-xs font-bold border border-indigo-100 mt-1">
+                   มาช่วยกระตุก: ${log.centralHoursShake||0} ชม. | มาช่วยแพ็ค: ${log.centralHoursPack||0} ชม. | ส่วนกลาง: ${log.centralHoursOnly||0} ชม.
+                </div>
+              </div>`;
+          });
+        }
+      }).getAdminRecentLogs();
+    }
+
+    function editAdminLog(row, date, strip, dye, shake, pack, centerShake, centerOnly, centerPack) {
+      switchSection('adminSection', 'แก้ไขยอดผลผลิต', document.querySelectorAll('.menu-item')[4]);
+      document.getElementById('editAdminRowNumber').value = row;
+      document.getElementById('adminDate').value = parseDDMMYYYYtoYYYYMMDD(date);
+      document.getElementById('adminStripping').value = strip || ''; document.getElementById('adminDyeing').value = dye || '';
+      document.getElementById('adminShaking').value = shake || ''; document.getElementById('adminPacking').value = pack || '';
+      document.getElementById('adminCentralHoursShake').value = centerShake || '';
+      document.getElementById('adminCentralHoursPack').value  = centerPack  || '';
+      document.getElementById('adminCentralHoursOnly').value  = centerOnly  || '';
+      document.getElementById('adminHeader').classList.replace('from-indigo-50', 'from-orange-50');
+      document.getElementById('adminTitle').innerHTML = '<i class="fas fa-edit text-orange-500"></i> โหมดแก้ไขยอดผลิต';
+      document.getElementById('cancelAdminEditBtn').classList.remove('hidden');
+      const submitBtn = document.getElementById('submitAdminDataBtn');
+      submitBtn.className = "w-full bg-gradient-to-r from-orange-500 to-orange-400 text-white font-bold py-4 rounded-2xl shadow-lg mt-4";
+      submitBtn.innerHTML = '<i class="fas fa-save"></i> บันทึกการแก้ไขยอด';
+    }
+
+    function cancelAdminEditMode() {
+      document.getElementById('editAdminRowNumber').value = '';
+      document.getElementById('adminDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('adminStripping').value = ''; document.getElementById('adminDyeing').value = '';
+      document.getElementById('adminShaking').value = ''; document.getElementById('adminPacking').value = '';
+      document.getElementById('adminCentralHoursShake').value = ''; document.getElementById('adminCentralHoursPack').value = ''; document.getElementById('adminCentralHoursOnly').value = '';
+      document.getElementById('adminHeader').classList.replace('from-orange-50', 'from-indigo-50');
+      document.getElementById('adminTitle').innerHTML = '<i class="fas fa-chart-pie text-indigo-500"></i> ฟอร์มบันทึกยอดผลผลิต';
+      document.getElementById('cancelAdminEditBtn').classList.add('hidden');
+      const submitBtn = document.getElementById('submitAdminDataBtn');
+      submitBtn.className = "w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg mt-4";
+      submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> บันทึกยอดผลผลิตรวม';
+      if(document.getElementById('pageTitle').innerText.includes("แก้ไข")) {
+          switchSection('adminHistorySection', 'ประวัติยอดผลผลิต', document.querySelectorAll('.menu-item')[5]);
+      }
+    }
+
+    // ════════════ ★ จัดการพนักงาน ★ ════════════
+    function submitNewEmployee() {
+      const empId = document.getElementById('newEmpId').value.trim();
+      const empName = document.getElementById('newEmpName').value.trim();
+      const empPos = document.getElementById('newEmpPos').value.trim();
+      const empRole = document.getElementById('newEmpRole').value;
+      const wageRate = parseFloat(document.getElementById('newEmpWage').value) || 0;
+
+      if (!empId || !empName || !empPos) return showPopup('warning', 'ข้อมูลไม่ครบ', 'กรุณากรอก รหัสพนักงาน, ชื่อ และตำแหน่ง ให้ครบถ้วน');
+      const msg = `ยืนยันการเพิ่มพนักงานใหม่<br><br>
+        <span class="text-blue-600 font-bold">รหัส:</span> ${empId}<br>
+        <span class="text-blue-600 font-bold">ชื่อ:</span> ${empName}<br>
+        <span class="text-blue-600 font-bold">สิทธิ์:</span> ${empRole}<br>
+        <span class="text-blue-600 font-bold">อัตราค่าแรง:</span> ${wageRate} บ./กก.`;
+      
+      showPopup('confirm', 'เพิ่มพนักงาน', msg, () => {
+         showLoader('กำลังบันทึกข้อมูลพนักงาน...');
+         google.script.run.withSuccessHandler(res => {
+            hideLoader();
+            if (res.success) {
+               showPopup('success', 'สำเร็จ!', res.message);
+               document.getElementById('newEmpId').value = ''; document.getElementById('newEmpName').value = '';
+               document.getElementById('newEmpPos').value = ''; document.getElementById('newEmpRole').value = 'User';
+               document.getElementById('newEmpWage').value = '';
+               loadEmployeeList();
+            } else { showPopup('error', 'เพิ่มไม่สำเร็จ', res.message); }
+         }).addNewEmployee({ empId, empName, empPos, empRole, wageRate });
+      });
+    }
+
+    function loadEmployeeList() {
+       const listDiv = document.getElementById('employeeListContainer');
+       listDiv.innerHTML = '<div class="text-center py-6"><div class="loader mx-auto mb-2" style="width:25px; height:25px; border-width:3px;"></div><p class="text-gray-500 text-sm">กำลังโหลดรายชื่อ...</p></div>';
+       google.script.run
+         .withFailureHandler(err => {
+           listDiv.innerHTML = '<div class="text-center py-6 bg-white rounded-xl text-rose-500 font-bold">เกิดข้อผิดพลาด: ' + err.message + '</div>';
+         })
+         .withSuccessHandler(res => {
+          if(res.success) {
+             listDiv.innerHTML = '';
+             if(res.data.length === 0) { listDiv.innerHTML = '<div class="text-center py-6 bg-white rounded-xl text-gray-500">ไม่มีรายชื่อพนักงาน</div>'; return; }
+             const currentUserId = document.getElementById('hiddenEmpId').value;
+             res.data.forEach(emp => {
+                const isAdmin = emp.role === 'Admin';
+                let roleControls = ''; let deleteBtn = '';
+
+                // แสดงค่าแรงปัจจุบัน
+                const wageDisplay = emp.wageRate > 0 
+                  ? `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2 py-0.5 rounded-full font-bold"><i class="fas fa-coins text-amber-500 mr-0.5"></i>${emp.wageRate} บ./กก.</span>`
+                  : `<span class="bg-gray-50 text-gray-400 border border-gray-200 text-[10px] px-2 py-0.5 rounded-full font-bold">ยังไม่ตั้งค่าแรง</span>`;
+
+                if (emp.id === currentUserId) {
+                   roleControls = `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold ml-2 shadow-sm">คุณ (${emp.role})</span>`;
+                   deleteBtn = `<button disabled class="text-gray-300 px-3 py-2 rounded-lg cursor-not-allowed"><i class="fas fa-trash-alt"></i></button>`;
+                } else {
+                   roleControls = `<select data-empid="${emp.id}" data-empname="${emp.name.replace(/"/g,'&quot;')}" onchange="changeEmpRole(this.dataset.empid, this.dataset.empname, this.value, this)" class="ml-2 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-lg px-2 py-1 outline-none cursor-pointer focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-sm"><option value="User" ${!isAdmin ? 'selected' : ''}>User</option><option value="Admin" ${isAdmin ? 'selected' : ''}>Admin</option></select>`;
+                   deleteBtn = `<button data-empid="${emp.id}" data-empname="${emp.name.replace(/"/g,'&quot;')}" onclick="deleteEmp(this.dataset.empid, this.dataset.empname)" class="text-rose-500 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors"><i class="fas fa-trash-alt"></i></button>`;
+                }
+
+                listDiv.innerHTML += `
+                  <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:border-amber-200 transition-colors">
+                    <!-- แถวหลัก -->
+                    <div class="p-4 flex justify-between items-center">
+                      <div class="flex-1 min-w-0 mr-2">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">รหัส: ${emp.id}</p>
+                        <h5 class="font-bold text-gray-800 leading-tight truncate">${emp.name}</h5>
+                        <div class="flex items-center flex-wrap gap-1 mt-1.5">
+                          <span class="text-xs text-gray-500 font-medium">${emp.pos}</span>
+                          ${roleControls}
+                        </div>
+                        <!-- ค่าแรงและปุ่มแก้ไข (เฉพาะพนักงานคนอื่น ไม่ใช่ตัวเอง) -->
+                        <div class="flex items-center gap-2 mt-2 flex-wrap">
+                          <div id="wageDisplay_${emp.id}">${wageDisplay}</div>
+                          ${emp.id !== currentUserId ? `
+                          <button data-empid="${emp.id}" data-wagerate="${emp.wageRate}" onclick="toggleWageEdit(this.dataset.empid, parseFloat(this.dataset.wagerate))" 
+                            id="wageEditBtn_${emp.id}"
+                            class="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-bold transition-all flex items-center gap-1">
+                            <i class="fas fa-pen text-[9px]"></i> แก้ไขค่าแรง
+                          </button>
+                          <button data-empid="${emp.id}" data-empname="${emp.name.replace(/"/g,'&amp;quot;')}" onclick="toggleWageHistory(this.dataset.empid, this.dataset.empname)"
+                            id="wageHistBtn_${emp.id}"
+                            class="bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-[10px] px-2 py-0.5 rounded-full font-bold transition-all flex items-center gap-1">
+                            <i class="fas fa-history text-[9px]"></i> ประวัติค่าแรง
+                          </button>` : ''}
+                        </div>
+                      </div>
+                      ${deleteBtn}
+                    </div>
+                    <!-- แถวแก้ไขค่าแรง (เฉพาะพนักงานคนอื่น ไม่ใช่ตัวเอง) -->
+                    ${emp.id !== currentUserId ? `
+                    <div id="wageEditRow_${emp.id}" class="hidden border-t-2 border-amber-200" style="background:#fffbeb;border-radius:0 0 10px 10px;">
+                      <div style="padding:14px 16px;">
+
+                        <!-- ฟิลด์อัตราค่าแรง -->
+                        <div style="margin-bottom:10px;">
+                          <label style="display:block;font-size:11px;font-weight:700;color:#92400e;margin-bottom:5px;">
+                            <i class="fas fa-coins" style="color:#f59e0b;margin-right:4px;"></i>อัตราค่าแรงใหม่
+                          </label>
+                          <div style="display:flex;align-items:center;gap:8px;">
+                            <input type="number" id="wageInput_${emp.id}" step="0.01" min="0"
+                              value="${emp.wageRate}" placeholder="0.00"
+                              style="flex:1;border:2px solid #f59e0b;border-radius:10px;padding:9px 12px;font-family:inherit;font-weight:700;font-size:16px;color:#92400e;background:#fff;outline:none;text-align:center;">
+                            <span style="font-size:12px;font-weight:700;color:#b45309;white-space:nowrap;">บาท/กก.</span>
+                          </div>
+                        </div>
+
+                        <!-- ฟิลด์วันที่มีผล -->
+                        <div style="margin-bottom:12px;">
+                          <label style="display:block;font-size:11px;font-weight:700;color:#92400e;margin-bottom:5px;">
+                            <i class="far fa-calendar-check" style="color:#f59e0b;margin-right:4px;"></i>มีผลตั้งแต่วันที่
+                          </label>
+                          <input type="date" id="wageEffDate_${emp.id}"
+                            style="display:block;width:100%;border:2px solid #f59e0b;border-radius:10px;padding:9px 12px;font-family:inherit;font-weight:700;font-size:14px;color:#92400e;background:#fff;outline:none;box-sizing:border-box;">
+                        </div>
+
+                        <!-- หมายเหตุ -->
+                        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:7px 10px;margin-bottom:12px;">
+                          <p style="font-size:10px;color:#92400e;margin:0;">
+                            <i class="fas fa-info-circle" style="color:#f59e0b;margin-right:4px;"></i>
+                            ค่าแรงวันก่อนหน้าวันที่ระบุจะยังคงใช้อัตราเดิม
+                          </p>
+                        </div>
+
+                        <!-- ปุ่ม -->
+                        <div style="display:flex;gap:8px;">
+                          <button data-empid="${emp.id}" data-empname="${emp.name.replace(/"/g,'&quot;')}" onclick="saveWageEdit(this.dataset.empid, this.dataset.empname)"
+                            style="flex:1;background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+                            <i class="fas fa-check"></i> บันทึกอัตราค่าแรง
+                          </button>
+                          <button data-empid="${emp.id}" onclick="cancelWageEdit(this.dataset.empid)"
+                            style="background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                            <i class="fas fa-times"></i> ยกเลิก
+                          </button>
+                        </div>
+
+                      </div>
+                    </div>` : ''}
+                    <!-- ★ ประวัติค่าแรง ★ -->
+                    ${emp.id !== currentUserId ? `
+                    <div id="wageHistRow_${emp.id}" class="hidden border-t border-blue-100" style="background:#eff6ff;">
+                      <div style="padding:14px 16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                          <span style="font-size:12px;font-weight:700;color:#1d4ed8;"><i class="fas fa-history" style="margin-right:5px;"></i>ประวัติอัตราค่าแรง</span>
+                          <button data-empid="${emp.id}" data-empname="${emp.name.replace(/"/g,'&amp;quot;')}" onclick="showAddWageHistoryForm(this.dataset.empid, this.dataset.empname)"
+                            style="background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:5px 10px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;">
+                            <i class="fas fa-plus"></i> เพิ่มอัตราย้อนหลัง
+                          </button>
+                        </div>
+                        <div id="wageHistList_${emp.id}">
+                          <div style="text-align:center;color:#94a3b8;font-size:12px;padding:8px;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลด...</div>
+                        </div>
+                        <!-- ฟอร์มเพิ่มย้อนหลัง (ซ่อนไว้) -->
+                        <div id="addHistForm_${emp.id}" style="display:none;margin-top:10px;background:#fff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;">
+                          <p style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:8px;"><i class="fas fa-pen"></i> เพิ่มอัตราค่าแรงย้อนหลัง</p>
+                          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                            <div>
+                              <label style="display:block;font-size:10px;font-weight:700;color:#1e40af;margin-bottom:3px;">อัตราค่าแรง (บ./กก.)</label>
+                              <input type="number" id="addHistRate_${emp.id}" step="0.01" min="0" placeholder="0.00"
+                                style="width:100%;border:1.5px solid #93c5fd;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;font-weight:700;color:#1e40af;background:#eff6ff;outline:none;text-align:center;box-sizing:border-box;">
+                            </div>
+                            <div>
+                              <label style="display:block;font-size:10px;font-weight:700;color:#1e40af;margin-bottom:3px;">มีผลตั้งแต่วันที่</label>
+                              <input type="date" id="addHistDate_${emp.id}"
+                                style="width:100%;border:1.5px solid #93c5fd;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12px;font-weight:700;color:#1e40af;background:#eff6ff;outline:none;box-sizing:border-box;">
+                            </div>
+                          </div>
+                          <div style="display:flex;gap:6px;">
+                            <button data-empid="${emp.id}" data-empname="${emp.name.replace(/"/g,'&amp;quot;')}" onclick="saveAddWageHistory(this.dataset.empid, this.dataset.empname)"
+                              style="flex:1;background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">
+                              <i class="fas fa-check"></i> บันทึก
+                            </button>
+                            <button data-empid="${emp.id}" onclick="document.getElementById('addHistForm_'+this.dataset.empid).style.display='none'"
+                              style="background:#fff;color:#6b7280;border:1px solid #d1d5db;border-radius:8px;padding:8px 12px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">
+                              ยกเลิก
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>` : ''}
+                  </div>`;
+             });
+          }
+       }).getEmployeeList();
+    }
+
+    // ════ ★ ฟังก์ชันแก้ไขค่าแรง Inline ★ ════
+    function toggleWageEdit(empId, currentWage) {
+      const editRow = document.getElementById(`wageEditRow_${empId}`);
+      const isHidden = editRow.classList.contains('hidden');
+      
+      // ปิดทุกช่องที่เปิดอยู่ก่อน
+      document.querySelectorAll('[id^="wageEditRow_"]').forEach(el => {
+        el.classList.add('hidden');
+      });
+      document.querySelectorAll('[id^="wageEditBtn_"]').forEach(el => {
+        el.innerHTML = '<i class="fas fa-pen text-[9px]"></i> แก้ไขค่าแรง';
+        el.classList.remove('bg-amber-200');
+      });
+
+      if (isHidden) {
+        editRow.classList.remove('hidden');
+        editRow.classList.add('wage-edit-expand');
+        const btn = document.getElementById(`wageEditBtn_${empId}`);
+        btn.innerHTML = '<i class="fas fa-chevron-up text-[9px]"></i> ปิด';
+        btn.classList.add('bg-amber-200');
+        // ตั้งค่า default วันที่เป็นวันนี้
+        setTimeout(() => {
+          const inp = document.getElementById(`wageInput_${empId}`);
+          if (inp) { inp.focus(); inp.select(); }
+          const dateInp = document.getElementById(`wageEffDate_${empId}`);
+          if (dateInp && !dateInp.value) {
+            dateInp.value = new Date().toISOString().split('T')[0];
+          }
+        }, 50);
+      }
+    }
+
+    function cancelWageEdit(empId) {
+      const editRow = document.getElementById(`wageEditRow_${empId}`);
+      editRow.classList.add('hidden');
+      const btn = document.getElementById(`wageEditBtn_${empId}`);
+      btn.innerHTML = '<i class="fas fa-pen text-[9px]"></i> แก้ไขค่าแรง';
+      btn.classList.remove('bg-amber-200');
+    }
+
+    function saveWageEdit(empId, empName) {
+      const input    = document.getElementById(`wageInput_${empId}`);
+      const dateInp  = document.getElementById(`wageEffDate_${empId}`);
+      const newWage  = parseFloat(input.value);
+      const effDateRaw = dateInp ? dateInp.value : '';
+
+      if (isNaN(newWage) || newWage < 0) {
+        return showPopup('warning', 'ข้อมูลไม่ถูกต้อง', 'กรุณากรอกอัตราค่าแรงเป็นตัวเลขที่มากกว่าหรือเท่ากับ 0');
+      }
+      if (!effDateRaw) {
+        return showPopup('warning', 'ข้อมูลไม่ครบ', 'กรุณาระบุวันที่เริ่มใช้อัตราค่าแรงใหม่');
+      }
+
+      // แปลง yyyy-mm-dd → dd/MM/yyyy เพื่อส่งไป backend
+      const dp = effDateRaw.split('-');
+      const effDateDisplay = `${dp[2]}/${dp[1]}/${dp[0]}`;
+
+      const msg = `ยืนยันการแก้ไขอัตราค่าแรงของ<br>
+        <span class="text-blue-600 font-bold">${empName}</span><br>
+        เป็น <span class="text-amber-600 font-bold text-lg">${newWage.toLocaleString('th-TH', {minimumFractionDigits:2})} บาท/กก.</span><br>
+        <span class="text-gray-500 text-xs">มีผลตั้งแต่วันที่ <span class="text-green-700 font-bold">${effDateDisplay}</span></span>`;
+
+      showPopup('confirm', 'ยืนยันแก้ไขค่าแรง', msg, () => {
+        showLoader('กำลังอัปเดตอัตราค่าแรง...');
+        google.script.run.withSuccessHandler(res => {
+          hideLoader();
+          if (res.success) {
+            showPopup('success', 'อัปเดตสำเร็จ!', res.message);
+            const wageDisplayEl = document.getElementById(`wageDisplay_${empId}`);
+            if (wageDisplayEl) {
+              wageDisplayEl.innerHTML = newWage > 0
+                ? `<span class="bg-amber-50 text-amber-700 border border-amber-200 text-[10px] px-2 py-0.5 rounded-full font-bold"><i class="fas fa-coins text-amber-500 mr-0.5"></i>${newWage} บ./กก.</span>`
+                : `<span class="bg-gray-50 text-gray-400 border border-gray-200 text-[10px] px-2 py-0.5 rounded-full font-bold">ยังไม่ตั้งค่าแรง</span>`;
+            }
+            const editBtn = document.getElementById(`wageEditBtn_${empId}`);
+            if (editBtn) editBtn.setAttribute('onclick', `toggleWageEdit('${empId}', ${newWage})`);
+            cancelWageEdit(empId);
+          } else {
+            showPopup('error', 'เกิดข้อผิดพลาด', res.message);
+          }
+        }).updateEmployeeWage(empId, newWage, effDateDisplay);
+      });
+    }
+
+    // ════ ★ ประวัติค่าแรง ★ ════
+    function toggleWageHistory(empId, empName) {
+      const row = document.getElementById(`wageHistRow_${empId}`);
+      const isHidden = row.classList.contains('hidden');
+      // ปิดอื่นก่อน
+      document.querySelectorAll('[id^="wageHistRow_"]').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('[id^="wageHistBtn_"]').forEach(el => {
+        el.innerHTML = '<i class="fas fa-history text-[9px]"></i> ประวัติค่าแรง';
+        el.classList.remove('bg-blue-200');
+      });
+      if (isHidden) {
+        row.classList.remove('hidden');
+        const btn = document.getElementById(`wageHistBtn_${empId}`);
+        if (btn) { btn.innerHTML = '<i class="fas fa-chevron-up text-[9px]"></i> ปิด'; btn.classList.add('bg-blue-200'); }
+        loadWageHistory(empId);
+      }
+    }
+
+    function loadWageHistory(empId) {
+      const listEl = document.getElementById(`wageHistList_${empId}`);
+      listEl.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12px;padding:8px;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลด...</div>';
+      google.script.run
+        .withFailureHandler(err => { listEl.innerHTML = '<p style="color:red;font-size:11px;">' + err.message + '</p>'; })
+        .withSuccessHandler(res => {
+          if (!res.success) { listEl.innerHTML = '<p style="color:red;font-size:11px;">' + res.message + '</p>'; return; }
+          if (res.data.length === 0) {
+            listEl.innerHTML = '<p style="color:#94a3b8;font-size:11px;text-align:center;padding:8px;">ยังไม่มีประวัติในระบบ</p>';
+            return;
+          }
+          let html = '<div style="display:flex;flex-direction:column;gap:6px;">';
+          res.data.forEach((item, idx) => {
+            const isLatest = idx === 0;
+            html += `<div style="display:flex;justify-content:space-between;align-items:center;background:${isLatest ? '#dbeafe' : '#fff'};border:1px solid ${isLatest ? '#93c5fd' : '#e2e8f0'};border-radius:8px;padding:7px 10px;">
+              <div>
+                <span style="font-size:13px;font-weight:700;color:#1e40af;">${item.rate.toLocaleString('th-TH', {minimumFractionDigits:2})} บ./กก.</span>
+                ${isLatest ? '<span style="font-size:9px;background:#3b82f6;color:#fff;border-radius:4px;padding:1px 5px;margin-left:5px;">ล่าสุด</span>' : ''}
+              </div>
+              <span style="font-size:11px;color:#64748b;font-weight:600;"><i class="far fa-calendar-alt" style="margin-right:3px;"></i>${item.effectiveDate}</span>
+            </div>`;
+          });
+          html += '</div>';
+          listEl.innerHTML = html;
+        }).getWageHistory(empId);
+    }
+
+    function showAddWageHistoryForm(empId, empName) {
+      const form = document.getElementById(`addHistForm_${empId}`);
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function saveAddWageHistory(empId, empName) {
+      const rateInp = document.getElementById(`addHistRate_${empId}`);
+      const dateInp = document.getElementById(`addHistDate_${empId}`);
+      const rate = parseFloat(rateInp.value);
+      const dateRaw = dateInp.value;
+      if (isNaN(rate) || rate <= 0) return showPopup('warning', 'ข้อมูลไม่ถูกต้อง', 'กรุณากรอกอัตราค่าแรงให้ถูกต้อง');
+      if (!dateRaw) return showPopup('warning', 'ข้อมูลไม่ครบ', 'กรุณาระบุวันที่มีผล');
+      const dp = dateRaw.split('-');
+      const effDate = `${dp[2]}/${dp[1]}/${dp[0]}`;
+      showPopup('confirm', 'ยืนยันเพิ่มประวัติ', `เพิ่มอัตรา <b>${rate} บ./กก.</b><br>มีผลตั้งแต่ <b>${effDate}</b> ?`, () => {
+        showLoader('กำลังบันทึก...');
+        google.script.run
+          .withFailureHandler(err => { hideLoader(); showPopup('error', 'ผิดพลาด', err.message); })
+          .withSuccessHandler(res => {
+            hideLoader();
+            if (res.success) {
+              showPopup('success', 'สำเร็จ!', res.message);
+              document.getElementById(`addHistForm_${empId}`).style.display = 'none';
+              loadWageHistory(empId);
+            } else { showPopup('error', 'ผิดพลาด', res.message); }
+          }).addWageHistoryEntry(empId, rate, effDate);
+      });
+    }
+
+    // ════ ★ Admin: แก้ไข Log พนักงาน ★ ════
+    function loadAdminEditEmpList() {
+      const sel = document.getElementById('adminEditEmpSelect');
+      sel.innerHTML = '<option value="">⏳ กำลังโหลด...</option>';
+      google.script.run
+        .withFailureHandler(err => {
+          sel.innerHTML = '<option value="">❌ โหลดไม่สำเร็จ</option>';
+        })
+        .withSuccessHandler(res => {
+          if (!res.success || !res.data || res.data.length === 0) {
+            sel.innerHTML = '<option value="">-- ไม่พบข้อมูลพนักงาน --</option>';
+            return;
+          }
+          sel.innerHTML = '<option value="">-- เลือกพนักงาน --</option>';
+          res.data.forEach(e => {
+            const opt = document.createElement('option');
+            opt.value = e.id;
+            opt.textContent = e.name + ' (' + e.id + ')';
+            sel.appendChild(opt);
+          });
+        }).getEmployeeList();
+    }
+
+    function loadAdminEmpLog() {
+      const empId = document.getElementById('adminEditEmpSelect').value;
+      if (!empId) return showPopup('warning', 'กรุณาเลือก', 'กรุณาเลือกพนักงานก่อน');
+      const listDiv = document.getElementById('adminEditLogList');
+      listDiv.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fas fa-spinner fa-spin mr-2"></i>กำลังโหลด...</div>';
+      cancelAdminEditLog();
+      google.script.run
+        .withFailureHandler(err => { listDiv.innerHTML = '<div class="text-center py-6 text-red-400">เกิดข้อผิดพลาด: ' + err.message + '</div>'; })
+        .withSuccessHandler(res => {
+          if (!res.success || res.data.length === 0) {
+            listDiv.innerHTML = '<div class="text-center py-8 bg-white rounded-2xl text-gray-400">ไม่มีประวัติการทำงาน</div>';
+            return;
+          }
+          listDiv.innerHTML = '';
+          res.data.forEach(log => {
+            let icon = 'fa-check-circle';
+            if (log.task.includes('ย้อม')||log.task.includes('ลอก')) icon = 'fa-fill-drip';
+            else if (log.task.includes('กระตุก')) icon = 'fa-hands';
+            else if (log.task.includes('บรรจุ')||log.task.includes('QC')) icon = 'fa-box-open';
+            listDiv.innerHTML += `
+              <div class="bg-white rounded-2xl p-4 shadow-sm border border-orange-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center shrink-0"><i class="fas ${icon}"></i></div>
+                  <div>
+                    <p class="text-xs text-gray-400 font-medium">${log.date}</p>
+                    <h4 class="font-bold text-gray-800 text-sm">${log.task}</h4>
+                    <p class="text-sm font-bold text-orange-600">${log.hours} <span class="text-xs font-normal text-gray-500">ชม.</span></p>
+                  </div>
+                </div>
+                <button onclick="openAdminEditLogForm(${log.row}, '${log.date}', '${log.task}', ${log.hours})"
+                  class="bg-orange-50 hover:bg-orange-100 text-orange-600 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1 shrink-0">
+                  <i class="fas fa-edit"></i> แก้ไข
+                </button>
+              </div>`;
+          });
+        }).getMyRecentLogs(empId);
+    }
+
+    function openAdminEditLogForm(row, date, task, hours) {
+      document.getElementById('adminEditLogRow').value = row;
+      document.getElementById('adminEditLogDate').value = parseDDMMYYYYtoYYYYMMDD(date);
+      document.getElementById('adminEditLogHours').value = hours;
+      document.getElementById('adminEditLogTask').value = task;
+      // highlight task button
+      document.querySelectorAll('.admin-task-btn').forEach(btn => {
+        btn.classList.toggle('bg-orange-500', btn.dataset.task === task);
+        btn.classList.toggle('text-white', btn.dataset.task === task);
+        btn.classList.toggle('border-orange-500', btn.dataset.task === task);
+        btn.classList.toggle('bg-gray-50', btn.dataset.task !== task);
+        btn.classList.toggle('text-gray-700', btn.dataset.task !== task);
+        btn.classList.toggle('border-gray-200', btn.dataset.task !== task);
+      });
+      document.getElementById('adminEditLogForm').classList.remove('hidden');
+      document.getElementById('adminEditLogForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function selectAdminEditTask(task) {
+      document.getElementById('adminEditLogTask').value = task;
+      document.querySelectorAll('.admin-task-btn').forEach(btn => {
+        const selected = btn.dataset.task === task;
+        btn.className = 'admin-task-btn border px-4 py-2 rounded-xl text-sm font-bold transition ' +
+          (selected ? 'bg-orange-500 border-orange-500 text-white' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700');
+      });
+    }
+
+    function cancelAdminEditLog() {
+      document.getElementById('adminEditLogForm').classList.add('hidden');
+      document.getElementById('adminEditLogRow').value = '';
+      document.getElementById('adminEditLogTask').value = '';
+    }
+
+    function saveAdminEditLog() {
+      const row     = document.getElementById('adminEditLogRow').value;
+      const rawDate = document.getElementById('adminEditLogDate').value;
+      const task    = document.getElementById('adminEditLogTask').value;
+      const hours   = document.getElementById('adminEditLogHours').value;
+      const empId   = document.getElementById('adminEditEmpSelect').value;
+
+      if (!row || !rawDate || !task || !hours) return showPopup('warning', 'ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
+
+      const logData = {
+        empId    : empId,
+        workDate : formatDateToDDMMYYYY(rawDate),
+        task     : task,
+        totalHours: hours,
+      };
+
+      showPopup('confirm', 'ยืนยันการแก้ไข', `แก้ไขรายการ <b>${task}</b> วันที่ <b>${logData.workDate}</b> จำนวน <b>${hours} ชม.</b> ใช่หรือไม่?`, () => {
+        showLoader('กำลังบันทึก...');
+        google.script.run
+          .withFailureHandler(err => { hideLoader(); showPopup('error', 'ผิดพลาด', err.message); })
+          .withSuccessHandler(res => {
+            hideLoader();
+            if (res.success) {
+              showPopup('success', 'สำเร็จ!', res.message);
+              cancelAdminEditLog();
+              loadAdminEmpLog();
+            } else { showPopup('error', 'ผิดพลาด', res.message); }
+          }).updateWorkLog(row, logData);
+      });
+    }
+
+    function changeEmpRole(empId, empName, newRole, selectEl) {
+       const oldRole = newRole === 'Admin' ? 'User' : 'Admin';
+       const msg = `คุณต้องการปรับสิทธิ์ของ <span class="text-blue-600 font-bold">${empName}</span><br>ให้เป็นระดับ <span class="text-rose-500 font-bold">${newRole}</span> ใช่หรือไม่?`;
+       showPopup('confirm', 'ยืนยันการปรับสิทธิ์', msg, () => { 
+             showLoader('กำลังอัปเดตสิทธิ์...');
+             google.script.run.withSuccessHandler(res => {
+                hideLoader();
+                if(res.success) { showPopup('success', 'สำเร็จ!', res.message); loadEmployeeList(); } else { showPopup('error', 'ข้อผิดพลาด', res.message); selectEl.value = oldRole; }
+             }).updateEmployeeRole(empId, newRole);
+          }, () => { selectEl.value = oldRole; }
+       );
+    }
+
+    function deleteEmp(empId, empName) {
+       const msg = `แน่ใจหรือไม่ว่าต้องการลบพนักงาน<br><span class="text-rose-600 font-bold">${empName} (รหัส ${empId})</span><br><span class="text-xs text-gray-500">* ข้อมูลในระบบจะถูกลบทันที</span>`;
+       showPopup('confirm', 'ยืนยันการลบ', msg, () => {
+          showLoader('กำลังลบข้อมูล...');
+          google.script.run.withSuccessHandler(res => {
+             hideLoader();
+             if(res.success) { showPopup('success', 'ลบสำเร็จ!', res.message); loadEmployeeList(); } else { showPopup('error', 'เกิดข้อผิดพลาด', res.message); }
+          }).deleteEmployee(empId);
+       });
+    }
+  </script>
+</body>
+</html>
