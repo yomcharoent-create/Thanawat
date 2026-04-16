@@ -555,16 +555,34 @@
   const API_URL = 'https://script.google.com/macros/s/AKfycbyohisA4P5CihX8X6qYITAF_Xk2gR4jI_Lh8j-enGx2tHV6Ip4O6AfWBuo9uFPbejRQ8g/exec';
 
   // ══════════════════════════════════════════════════
-  //  API HELPER — แทนที่ google.script.run ทั้งหมด
+  //  API HELPER
   // ══════════════════════════════════════════════════
   async function api(action, data) {
     const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' }, // text/plain หลีกเลี่ยง CORS preflight
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({ action, ...data })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     return res.json();
+  }
+
+  // อัปโหลดรูปแยกต่างหาก — ส่งเฉพาะ base64 + metadata แล้วรับ URL กลับ
+  async function uploadPhoto(base64, orderId) {
+    if (!base64) return '-';
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'uploadPhoto',
+        base64: base64,
+        orderId: orderId || 'unknown'
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.success) return data.url;
+    throw new Error(data.message || 'อัปโหลดรูปไม่สำเร็จ');
   }
 
   // ── State ──
@@ -898,7 +916,19 @@
     const sb = document.getElementById('submitBtn');
     sb.disabled = true;
     sb.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+    showLoading('กำลังอัปโหลดรูปภาพ...');
     try {
+      // Step 1: อัปโหลดรูปก่อน รับ URL กลับมา
+      let photoUrl = '-';
+      if (photoBase64) {
+        try {
+          photoUrl = await uploadPhoto(photoBase64, orderVal);
+        } catch(photoErr) {
+          photoUrl = 'อัปโหลดไม่สำเร็จ';
+        }
+      }
+      // Step 2: บันทึกข้อมูลพร้อม URL รูป
+      document.getElementById('loadingText').textContent = 'กำลังบันทึกข้อมูล...';
       await api('saveData', {
         payload: {
           status: prodMode === 'start' ? 'เริ่มผลิต' : 'หยุดผลิต',
@@ -907,12 +937,20 @@
           rounds:     document.getElementById('rounds')?.value || 0,
           totalAuk:   document.getElementById('totalAuk')?.value || 0,
           notes: checks.join(', '),
-          roundsPhoto: photoBase64
+          roundsPhoto: photoUrl
         }
       });
-      toast('บันทึกข้อมูลสำเร็จ', 'ok');
-      setTimeout(() => setMode(prodMode), 900);
+      hideLoading();
+      sb.disabled = false;
+      sb.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
+      const modeLabel = prodMode === 'start' ? 'เริ่มผลิต' : 'หยุดผลิต';
+      showSuccess(
+        'บันทึกข้อมูลสำเร็จ',
+        'บันทึก' + modeLabel + ' เครื่อง ' + machineVal + '\nใบสั่งผลิต ' + orderVal + ' เรียบร้อยแล้ว',
+        () => setMode(prodMode)
+      );
     } catch(e) {
+      hideLoading();
       toast('เกิดข้อผิดพลาด: ' + e.message, 'err');
       sb.disabled = false;
       sb.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
