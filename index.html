@@ -84,14 +84,7 @@
     input[type="number"],input[type="text"],input[type="date"]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:1rem;background:white;color:var(--ink);transition:border-color 0.15s}
     input[type="number"]:focus,input[type="text"]:focus,input[type="date"]:focus{outline:none;border-color:var(--blue)}
     .section-label{font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin:16px 0 10px}
-    .photo-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border:1.5px dashed var(--blue);background:var(--blue-soft);color:var(--blue-dark);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.92rem;font-weight:600;cursor:pointer;transition:all 0.15s;margin-top:4px}
-    .photo-btn:active{background:var(--blue-mid)}
-    #photoInput{display:none}
-    .photo-preview{margin-top:10px;position:relative;display:none}
-    .photo-preview img{width:100%;border-radius:10px;border:1.5px solid var(--border);object-fit:cover;max-height:220px;display:block}
-    .photo-preview-bar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,43,74,0.65));border-radius:0 0 10px 10px;padding:10px 12px 8px;display:flex;align-items:center;justify-content:space-between}
-    .photo-preview-label{font-size:0.78rem;color:white;font-weight:500;display:flex;align-items:center;gap:6px}
-    .photo-retake{font-size:0.75rem;color:rgba(255,255,255,0.85);font-weight:500;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Kodchasan',sans-serif}
+
     .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
     .check-pill{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:white;transition:all 0.15s;user-select:none}
     .check-pill input{display:none}
@@ -107,7 +100,6 @@
     .input-err{border-color:var(--danger)!important;background:var(--danger-bg)!important;box-shadow:0 0 0 3px rgba(192,57,43,0.12)!important}
     .field-err-msg{font-size:0.75rem;color:var(--danger);margin-top:5px;display:flex;align-items:center;gap:5px}
     .check-grid-err{border:1.5px solid var(--danger);border-radius:10px;padding:8px;background:var(--danger-bg)}
-    .photo-btn-err{border-color:var(--danger)!important;background:var(--danger-bg)!important;color:var(--danger)!important}
     .wh-header-card{background:linear-gradient(135deg,#B45309,#92400E);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(180,83,9,0.25);display:flex;align-items:center;gap:14px}
     .wh-header-icon{width:46px;height:46px;background:rgba(255,255,255,0.2);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;color:white;flex-shrink:0}
     .wh-header-title{font-size:1rem;font-weight:600;color:white}
@@ -271,16 +263,7 @@
           <div class="ig"><label class="field-label">จำนวนรอบ</label><input type="number" id="rounds" placeholder="0" min="0" oninput="clearErr('rounds')"></div>
           <div class="ig"><label class="field-label">จำนวนอัก</label><input type="number" id="totalAuk" placeholder="0" min="0" oninput="clearErr('totalAuk')"></div>
         </div>
-        <label class="field-label" style="margin-bottom:6px;">รูปถ่ายจำนวนรอบ</label>
-        <button class="photo-btn" id="photoBtnEl" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i> ถ่ายรูป / เลือกรูป</button>
-        <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhoto(this)">
-        <div class="photo-preview" id="photoPreview">
-          <img id="photoImg" src="" alt="รูปถ่าย">
-          <div class="photo-preview-bar">
-            <span class="photo-preview-label"><i class="fa-solid fa-image" style="font-size:13px;"></i> รูปถ่ายจำนวนรอบ</span>
-            <button class="photo-retake" onclick="retakePhoto()"><i class="fa-solid fa-rotate-right"></i> ถ่ายใหม่</button>
-          </div>
-        </div>
+
         <div class="section-label">สถานะรังและน้ำ</div>
         <div class="check-grid">
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="รังเกรด 1"><div class="check-dot"></div><span class="check-text">รังเกรด 1</span></div>
@@ -397,37 +380,7 @@ function callAPI(action, data, onSuccess, onError) {
   .catch(function(e){ onError(e.message||'เชื่อมต่อไม่ได้'); });
 }
 
-// อัปโหลดรูปแบบ chunked — แบ่ง base64 เป็นชิ้น 50KB ส่งทีละครั้ง
-function uploadPhotoChunked(base64, orderId, rowId, onDone) {
-  if (!base64 || base64.indexOf('data:image') !== 0) { onDone(null); return; }
 
-  var CHUNK = 50000; // 50KB per chunk
-  var chunks = [];
-  var pure = base64.split(',')[1]; // เอาแค่ส่วน base64
-  var mime  = base64.split(';')[0].split(':')[1];
-  for (var i = 0; i < pure.length; i += CHUNK) {
-    chunks.push(pure.substring(i, i + CHUNK));
-  }
-  var total = chunks.length;
-  var uploadId = 'up_' + Date.now();
-
-  // ส่งทีละ chunk
-  function sendChunk(idx) {
-    if (idx >= total) {
-      // ส่งครบแล้ว — สั่ง finalize
-      callAPI('finalizePhoto', { uploadId: uploadId, orderId: orderId, rowId: rowId, mime: mime, total: total },
-        function(res){ onDone(res && res.url ? res.url : null); },
-        function(){ onDone(null); }
-      );
-      return;
-    }
-    callAPI('uploadChunk', { uploadId: uploadId, idx: idx, chunk: chunks[idx] },
-      function(){ sendChunk(idx + 1); },
-      function(){ onDone(null); }
-    );
-  }
-  sendChunk(0);
-}
 
 // REPORT
 function loadReport(){
@@ -484,7 +437,7 @@ function loadReport(){
 
 // STATE
 var prodMode='start', scannerProd=null, scannerHours=null, currentPlan=null;
-var machineVal='', orderVal='', photoBase64='';
+var machineVal='', orderVal='';
 var leaderCode='', leaderName='';
 var teamMembers=[], extraMembers=[], selectedShift='';
 var whOrderId='', whOrderData=null, _successCb=null;
@@ -556,7 +509,7 @@ function resetProductionUI(){
   document.getElementById('s1').classList.remove('done');document.getElementById('s2').classList.remove('done');
   document.querySelectorAll('.check-pill').forEach(function(p){p.classList.remove('on');p.querySelector('input').checked=false});
   ['changeTime','rounds','totalAuk'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=''});
-  clearAllErr();retakePhoto();killScan('prod');
+  clearAllErr();killScan('prod');
 }
 function resetHoursUI(){
   whOrderId='';whOrderData=null;setFV('whOrderDisplay','ยังไม่ได้ระบุ',false);
@@ -572,39 +525,7 @@ function togglePill(el){
   if(el.classList.contains('on')){var cg=document.querySelector('.check-grid');if(cg)cg.classList.remove('check-grid-err');var ce=document.querySelector('.check-grid-err-msg');if(ce)ce.remove()}
 }
 
-// PHOTO
-function handlePhoto(input){
-  if(!input.files||!input.files[0])return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var img=new Image();
-    img.onload=function(){
-      // ย่อรูปให้เล็กพอสำหรับส่งผ่าน Apps Script (max 800px, quality 0.6)
-      var MAX=800,w=img.width,h=img.height;
-      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX}}
-      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX}}
-      var cv=document.createElement('canvas');cv.width=w;cv.height=h;
-      cv.getContext('2d').drawImage(img,0,0,w,h);
-      photoBase64=cv.toDataURL('image/jpeg',0.6);
-      // แสดง preview จากรูปต้นฉบับ (ไม่ย่อ) แต่ส่งรูปย่อ
-      document.getElementById('photoImg').src=e.target.result;
-      document.getElementById('photoPreview').style.display='block';
-      document.getElementById('photoBtnEl').style.display='none';
-      document.getElementById('photoBtnEl').classList.remove('photo-btn-err');
-      var pe=document.querySelector('.photo-btn-err-msg');if(pe)pe.remove();
-      // แสดงขนาดไฟล์ใน console
-      var kb=Math.round(photoBase64.length*0.75/1024);
-      console.log('Photo compressed: '+w+'x'+h+' = '+kb+' KB');
-    };img.src=e.target.result;
-  };reader.readAsDataURL(input.files[0]);
-}
-function retakePhoto(){
-  photoBase64='';
-  var img=document.getElementById('photoImg');if(img)img.src='';
-  var pp=document.getElementById('photoPreview');if(pp)pp.style.display='none';
-  var pb=document.getElementById('photoBtnEl');if(pb)pb.style.display='flex';
-  var pi=document.getElementById('photoInput');if(pi)pi.value='';
-}
+
 
 // QR SCANNER
 function killScan(ctx){
@@ -672,8 +593,7 @@ function handleSave(){
     rounds:document.getElementById('rounds')?document.getElementById('rounds').value||0:0,
     totalAuk:document.getElementById('totalAuk')?document.getElementById('totalAuk').value||0:0,
     notes:checks.join(', '),
-    roundsPhoto:photoBase64
-  };
+};
   // Step 1: บันทึกข้อมูลก่อน (ไม่รอรูป)
   var payloadNoPhoto = JSON.parse(JSON.stringify(payload));
   payloadNoPhoto.roundsPhoto = '__PENDING__';
@@ -683,12 +603,7 @@ function handleSave(){
       var ml=prodMode==='start'?'เริ่มผลิต':'หยุดผลิต';
       var rowId=res.rowId||null;
       showSuccess('บันทึกข้อมูลสำเร็จ','บันทึก'+ml+' เครื่อง '+machineVal+'\nใบสั่งผลิต '+orderVal+' เรียบร้อยแล้ว',function(){setMode(prodMode)});
-      // Step 2: อัปโหลดรูปแบบ chunked (background)
-      if(payload.roundsPhoto && payload.roundsPhoto.indexOf('data:image')===0 && rowId){
-        uploadPhotoChunked(payload.roundsPhoto, orderVal, rowId, function(url){
-          console.log('Photo upload done:', url||'failed');
-        });
-      }
+
     } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||'ไม่ทราบสาเหตุ'),'err')}
   },function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล'});
 }
