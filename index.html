@@ -755,11 +755,11 @@ function handleSave(){
     rounds:document.getElementById('rounds')?document.getElementById('rounds').value||0:0,
     totalAuk:document.getElementById('totalAuk')?document.getElementById('totalAuk').value||0:0,
     notes:checks.join(', '),
+    extraNote:document.getElementById('extraNote')?document.getElementById('extraNote').value.trim():'',
+    leaderCode:leaderCode
 };
   // Step 1: บันทึกข้อมูลก่อน (ไม่รอรูป)
-  var payloadNoPhoto = JSON.parse(JSON.stringify(payload));
-  payloadNoPhoto.roundsPhoto = '__PENDING__';
-  callAPI('saveData',{payload:payloadNoPhoto},function(res){
+  callAPI('saveData',{payload:payload},function(res){
     hideLoading();sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
     if(res&&res.success){
       var ml=prodMode==='start'?'เริ่มผลิต':'หยุดผลิต';
