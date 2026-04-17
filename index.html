@@ -555,60 +555,43 @@
   const API_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
 
   // ══════════════════════════════════════════════════
-  //  API HELPER — ใช้ GET + JSONP เพื่อหลีกเลี่ยง CORS
-  //  Apps Script ไม่รองรับ CORS สำหรับ POST จาก browser
+  //  API HELPER — fetch POST พร้อม CORS
   // ══════════════════════════════════════════════════
-  function api(action, data) {
-    return new Promise((resolve, reject) => {
-      // สร้าง callback name ไม่ซ้ำกัน
-      const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-      // timeout 30 วินาที
-      const timer = setTimeout(() => {
-        delete window[cbName];
-        const sc = document.getElementById(cbName);
-        if (sc) sc.remove();
-        reject(new Error('หมดเวลาเชื่อมต่อ (30s)'));
-      }, 30000);
-
-      window[cbName] = function(result) {
-        clearTimeout(timer);
-        delete window[cbName];
-        const sc = document.getElementById(cbName);
-        if (sc) sc.remove();
-        resolve(result);
-      };
-
-      const payload = JSON.stringify({ action, ...data });
-      const url = API_URL
-        + '?callback=' + cbName
-        + '&payload=' + encodeURIComponent(payload);
-
-      const script = document.createElement('script');
-      script.id = cbName;
-      script.src = url;
-      script.onerror = function() {
-        clearTimeout(timer);
-        delete window[cbName];
-        script.remove();
-        reject(new Error('โหลด script ไม่ได้ — ตรวจสอบ API URL'));
-      };
-      document.head.appendChild(script);
-    });
+  async function api(action, data) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60000);
+    try {
+      const body = JSON.stringify({ action, ...data });
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: body,
+        signal: controller.signal,
+        redirect: 'follow'
+      });
+      clearTimeout(timer);
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch(e) { throw new Error('Response: ' + text.substring(0, 200)); }
+    } catch(e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError') throw new Error('หมดเวลา 60s — ตรวจสอบ Apps Script');
+      throw e;
+    }
   }
 
-  // อัปโหลดรูปแยก — ใช้ JSONP เช่นกัน
-  function uploadPhoto(base64, orderId) {
-    if (!base64) return Promise.resolve('-');
-    return api('uploadPhoto', { base64: base64, orderId: orderId || 'unknown' })
-      .then(function(data) {
-        if (data && data.success) return data.url;
-        console.warn('uploadPhoto failed:', data && data.message);
-        return 'UPLOAD_ERR: ' + ((data && data.message) || '');
-      })
-      .catch(function(e) {
-        console.warn('uploadPhoto exception:', e);
-        return 'EXCEPTION: ' + e.message;
-      });
+  // อัปโหลดรูปแยก
+  async function uploadPhoto(base64, orderId) {
+    if (!base64) return '-';
+    try {
+      const result = await api('uploadPhoto', { base64: base64, orderId: orderId || 'unknown' });
+      if (result && result.success) return result.url;
+      return 'UPLOAD_ERR: ' + ((result && result.message) || '');
+    } catch(e) {
+      console.warn('uploadPhoto:', e.message);
+      return 'EXCEPTION: ' + e.message;
+    }
   }
 
   // ── Startup check ──
