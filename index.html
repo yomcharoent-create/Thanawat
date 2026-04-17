@@ -315,7 +315,7 @@
 // ══════════════════════════════════════════════
 //  CONFIG — ใส่ URL Apps Script ของคุณตรงนี้
 // ══════════════════════════════════════════════
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
+var GAS_URL = 'https://YOUR_WORKER_NAME.YOUR_SUBDOMAIN.workers.dev'; // เปลี่ยนเป็น URL ของ Cloudflare Worker
 
 // ══════════════════════════════════════════════
 //  API — ใช้ fetch + no-cors workaround
@@ -426,14 +426,22 @@ function handlePhoto(input){
   reader.onload=function(e){
     var img=new Image();
     img.onload=function(){
-      var MAX=1200,w=img.width,h=img.height;if(w>MAX){h=Math.round(h*MAX/w);w=MAX}
-      var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
-      photoBase64=cv.toDataURL('image/jpeg',0.82);
-      document.getElementById('photoImg').src=photoBase64;
+      // ย่อรูปให้เล็กพอสำหรับส่งผ่าน Apps Script (max 800px, quality 0.6)
+      var MAX=800,w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX}}
+      var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      photoBase64=cv.toDataURL('image/jpeg',0.6);
+      // แสดง preview จากรูปต้นฉบับ (ไม่ย่อ) แต่ส่งรูปย่อ
+      document.getElementById('photoImg').src=e.target.result;
       document.getElementById('photoPreview').style.display='block';
       document.getElementById('photoBtnEl').style.display='none';
       document.getElementById('photoBtnEl').classList.remove('photo-btn-err');
       var pe=document.querySelector('.photo-btn-err-msg');if(pe)pe.remove();
+      // แสดงขนาดไฟล์ใน console
+      var kb=Math.round(photoBase64.length*0.75/1024);
+      console.log('Photo compressed: '+w+'x'+h+' = '+kb+' KB');
     };img.src=e.target.result;
   };reader.readAsDataURL(input.files[0]);
 }
@@ -513,11 +521,21 @@ function handleSave(){
     notes:checks.join(', '),
     roundsPhoto:photoBase64
   };
-  callAPI('saveData',{payload:payload},function(res){
+  // Step 1: บันทึกข้อมูลก่อน (ไม่รอรูป)
+  var payloadNoPhoto = JSON.parse(JSON.stringify(payload));
+  payloadNoPhoto.roundsPhoto = '__PENDING__';
+  callAPI('saveData',{payload:payloadNoPhoto},function(res){
     hideLoading();sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
     if(res&&res.success){
       var ml=prodMode==='start'?'เริ่มผลิต':'หยุดผลิต';
+      var rowId=res.rowId||null;
       showSuccess('บันทึกข้อมูลสำเร็จ','บันทึก'+ml+' เครื่อง '+machineVal+'\nใบสั่งผลิต '+orderVal+' เรียบร้อยแล้ว',function(){setMode(prodMode)});
+      // Step 2: อัปโหลดรูปแยก (background) ถ้ามีรูป
+      if(payload.roundsPhoto && payload.roundsPhoto.indexOf('data:image')===0 && rowId){
+        callAPI('updatePhoto',{rowId:rowId,base64:payload.roundsPhoto,orderId:orderVal},function(r){
+          console.log('Photo upload:',r&&r.success?'ok':r&&r.message);
+        },function(e){console.warn('Photo upload error:',e)});
+      }
     } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||'ไม่ทราบสาเหตุ'),'err')}
   },function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล'});
 }
