@@ -84,6 +84,9 @@
     input[type="number"],input[type="text"],input[type="date"]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:1rem;background:white;color:var(--ink);transition:border-color 0.15s}
     input[type="number"]:focus,input[type="text"]:focus,input[type="date"]:focus{outline:none;border-color:var(--blue)}
     .section-label{font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin:16px 0 10px}
+    textarea.note-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;color:var(--ink);background:white;resize:none;line-height:1.5;transition:border-color 0.15s}
+    textarea.note-input:focus{outline:none;border-color:var(--blue)}
+    textarea.note-input::placeholder{color:var(--ink-muted)}
 
     .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
     .check-pill{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:white;transition:all 0.15s;user-select:none}
@@ -275,6 +278,8 @@
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="ดีสด"><div class="check-dot"></div><span class="check-text">ดีสด</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="ดีแห้ง"><div class="check-dot"></div><span class="check-text">ดีแห้ง</span></div>
         </div>
+        <div class="section-label" style="margin-top:18px;">หมายเหตุเพิ่มเติม</div>
+        <textarea class="note-input" id="extraNote" rows="3" placeholder="กรอกหมายเหตุ (ถ้ามี)..."></textarea>
       </div>
     </div>
     <button class="btn-submit" id="submitBtn" onclick="handleSave()"><i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล</button>
