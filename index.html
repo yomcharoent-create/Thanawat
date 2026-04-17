@@ -313,25 +313,36 @@
 
 <script>
 // ══════════════════════════════════════════════
-//  CONFIG — ใส่ URL Apps Script ของคุณตรงนี้
+//  CONFIG
 // ══════════════════════════════════════════════
-var GAS_URL = 'https://YOUR_WORKER_NAME.YOUR_SUBDOMAIN.workers.dev'; // เปลี่ยนเป็น URL ของ Cloudflare Worker
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
 
 // ══════════════════════════════════════════════
-//  API — ใช้ fetch + no-cors workaround
-//  Apps Script รองรับ POST ด้วย Content-Type: text/plain
-//  โดยไม่ต้อง preflight (simple request)
+//  API — ใช้ GET สำหรับข้อมูลปกติ (ไม่มี CORS)
+//        ใช้ POST สำหรับรูปภาพ
 // ══════════════════════════════════════════════
 function callAPI(action, data, onSuccess, onError) {
-  var body = JSON.stringify(Object.assign({ action: action }, data));
-  fetch(GAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: body
-  })
-  .then(function(r) { return r.json(); })
-  .then(function(res) { onSuccess(res); })
-  .catch(function(e) { onError(e.message || 'เชื่อมต่อไม่ได้'); });
+  var hasPhoto = JSON.stringify(data).indexOf('data:image') !== -1;
+
+  if (hasPhoto) {
+    // มีรูป — POST
+    var body = JSON.stringify(Object.assign({ action: action }, data));
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: body
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(res){ onSuccess(res); })
+    .catch(function(e){ onError(e.message||'เชื่อมต่อไม่ได้'); });
+  } else {
+    // ไม่มีรูป — GET (ไม่มีปัญหา CORS)
+    var params = '?action=' + encodeURIComponent(action) + '&data=' + encodeURIComponent(JSON.stringify(data));
+    fetch(GAS_URL + params, { method: 'GET' })
+    .then(function(r){ return r.json(); })
+    .then(function(res){ onSuccess(res); })
+    .catch(function(e){ onError(e.message||'เชื่อมต่อไม่ได้'); });
+  }
 }
 
 // STATE
