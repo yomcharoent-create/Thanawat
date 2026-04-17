@@ -318,31 +318,47 @@
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
 
 // ══════════════════════════════════════════════
-//  API — ใช้ GET สำหรับข้อมูลปกติ (ไม่มี CORS)
-//        ใช้ POST สำหรับรูปภาพ
+//  API — ใช้ GET ทุก request (ไม่มีปัญหา CORS Safari)
+//  รูปภาพส่งแบบ chunked ผ่าน GET หลายครั้ง
 // ══════════════════════════════════════════════
 function callAPI(action, data, onSuccess, onError) {
-  var hasPhoto = JSON.stringify(data).indexOf('data:image') !== -1;
+  var params = '?action=' + encodeURIComponent(action) + '&data=' + encodeURIComponent(JSON.stringify(data));
+  fetch(GAS_URL + params, { method: 'GET' })
+  .then(function(r){ return r.json(); })
+  .then(function(res){ onSuccess(res); })
+  .catch(function(e){ onError(e.message||'เชื่อมต่อไม่ได้'); });
+}
 
-  if (hasPhoto) {
-    // มีรูป — POST
-    var body = JSON.stringify(Object.assign({ action: action }, data));
-    fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: body
-    })
-    .then(function(r){ return r.json(); })
-    .then(function(res){ onSuccess(res); })
-    .catch(function(e){ onError(e.message||'เชื่อมต่อไม่ได้'); });
-  } else {
-    // ไม่มีรูป — GET (ไม่มีปัญหา CORS)
-    var params = '?action=' + encodeURIComponent(action) + '&data=' + encodeURIComponent(JSON.stringify(data));
-    fetch(GAS_URL + params, { method: 'GET' })
-    .then(function(r){ return r.json(); })
-    .then(function(res){ onSuccess(res); })
-    .catch(function(e){ onError(e.message||'เชื่อมต่อไม่ได้'); });
+// อัปโหลดรูปแบบ chunked — แบ่ง base64 เป็นชิ้น 50KB ส่งทีละครั้ง
+function uploadPhotoChunked(base64, orderId, rowId, onDone) {
+  if (!base64 || base64.indexOf('data:image') !== 0) { onDone(null); return; }
+
+  var CHUNK = 50000; // 50KB per chunk
+  var chunks = [];
+  var pure = base64.split(',')[1]; // เอาแค่ส่วน base64
+  var mime  = base64.split(';')[0].split(':')[1];
+  for (var i = 0; i < pure.length; i += CHUNK) {
+    chunks.push(pure.substring(i, i + CHUNK));
   }
+  var total = chunks.length;
+  var uploadId = 'up_' + Date.now();
+
+  // ส่งทีละ chunk
+  function sendChunk(idx) {
+    if (idx >= total) {
+      // ส่งครบแล้ว — สั่ง finalize
+      callAPI('finalizePhoto', { uploadId: uploadId, orderId: orderId, rowId: rowId, mime: mime, total: total },
+        function(res){ onDone(res && res.url ? res.url : null); },
+        function(){ onDone(null); }
+      );
+      return;
+    }
+    callAPI('uploadChunk', { uploadId: uploadId, idx: idx, chunk: chunks[idx] },
+      function(){ sendChunk(idx + 1); },
+      function(){ onDone(null); }
+    );
+  }
+  sendChunk(0);
 }
 
 // STATE
@@ -541,11 +557,11 @@ function handleSave(){
       var ml=prodMode==='start'?'เริ่มผลิต':'หยุดผลิต';
       var rowId=res.rowId||null;
       showSuccess('บันทึกข้อมูลสำเร็จ','บันทึก'+ml+' เครื่อง '+machineVal+'\nใบสั่งผลิต '+orderVal+' เรียบร้อยแล้ว',function(){setMode(prodMode)});
-      // Step 2: อัปโหลดรูปแยก (background) ถ้ามีรูป
+      // Step 2: อัปโหลดรูปแบบ chunked (background)
       if(payload.roundsPhoto && payload.roundsPhoto.indexOf('data:image')===0 && rowId){
-        callAPI('updatePhoto',{rowId:rowId,base64:payload.roundsPhoto,orderId:orderVal},function(r){
-          console.log('Photo upload:',r&&r.success?'ok':r&&r.message);
-        },function(e){console.warn('Photo upload error:',e)});
+        uploadPhotoChunked(payload.roundsPhoto, orderVal, rowId, function(url){
+          console.log('Photo upload done:', url||'failed');
+        });
       }
     } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||'ไม่ทราบสาเหตุ'),'err')}
   },function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล'});
