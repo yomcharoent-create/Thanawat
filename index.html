@@ -167,6 +167,40 @@
     .success-sub{font-size:0.85rem;color:var(--ink-muted);text-align:center;line-height:1.5}
     .success-btn{width:100%;padding:13px;background:var(--success);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity 0.15s}
     .success-btn:active{opacity:0.8}
+    /* ── Report Tab ── */
+    .report-header-card{background:linear-gradient(135deg,#1D8A55,#145A38);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(29,138,85,0.25);display:flex;align-items:center;gap:14px}
+    .report-header-icon{width:46px;height:46px;background:rgba(255,255,255,0.2);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;color:white;flex-shrink:0}
+    .report-header-title{font-size:1rem;font-weight:600;color:white}
+    .report-header-sub{font-size:0.75rem;color:rgba(255,255,255,0.75);margin-top:2px}
+    .report-date-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px}
+    .report-date-row input[type="date"]{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;background:white;color:var(--ink)}
+    .btn-load-report{padding:11px 18px;background:var(--success);color:white;border:none;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:opacity 0.15s;flex-shrink:0}
+    .btn-load-report:active{opacity:0.8}
+    .report-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+    .summary-card{background:white;border-radius:12px;border:1px solid var(--border);padding:14px 16px;text-align:center}
+    .summary-num{font-size:1.6rem;font-weight:600;color:var(--success)}
+    .summary-label{font-size:0.75rem;color:var(--ink-muted);margin-top:2px}
+    .report-table-wrap{background:white;border-radius:14px;border:1px solid var(--border);overflow:hidden}
+    .report-table-head{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--success-bg);border-bottom:1px solid var(--border)}
+    .report-table-title{font-size:0.9rem;font-weight:600;color:var(--success);flex:1}
+    table.report-tbl{width:100%;border-collapse:collapse;font-size:0.83rem}
+    table.report-tbl th{padding:10px 12px;text-align:left;font-weight:600;color:var(--ink-mid);background:var(--bg);border-bottom:1px solid var(--border);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em}
+    table.report-tbl td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--ink)}
+    table.report-tbl tr:last-child td{border-bottom:none}
+    table.report-tbl tr:active td{background:var(--bg)}
+    .hrs-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-weight:600;font-size:0.82rem}
+    .hrs-badge.high{background:var(--success-bg);color:var(--success)}
+    .hrs-badge.mid{background:var(--blue-soft);color:var(--blue-dark)}
+    .hrs-badge.low{background:var(--warn-bg);color:var(--warn)}
+    .shift-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+    .shift-dot.A{background:#F59E0B}
+    .shift-dot.B{background:#3B82F6}
+    .shift-dot.C{background:#6366F1}
+    .report-empty{text-align:center;padding:40px 20px;color:var(--ink-muted);font-size:0.9rem}
+    .report-empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:0.35}
+    .nav-tab.report-active{color:var(--success)}
+    .nav-tab.report-active::before{background:var(--success);opacity:1}
+
     .toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:white;padding:10px 22px;border-radius:30px;font-size:0.87rem;font-weight:500;font-family:'Kodchasan',sans-serif;opacity:0;pointer-events:none;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .toast.ok{background:var(--success)}
@@ -300,10 +334,44 @@
     <button class="btn-save-hours" onclick="saveWorkHours()"><i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน</button>
   </div>
 
+  <!-- TAB: Report -->
+  <div class="tab-page" id="tabReport">
+    <div class="report-header-card">
+      <div class="report-header-icon"><i class="fa-solid fa-chart-bar"></i></div>
+      <div>
+        <div class="report-header-title">รายงานชั่วโมงทำงาน</div>
+        <div class="report-header-sub" id="reportLeaderName">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="background:var(--success-bg);border-bottom-color:rgba(29,138,85,0.2)">
+        <div class="step-badge" style="background:var(--success)"><i class="fa-solid fa-calendar" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text">เลือกวันที่</span>
+      </div>
+      <div class="card-body">
+        <div class="report-date-row">
+          <input type="date" id="reportDate">
+          <button class="btn-load-report" onclick="loadReport()">
+            <i class="fa-solid fa-magnifying-glass"></i> ดูรายงาน
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="reportContent">
+      <div class="report-empty">
+        <i class="fa-solid fa-chart-bar"></i>
+        เลือกวันที่แล้วกด "ดูรายงาน"
+      </div>
+    </div>
+  </div>
+
   <nav class="nav-bar">
     <button class="nav-tab active" id="navStart" onclick="setMode('start')"><i class="fa-solid fa-circle-play"></i>เริ่มผลิต</button>
     <button class="nav-tab" id="navStop" onclick="setMode('stop')"><i class="fa-solid fa-circle-stop"></i>หยุดผลิต</button>
     <button class="nav-tab" id="navHours" onclick="showTab('hours')"><i class="fa-solid fa-clock"></i>ชั่วโมงงาน</button>
+    <button class="nav-tab" id="navReport" onclick="showTab('report')"><i class="fa-solid fa-chart-bar"></i>รายงาน</button>
   </nav>
 </div>
 
@@ -361,6 +429,59 @@ function uploadPhotoChunked(base64, orderId, rowId, onDone) {
   sendChunk(0);
 }
 
+// REPORT
+function loadReport(){
+  var date=document.getElementById('reportDate').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  var area=document.getElementById('reportContent');
+  area.innerHTML='<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+  callAPI('getReport',{leaderCode:leaderCode,date:date},function(res){
+    if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+( res.message||'โหลดไม่ได้')+'</div>';return}
+    var rows=res.rows||[];
+    if(!rows.length){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลวันที่ '+date+'</div>';return}
+
+    // summary
+    var totalHrs=0,members={};
+    rows.forEach(function(r){
+      totalHrs+=parseFloat(r.hours)||0;
+      if(!members[r.empId])members[r.empId]={name:r.empName,hrs:0};
+      members[r.empId].hrs+=parseFloat(r.hours)||0;
+    });
+    var memCount=Object.keys(members).length;
+
+    var shiftMap={A:'กะเช้า',B:'กะบ่าย',C:'กะดึก'};
+
+    // build HTML
+    var html='<div class="report-summary">'
+      +'<div class="summary-card"><div class="summary-num">'+totalHrs.toFixed(1)+'</div><div class="summary-label">ชั่วโมงรวม</div></div>'
+      +'<div class="summary-card"><div class="summary-num">'+memCount+'</div><div class="summary-label">จำนวนคน</div></div>'
+      +'</div>';
+
+    html+='<div class="report-table-wrap">'
+      +'<div class="report-table-head"><i class="fa-solid fa-list" style="color:var(--success);margin-right:8px"></i><span class="report-table-title">รายละเอียด</span></div>'
+      +'<table class="report-tbl">'
+      +'<thead><tr><th>ชื่อพนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
+
+    rows.forEach(function(r){
+      var hrs=parseFloat(r.hours)||0;
+      var badge=hrs>=8?'high':hrs>=4?'mid':'low';
+      var sCode=r.shift||'';
+      var sDot=sCode==='A'?'A':sCode==='B'?'B':'C';
+      var sLabel=shiftMap[sCode]||r.shiftLabel||sCode;
+      html+='<tr>'
+        +'<td><div style="font-weight:600;color:var(--ink)">'+r.empName+'</div>'
+        +'<div style="font-size:0.72rem;color:var(--ink-muted)">รหัส '+r.empId+'</div></td>'
+        +'<td><span class="shift-dot '+sDot+'"></span>'+sLabel+'</td>'
+        +'<td><span class="hrs-badge '+badge+'">'+hrs.toFixed(1)+' ชม.</span></td>'
+        +'</tr>';
+    });
+    html+='</tbody></table></div>';
+    area.innerHTML=html;
+  },function(e){
+    area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>เกิดข้อผิดพลาด: '+e+'</div>';
+  });
+}
+
 // STATE
 var prodMode='start', scannerProd=null, scannerHours=null, currentPlan=null;
 var machineVal='', orderVal='', photoBase64='';
@@ -408,12 +529,17 @@ function doLogout(){leaderCode='';leaderName='';teamMembers=[];extraMembers=[];r
 // TABS
 function showTab(tab){
   document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active')});
-  ['navStart','navStop','navHours'].forEach(function(id){document.getElementById(id).className='nav-tab'});
+  ['navStart','navStop','navHours','navReport'].forEach(function(id){document.getElementById(id).className='nav-tab'});
   killScan('prod');killScan('hours');
   if(tab==='production'){
     document.getElementById('tabProduction').classList.add('active');
     if(prodMode==='start')document.getElementById('navStart').className='nav-tab active';
     else document.getElementById('navStop').className='nav-tab active stop-active';
+  } else if(tab==='report'){
+    document.getElementById('tabReport').classList.add('active');
+    document.getElementById('navReport').className='nav-tab active report-active';
+    document.getElementById('reportLeaderName').textContent='หัวหน้าทีม: '+leaderName;
+    if(!document.getElementById('reportDate').value)document.getElementById('reportDate').value=todayISO();
   } else {
     document.getElementById('tabHours').classList.add('active');
     document.getElementById('navHours').className='nav-tab active hours-active';
