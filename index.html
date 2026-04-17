@@ -555,34 +555,58 @@
   const API_URL = 'https://script.google.com/macros/s/AKfycbyohisA4P5CihX8X6qYITAF_Xk2gR4jI_Lh8j-enGx2tHV6Ip4O6AfWBuo9uFPbejRQ8g/exec';
 
   // ══════════════════════════════════════════════════
-  //  API HELPER
+  //  API HELPER — timeout 30s + redirect follow
   // ══════════════════════════════════════════════════
   async function api(action, data) {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action, ...data })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        redirect: 'follow',      // Apps Script redirect จาก /exec → /exec?...
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action, ...data }),
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch(e) { throw new Error('ตอบกลับผิดรูปแบบ: ' + text.substring(0,100)); }
+    } catch(e) {
+      clearTimeout(timer);
+      if (e.name === 'AbortError') throw new Error('หมดเวลาเชื่อมต่อ (30s) — ตรวจสอบ API URL');
+      throw e;
+    }
   }
 
-  // อัปโหลดรูปแยกต่างหาก — ส่งเฉพาะ base64 + metadata แล้วรับ URL กลับ
+  // อัปโหลดรูปแยก — ถ้าล้มเหลวคืน '-' แต่ไม่ throw
   async function uploadPhoto(base64, orderId) {
     if (!base64) return '-';
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'uploadPhoto',
-        base64: base64,
-        orderId: orderId || 'unknown'
-      })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.success) return data.url;
-    throw new Error(data.message || 'อัปโหลดรูปไม่สำเร็จ');
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({
+          action: 'uploadPhoto',
+          base64: base64,
+          orderId: orderId || 'unknown'
+        })
+      });
+      if (!res.ok) { console.warn('uploadPhoto HTTP', res.status); return 'HTTP_ERR_' + res.status; }
+      const data = await res.json();
+      if (data.success) return data.url;
+      console.warn('uploadPhoto failed:', data.message);
+      return 'UPLOAD_ERR: ' + (data.message || '');
+    } catch(e) {
+      console.warn('uploadPhoto exception:', e);
+      return 'EXCEPTION: ' + e.message;
+    }
+  }
+
+  // ── Startup check ──
+  if (API_URL.includes('YOUR_DEPLOYMENT_ID')) {
+    console.error('❌ ยังไม่ได้ใส่ API_URL — แก้ค่า API_URL ใน index.html ก่อน');
   }
 
   // ── State ──
@@ -951,7 +975,10 @@
       );
     } catch(e) {
       hideLoading();
-      toast('เกิดข้อผิดพลาด: ' + e.message, 'err');
+      // แสดง error ละเอียดเพื่อช่วย debug
+      const errMsg = e.message || 'ไม่ทราบสาเหตุ';
+      toast('❌ ' + errMsg, 'err');
+      console.error('handleSave error:', e);
       sb.disabled = false;
       sb.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
     }
