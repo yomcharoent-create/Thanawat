@@ -555,53 +555,60 @@
   const API_URL = 'https://script.google.com/macros/s/AKfycbyohisA4P5CihX8X6qYITAF_Xk2gR4jI_Lh8j-enGx2tHV6Ip4O6AfWBuo9uFPbejRQ8g/exec';
 
   // ══════════════════════════════════════════════════
-  //  API HELPER — timeout 30s + redirect follow
+  //  API HELPER — ใช้ GET + JSONP เพื่อหลีกเลี่ยง CORS
+  //  Apps Script ไม่รองรับ CORS สำหรับ POST จาก browser
   // ══════════════════════════════════════════════════
-  async function api(action, data) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 30000); // 30s timeout
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        redirect: 'follow',      // Apps Script redirect จาก /exec → /exec?...
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({ action, ...data }),
-        signal: controller.signal
-      });
-      clearTimeout(timer);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      try { return JSON.parse(text); }
-      catch(e) { throw new Error('ตอบกลับผิดรูปแบบ: ' + text.substring(0,100)); }
-    } catch(e) {
-      clearTimeout(timer);
-      if (e.name === 'AbortError') throw new Error('หมดเวลาเชื่อมต่อ (30s) — ตรวจสอบ API URL');
-      throw e;
-    }
+  function api(action, data) {
+    return new Promise((resolve, reject) => {
+      // สร้าง callback name ไม่ซ้ำกัน
+      const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      // timeout 30 วินาที
+      const timer = setTimeout(() => {
+        delete window[cbName];
+        const sc = document.getElementById(cbName);
+        if (sc) sc.remove();
+        reject(new Error('หมดเวลาเชื่อมต่อ (30s)'));
+      }, 30000);
+
+      window[cbName] = function(result) {
+        clearTimeout(timer);
+        delete window[cbName];
+        const sc = document.getElementById(cbName);
+        if (sc) sc.remove();
+        resolve(result);
+      };
+
+      const payload = JSON.stringify({ action, ...data });
+      const url = API_URL
+        + '?callback=' + cbName
+        + '&payload=' + encodeURIComponent(payload);
+
+      const script = document.createElement('script');
+      script.id = cbName;
+      script.src = url;
+      script.onerror = function() {
+        clearTimeout(timer);
+        delete window[cbName];
+        script.remove();
+        reject(new Error('โหลด script ไม่ได้ — ตรวจสอบ API URL'));
+      };
+      document.head.appendChild(script);
+    });
   }
 
-  // อัปโหลดรูปแยก — ถ้าล้มเหลวคืน '-' แต่ไม่ throw
-  async function uploadPhoto(base64, orderId) {
-    if (!base64) return '-';
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-          action: 'uploadPhoto',
-          base64: base64,
-          orderId: orderId || 'unknown'
-        })
+  // อัปโหลดรูปแยก — ใช้ JSONP เช่นกัน
+  function uploadPhoto(base64, orderId) {
+    if (!base64) return Promise.resolve('-');
+    return api('uploadPhoto', { base64: base64, orderId: orderId || 'unknown' })
+      .then(function(data) {
+        if (data && data.success) return data.url;
+        console.warn('uploadPhoto failed:', data && data.message);
+        return 'UPLOAD_ERR: ' + ((data && data.message) || '');
+      })
+      .catch(function(e) {
+        console.warn('uploadPhoto exception:', e);
+        return 'EXCEPTION: ' + e.message;
       });
-      if (!res.ok) { console.warn('uploadPhoto HTTP', res.status); return 'HTTP_ERR_' + res.status; }
-      const data = await res.json();
-      if (data.success) return data.url;
-      console.warn('uploadPhoto failed:', data.message);
-      return 'UPLOAD_ERR: ' + (data.message || '');
-    } catch(e) {
-      console.warn('uploadPhoto exception:', e);
-      return 'EXCEPTION: ' + e.message;
-    }
   }
 
   // ── Startup check ──
