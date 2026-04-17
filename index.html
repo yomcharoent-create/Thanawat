@@ -372,7 +372,7 @@
     <div class="card">
       <div class="card-header" style="background:var(--success-bg);border-bottom-color:rgba(29,138,85,0.2)">
         <div class="step-badge" style="background:var(--success)"><i class="fa-solid fa-calendar" style="font-size:0.7rem"></i></div>
-        <span class="card-header-text">ช่วงเวลา</span>
+        <span class="card-header-text">เลือกช่วงเวลา</span>
       </div>
       <div class="card-body">
         <div class="period-row">
@@ -382,27 +382,10 @@
         </div>
         <div class="report-date-row">
           <input type="date" id="reportDate">
-          <button class="btn-load-report" onclick="loadReport()">
+          <button class="btn-load-report" onclick="loadReportAndCheck()">
             <i class="fa-solid fa-magnifying-glass"></i> ดูรายงาน
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- เช็คการกรอกชั่วโมง -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-header" style="background:var(--success-bg);border-bottom-color:rgba(29,138,85,0.2)">
-        <div class="step-badge" style="background:var(--success)"><i class="fa-solid fa-clipboard-check" style="font-size:0.7rem"></i></div>
-        <span class="card-header-text">เช็คการกรอกชั่วโมง</span>
-      </div>
-      <div class="card-body">
-        <div class="report-date-row" style="margin-bottom:0">
-          <input type="date" id="checkDate">
-          <button class="btn-load-report" style="background:var(--blue)" onclick="checkHoursCompletion()">
-            <i class="fa-solid fa-circle-check"></i> เช็ค
-          </button>
-        </div>
-        <div id="checkResult" style="margin-top:12px"></div>
       </div>
     </div>
 
@@ -484,6 +467,10 @@ function selectPeriod(p){
   });
 }
 
+function loadReportAndCheck(){
+  loadReport();
+}
+
 function loadReport(){
   var date=document.getElementById('reportDate').value;
   if(!date){toast('กรุณาเลือกวันที่','warn');return}
@@ -549,96 +536,55 @@ function loadReport(){
         +'</tr>';
     });
     html+='</tbody></table></div>';
+    // เพิ่มส่วนเช็คการกรอกด้านล่างรายงาน
+    html += buildCheckSection();
     area.innerHTML=html;
   },function(e){
     area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+e+'</div>';
   });
 }
 
-function checkHoursCompletion(){
-  var date=document.getElementById('checkDate').value;
-  if(!date){toast('กรุณาเลือกวันที่','warn');return}
-  var area=document.getElementById('checkResult');
-  area.innerHTML='<div style="color:var(--ink-muted);font-size:0.85rem"><i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...</div>';
-
-  // ดึงข้อมูลชั่วโมงที่กรอกแล้ว + รายชื่อลูกทีมทั้งหมด พร้อมกัน
-  var done1=false,done2=false,hoursRows=[],allMembers=[];
-
-  function tryRender(){
-    if(!done1||!done2) return;
-
-    // หาคนที่กรอกแล้ววันนั้น
+function buildCheckSection(){
+  if(!teamMembers.length) return '';
+  var date=document.getElementById('reportDate').value;
+  // ดึงข้อมูลชั่วโมงแบบ async แล้วอัปเดต DOM
+  callAPI('getReport',{leaderCode:leaderCode,date:date,period:'day'},function(res){
+    var hoursRows=res.rows||[];
     var recorded={};
-    hoursRows.forEach(function(r){ recorded[r.empId]=r.hours; });
-
-    // แยกเป็น กรอกแล้ว / ยังไม่ได้กรอก
-    var missing=allMembers.filter(function(m){ return !recorded[m.empId]; });
-    var done=allMembers.filter(function(m){ return recorded[m.empId]; });
-
-    if(!allMembers.length){
-      area.innerHTML='<div style="color:var(--ink-muted);font-size:0.85rem">ไม่พบรายชื่อลูกทีม</div>';
-      return;
-    }
-
-    var html='';
-
+    hoursRows.forEach(function(r){ recorded[r.empId]=(recorded[r.empId]||0)+(parseFloat(r.hours)||0); });
+    var missing=teamMembers.filter(function(m){return !recorded[m.empId]});
+    var doneList=teamMembers.filter(function(m){return !!recorded[m.empId]});
+    var el=document.getElementById('checkSection');
+    if(!el) return;
+    var html2='';
     if(!missing.length){
-      // กรอกครบ
-      html='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--success-bg);border:1px solid rgba(29,138,85,0.2);border-radius:12px">'
+      html2='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--success-bg);border:1px solid rgba(29,138,85,0.2);border-radius:12px">'
         +'<i class="fa-solid fa-circle-check" style="color:var(--success);font-size:1.3rem"></i>'
-        +'<div><div style="font-weight:600;color:var(--success)">กรอกชั่วโมงครบแล้ว</div>'
-        +'<div style="font-size:0.78rem;color:var(--success);opacity:0.8">ลูกทีมทุกคนถูกบันทึกแล้ว ('+done.length+'/'+allMembers.length+' คน)</div></div></div>';
+        +'<div><div style="font-weight:600;color:var(--success)">กรอกชั่วโมงครบแล้ว ✓</div>'
+        +'<div style="font-size:0.78rem;color:var(--success);opacity:0.8">'+doneList.length+'/'+teamMembers.length+' คน</div></div></div>';
     } else {
-      // ยังไม่ครบ
-      html='<div style="padding:11px 14px;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:12px;margin-bottom:10px;display:flex;align-items:center;gap:10px">'
+      html2='<div style="padding:11px 14px;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px">'
         +'<i class="fa-solid fa-triangle-exclamation" style="color:var(--warn);font-size:1.1rem"></i>'
         +'<div><div style="font-weight:600;color:var(--warn)">กรอกยังไม่ครบ</div>'
-        +'<div style="font-size:0.78rem;color:var(--warn)">บันทึกแล้ว '+done.length+'/'+allMembers.length+' คน</div></div></div>';
-
-      // รายชื่อที่ยังไม่ได้กรอก
-      html+='<div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden">'
-        +'<div style="padding:10px 14px;background:var(--danger-bg);border-bottom:1px solid rgba(192,57,43,0.15);font-size:0.78rem;font-weight:600;color:var(--danger)">'
+        +'<div style="font-size:0.78rem;color:var(--warn)">บันทึกแล้ว '+doneList.length+'/'+teamMembers.length+' คน</div></div></div>';
+      html2+='<div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden">'
+        +'<div style="padding:9px 14px;background:var(--danger-bg);font-size:0.78rem;font-weight:600;color:var(--danger);border-bottom:1px solid rgba(192,57,43,0.15)">'
         +'<i class="fa-solid fa-user-clock" style="margin-right:6px"></i>ยังไม่ได้กรอก ('+missing.length+' คน)</div>';
-
       missing.forEach(function(m){
-        html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">'
-          +'<div style="width:34px;height:34px;border-radius:50%;background:var(--danger-bg);border:1px solid rgba(192,57,43,0.2);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:var(--danger);flex-shrink:0">'
+        html2+='<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">'
+          +'<div style="width:34px;height:34px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:var(--danger);flex-shrink:0">'
           +(m.empName||'??').substring(0,2)+'</div>'
           +'<div><div style="font-size:0.87rem;font-weight:600;color:var(--ink)">'+m.empName+'</div>'
-          +'<div style="font-size:0.72rem;color:var(--ink-muted)">รหัส '+m.empId+'</div></div>'
-          +'</div>';
+          +'<div style="font-size:0.72rem;color:var(--ink-muted)">รหัส '+m.empId+'</div></div></div>';
       });
-      html+='</div>';
-
-      if(done.length){
-        html+='<div style="margin-top:10px;background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden">'
-          +'<div style="padding:10px 14px;background:var(--success-bg);border-bottom:1px solid rgba(29,138,85,0.15);font-size:0.78rem;font-weight:600;color:var(--success)">'
-          +'<i class="fa-solid fa-check" style="margin-right:6px"></i>กรอกแล้ว ('+done.length+' คน)</div>';
-        done.forEach(function(m){
-          var hrs=parseFloat(recorded[m.empId])||0;
-          html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">'
-            +'<div style="width:34px;height:34px;border-radius:50%;background:var(--success-bg);border:1px solid rgba(29,138,85,0.2);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:var(--success);flex-shrink:0">'
-            +(m.empName||'??').substring(0,2)+'</div>'
-            +'<div style="flex:1"><div style="font-size:0.87rem;font-weight:600;color:var(--ink)">'+m.empName+'</div>'
-            +'<div style="font-size:0.72rem;color:var(--ink-muted)">รหัส '+m.empId+'</div></div>'
-            +'<span class="hrs-badge '+(hrs>=8?'high':hrs>=4?'mid':'low')+'">'+hrs.toFixed(1)+' ชม.</span>'
-            +'</div>';
-        });
-        html+='</div>';
-      }
+      html2+='</div>';
     }
-    area.innerHTML=html;
-  }
-
-  // call 1: ดึงชั่วโมงที่กรอกวันนั้น
-  callAPI('getReport',{leaderCode:leaderCode,date:date,period:'day'},function(res){
-    hoursRows=res.rows||[];
-    done1=true;tryRender();
-  },function(){done1=true;tryRender()});
-
-  // call 2: ดึงรายชื่อลูกทีมทั้งหมด (ใช้ teamMembers ที่โหลดไว้แล้ว)
-  allMembers=teamMembers.slice();
-  done2=true;tryRender();
+    el.innerHTML=html2;
+  },function(){});
+  return '<div class="card" style="margin-top:14px"><div class="card-header" style="background:var(--blue-soft);border-bottom-color:var(--border)">'
+    +'<div class="step-badge"><i class="fa-solid fa-clipboard-check" style="font-size:0.7rem"></i></div>'
+    +'<span class="card-header-text">สถานะการกรอกชั่วโมง</span></div>'
+    +'<div class="card-body"><div id="checkSection"><div style="color:var(--ink-muted);font-size:0.85rem"><i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...</div></div></div></div>';
 }
 
 // STATE
@@ -701,7 +647,6 @@ function showTab(tab){
     document.getElementById('navReport').className='nav-tab active report-active';
     document.getElementById('reportLeaderName').textContent='หัวหน้าทีม: '+leaderName;
     if(!document.getElementById('reportDate').value)document.getElementById('reportDate').value=todayISO();
-    if(!document.getElementById('checkDate').value)document.getElementById('checkDate').value=todayISO();
   } else if(tab==='history'){
     document.getElementById('tabHistory').classList.add('active');
     document.getElementById('navHistory').className='nav-tab active';
