@@ -9,410 +9,219 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     :root {
-      --blue:       #1A73E8;
-      --blue-dark:  #1557B0;
-      --blue-soft:  #E8F0FE;
-      --blue-mid:   #ADCCFB;
-      --white:      #FFFFFF;
-      --bg:         #F0F4FF;
-      --ink:        #1C2B4A;
-      --ink-mid:    #4A5568;
-      --ink-muted:  #9AA5B4;
-      --border:     #D6E0F5;
-      --success:    #1D8A55;
-      --success-bg: #E6F4ED;
-      --danger:     #C0392B;
-      --danger-bg:  #FDEDEC;
-      --warn:       #B45309;
-      --warn-bg:    #FEF3C7;
-      --warn-border:#FDE68A;
+      --blue:#1A73E8;--blue-dark:#1557B0;--blue-soft:#E8F0FE;--blue-mid:#ADCCFB;
+      --white:#FFFFFF;--bg:#F0F4FF;--ink:#1C2B4A;--ink-mid:#4A5568;--ink-muted:#9AA5B4;
+      --border:#D6E0F5;--success:#1D8A55;--success-bg:#E6F4ED;
+      --danger:#C0392B;--danger-bg:#FDEDEC;--warn:#B45309;--warn-bg:#FEF3C7;--warn-border:#FDE68A;
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-    body {
-      font-family: 'Kodchasan', sans-serif;
-      background: var(--bg); color: var(--ink);
-      display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+    body{font-family:'Kodchasan',sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    .screen{display:none;flex-direction:column;height:100vh}
+    .screen.active{display:flex}
 
-    /* ── Screens ── */
-    .screen { display: none; flex-direction: column; height: 100vh; }
-    .screen.active { display: flex; }
+    /* LOGIN */
+    #loginScreen{background:var(--bg);align-items:center;justify-content:center;padding:24px;overflow:hidden}
+    .login-top{width:100%;display:flex;flex-direction:column;align-items:center;margin-bottom:0}
+    .login-divider{width:100%;height:1px;background:var(--border);margin:24px 0}
+    .login-logo{width:80px;height:80px;background:var(--blue-soft);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+    .login-logo-inner{width:56px;height:56px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;color:white;box-shadow:0 6px 18px rgba(26,115,232,0.35)}
+    .login-title{font-size:1.6rem;font-weight:600;color:var(--ink);margin-bottom:7px;text-align:center}
+    .login-sub{font-size:0.85rem;color:var(--ink-muted);text-align:center;line-height:1.6}
+    .login-body{width:100%;background:white;border-radius:20px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(26,60,120,0.09);padding:32px 24px 28px}
+    .login-field-label{font-size:0.82rem;font-weight:600;color:var(--ink);margin-bottom:8px;display:block}
+    .login-input-wrap{position:relative;margin-bottom:20px}
+    .login-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;color:var(--ink);background:var(--bg);transition:all 0.18s;-webkit-appearance:none}
+    .login-input::placeholder{color:var(--ink-muted)}
+    .login-input:focus{outline:none;border-color:var(--blue);background:white;box-shadow:0 0 0 4px rgba(26,115,232,0.1)}
+    .login-btn{width:100%;padding:15px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.15s;box-shadow:0 4px 14px rgba(26,115,232,0.3)}
+    .login-btn:active{background:var(--blue-dark);transform:scale(0.98)}
+    .login-err{background:var(--danger-bg);border:1px solid rgba(192,57,43,0.2);border-radius:10px;padding:11px 14px;font-size:0.83rem;color:var(--danger);margin-bottom:18px;display:none;align-items:center;gap:9px}
 
-    /* ══════════════ LOGIN ══════════════ */
-    #loginScreen {
-      background: var(--bg);
-      align-items: center; justify-content: center;
-      padding: 24px;
-      padding-top: max(24px, calc(env(safe-area-inset-top) + 16px));
-      padding-bottom: max(24px, env(safe-area-inset-bottom));
-      overflow: hidden;
-    }
-    .login-top {
-      width: 100%; display: flex; flex-direction: column;
-      align-items: center; margin-bottom: 0;
-    }
-    .login-divider {
-      width: 100%; height: 1px; background: var(--border); margin: 24px 0;
-    }
-    .login-logo {
-      width: 80px; height: 80px; background: var(--blue-soft);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      margin-bottom: 20px;
-    }
-    .login-logo-inner {
-      width: 56px; height: 56px; background: var(--blue);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 24px; color: white; box-shadow: 0 6px 18px rgba(26,115,232,0.35);
-    }
-    .login-title { font-size: 1.6rem; font-weight: 600; color: var(--ink); margin-bottom: 7px; text-align: center; }
-    .login-sub   { font-size: 0.85rem; color: var(--ink-muted); text-align: center; line-height: 1.6; }
-    .login-body {
-      width: 100%; background: white; border-radius: 20px;
-      border: 1px solid var(--border); box-shadow: 0 4px 24px rgba(26,60,120,0.09);
-      padding: 32px 24px 28px;
-    }
-    .login-sheet-handle { display: none; }
-    .login-field-label  { font-size: 0.82rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; display: block; }
-    .login-input-wrap   { position: relative; margin-bottom: 20px; }
-    .login-input-icon   { display: none; }
-    .login-input {
-      width: 100%; padding: 14px 16px;
-      border: 1.5px solid var(--border); border-radius: 12px;
-      font-family: 'Kodchasan', sans-serif; font-size: 1rem; color: var(--ink);
-      background: var(--bg); transition: all 0.18s; -webkit-appearance: none;
-    }
-    .login-input::placeholder { color: var(--ink-muted); }
-    .login-input:focus { outline: none; border-color: var(--blue); background: white; box-shadow: 0 0 0 4px rgba(26,115,232,0.1); }
-    .login-hint { display: none; }
-    .login-btn {
-      width: 100%; padding: 15px; background: var(--blue);
-      color: white; border: none; border-radius: 12px;
-      font-family: 'Kodchasan', sans-serif; font-size: 1rem; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-      transition: all 0.15s; letter-spacing: 0.01em;
-      box-shadow: 0 4px 14px rgba(26,115,232,0.3);
-    }
-    .login-btn:active { background: var(--blue-dark); transform: scale(0.98); box-shadow: none; }
-    .login-err {
-      background: var(--danger-bg); border: 1px solid rgba(192,57,43,0.2);
-      border-radius: 10px; padding: 11px 14px; font-size: 0.83rem; color: var(--danger);
-      margin-bottom: 18px; display: none; align-items: center; gap: 9px;
-    }
-
-    /* ══════════════ MAIN ══════════════ */
-    #mainScreen { overflow: hidden; }
-    .app-bar {
-      background: linear-gradient(135deg, #1A73E8 0%, #1557B0 100%);
-      padding: 0 16px 0;
-      /* safe area: รองรับ notch / status bar ทุกรุ่น */
-      padding-top: max(14px, env(safe-area-inset-top));
-      padding-left: max(16px, env(safe-area-inset-left));
-      padding-right: max(16px, env(safe-area-inset-right));
-      min-height: 62px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0; box-shadow: 0 2px 12px rgba(26,115,232,0.25);
-    }
-    .app-bar-brand { display: flex; align-items: center; gap: 10px; }
-    .app-bar-logo  { width: 34px; height: 34px; background: rgba(255,255,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
-    .app-bar-title { font-size: 1rem; font-weight: 600; color: white; }
-    .app-bar-sub   { font-size: 0.68rem; color: rgba(255,255,255,0.75); font-weight: 300; }
-    .app-bar-right { display: flex; align-items: center; gap: 8px; }
-    .mode-pill     { font-size: 0.7rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.22); color: white; letter-spacing: 0.03em; border: 1px solid rgba(255,255,255,0.3); }
-    .logout-btn    { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 8px; padding: 5px 9px; cursor: pointer; font-size: 0.78rem; font-family: 'Kodchasan', sans-serif; display: flex; align-items: center; gap: 5px; }
-
-    /* Bottom nav */
-    .nav-bar {
-      position: fixed; bottom: 0; width: 100%; background: white;
-      border-top: 1px solid var(--border); display: flex;
-      box-shadow: 0 -2px 12px rgba(26,60,120,0.08); z-index: 100;
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
-    .nav-tab {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 9px 0 11px; color: var(--ink-muted); cursor: pointer;
-      font-size: 0.72rem; font-weight: 500; gap: 3px; border: none; background: transparent;
-      font-family: 'Kodchasan', sans-serif; transition: color 0.2s; position: relative;
-    }
-    .nav-tab i { font-size: 1.25rem; }
-    .nav-tab.active       { color: var(--blue); }
-    .nav-tab.stop-active  { color: var(--danger); }
-    .nav-tab.hours-active { color: var(--warn); }
-    .nav-tab::before {
-      content: ''; position: absolute; top: 0; left: 15%; right: 15%;
-      height: 3px; background: var(--blue); border-radius: 0 0 4px 4px; opacity: 0; transition: opacity 0.2s;
-    }
-    .nav-tab.active::before       { opacity: 1; }
-    .nav-tab.stop-active::before  { background: var(--danger); opacity: 1; }
-    .nav-tab.hours-active::before { background: var(--warn); opacity: 1; }
-
-    /* Tab pages */
-    .tab-page { display: none; flex: 1; overflow-y: auto; padding: 18px 15px calc(90px + env(safe-area-inset-bottom)); }
-    .tab-page.active { display: block; }
-
-    /* QR containers */
-    .qr-container {
-      width: 100%; border-radius: 14px; overflow: hidden;
-      display: none; margin-bottom: 16px;
-      border: 2px solid var(--blue); box-shadow: 0 4px 20px rgba(26,115,232,0.2);
-    }
-
-    /* Shared card components */
-    .card {
-      background: var(--white); border-radius: 16px; border: 1px solid var(--border);
-      overflow: hidden; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(26,60,120,0.06);
-    }
-    .card-header {
-      display: flex; align-items: center; gap: 12px; padding: 13px 16px;
-      background: var(--blue-soft); border-bottom: 1px solid var(--border);
-    }
-    .card-header.warn-header { background: var(--warn-bg); border-bottom-color: var(--warn-border); }
-    .step-badge {
-      width: 28px; height: 28px; background: var(--blue); color: white;
-      border-radius: 50%; font-size: 0.78rem; font-weight: 600;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s;
-    }
-    .step-badge.done { background: var(--success); }
-    .step-badge.warn { background: var(--warn); }
-    .card-header-text { font-size: 0.9rem; font-weight: 600; color: var(--ink); flex: 1; }
-    .card-body { padding: 15px 16px; }
-
-    .btn-scan {
-      display: flex; align-items: center; justify-content: center; gap: 9px;
-      width: 100%; padding: 12px; border: 1.5px solid var(--blue);
-      background: var(--blue-soft); color: var(--blue-dark); border-radius: 10px;
-      font-family: 'Kodchasan', sans-serif; font-size: 0.92rem; font-weight: 600;
-      cursor: pointer; margin-bottom: 10px; transition: all 0.15s;
-    }
-    .btn-scan:active { background: var(--blue-mid); }
-    .btn-scan.warn-scan { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
-    .btn-scan.warn-scan:active { background: var(--warn-border); }
-
-    .field-val {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
-      padding: 10px 14px; font-size: 0.9rem; color: var(--ink-muted);
-      min-height: 42px; display: flex; align-items: center; font-family: 'Kodchasan', sans-serif;
-    }
-    .field-val.filled { color: var(--ink); background: white; font-weight: 500; }
-
-    .info-box {
-      background: var(--success-bg); border: 1px solid rgba(29,138,85,0.25);
-      border-radius: 12px; padding: 14px 16px; margin-top: 12px; display: none;
-    }
-    .info-box-head { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 600; color: var(--success); margin-bottom: 10px; }
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
-    .info-chip-label { font-size: 0.7rem; font-weight: 500; color: #2E7D5C; text-transform: uppercase; letter-spacing: 0.06em; }
-    .info-chip-value { font-size: 0.9rem; font-weight: 600; color: var(--success); }
-
-    .field-label { font-size: 0.78rem; font-weight: 500; color: var(--ink-mid); margin-bottom: 6px; display: block; }
-    .input-row { display: flex; gap: 10px; margin-bottom: 14px; }
-    .ig { flex: 1; }
-    input[type="number"], input[type="text"], input[type="date"], select {
-      width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 9px;
-      font-family: 'Kodchasan', sans-serif; font-size: 1rem; background: white; color: var(--ink); transition: border-color 0.15s;
-    }
-    input[type="number"]:focus, input[type="text"]:focus, input[type="date"]:focus { outline: none; border-color: var(--blue); }
-
-    .section-label { font-size: 0.78rem; font-weight: 600; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.07em; margin: 16px 0 10px; }
-
-    /* Photo */
-    .photo-btn {
-      display: flex; align-items: center; justify-content: center; gap: 9px;
-      width: 100%; padding: 12px; border: 1.5px dashed var(--blue); background: var(--blue-soft); color: var(--blue-dark);
-      border-radius: 10px; font-family: 'Kodchasan', sans-serif; font-size: 0.92rem; font-weight: 600;
-      cursor: pointer; transition: all 0.15s; margin-top: 4px;
-    }
-    .photo-btn:active { background: var(--blue-mid); }
-    #photoInput { display: none; }
-    .photo-preview { margin-top: 10px; position: relative; display: none; }
-    .photo-preview img { width: 100%; border-radius: 10px; border: 1.5px solid var(--border); object-fit: cover; max-height: 220px; display: block; }
-    .photo-preview-bar { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(26,43,74,0.65)); border-radius: 0 0 10px 10px; padding: 10px 12px 8px; display: flex; align-items: center; justify-content: space-between; }
-    .photo-preview-label { font-size: 0.78rem; color: white; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-    .photo-retake { font-size: 0.75rem; color: rgba(255,255,255,0.85); font-weight: 500; background: rgba(255,255,255,0.2); border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-family: 'Kodchasan', sans-serif; }
-
-    /* Checkboxes */
-    .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-    .check-pill { display: flex; align-items: center; gap: 9px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; background: white; transition: all 0.15s; user-select: none; }
-    .check-pill input { display: none; }
-    .check-dot { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-    .check-pill.on { border-color: var(--blue); background: var(--blue-soft); }
-    .check-pill.on .check-dot { background: var(--blue); border-color: var(--blue); }
-    .check-pill.on .check-dot::after { content: ''; display: block; width: 5px; height: 9px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px,-1px); }
-    .check-text { font-size: 0.84rem; font-weight: 500; color: var(--ink-mid); font-family: 'Kodchasan', sans-serif; }
-    .check-pill.on .check-text { color: var(--blue-dark); }
-
-    /* Submit button */
-    .btn-submit {
-      width: 100%; padding: 15px; background: linear-gradient(135deg, #1A73E8, #1557B0);
-      color: white; border: none; border-radius: 12px;
-      font-family: 'Kodchasan', sans-serif; font-size: 1rem; font-weight: 600;
-      cursor: pointer; display: none; align-items: center; justify-content: center; gap: 9px;
-      margin-top: 18px; box-shadow: 0 4px 14px rgba(26,115,232,0.35); transition: opacity 0.15s;
-    }
-    .btn-submit:active { opacity: 0.8; }
-    .btn-submit.stop-mode { background: linear-gradient(135deg, #E53E3E, #C0392B); box-shadow: 0 4px 14px rgba(192,57,43,0.3); }
-
-    /* Work hours */
-    .wh-header-card {
-      background: linear-gradient(135deg, #B45309, #92400E);
-      border-radius: 16px; padding: 18px 20px; margin-bottom: 16px;
-      box-shadow: 0 4px 16px rgba(180,83,9,0.25); display: flex; align-items: center; gap: 14px;
-    }
-    .wh-header-icon { width: 46px; height: 46px; background: rgba(255,255,255,0.2); border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; flex-shrink: 0; }
-    .wh-header-title { font-size: 1rem; font-weight: 600; color: white; }
-    .wh-header-sub   { font-size: 0.75rem; color: rgba(255,255,255,0.75); margin-top: 2px; }
-
-    .order-info-box { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 12px; padding: 14px 16px; margin-top: 12px; display: none; }
-    .order-info-head { display: flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 600; color: var(--warn); margin-bottom: 10px; }
-    .order-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
-    .order-info-label { font-size: 0.7rem; font-weight: 500; color: var(--warn); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.8; }
-    .order-info-value { font-size: 0.9rem; font-weight: 600; color: var(--warn); }
-
-    .shift-row { display: flex; gap: 9px; margin-bottom: 16px; }
-    .shift-btn { flex: 1; padding: 9px 6px; border-radius: 9px; border: 1.5px solid var(--border); background: white; font-family: 'Kodchasan', sans-serif; font-size: 0.82rem; font-weight: 500; color: var(--ink-mid); cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .shift-btn i { font-size: 1rem; }
-    .shift-btn.on { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
-
-    /* Member list */
-    .member-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
-    .member-row  { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
-    .member-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-soft); border: 1.5px solid var(--blue-mid); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; color: var(--blue-dark); flex-shrink: 0; line-height: 1; }
-    .extra-avatar  { background: var(--warn-bg) !important; border-color: var(--warn-border) !important; color: var(--warn) !important; }
-    .member-info   { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-    .member-name   { font-size: 0.9rem; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .member-id     { font-size: 0.73rem; color: var(--ink-muted); }
-    .hours-side    { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-    .hours-label   { font-size: 0.65rem; font-weight: 500; color: var(--warn); text-transform: uppercase; letter-spacing: 0.04em; }
-    .hours-input   { width: 72px; padding: 8px 6px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Kodchasan', sans-serif; font-size: 1rem; font-weight: 600; text-align: center; color: var(--ink); background: var(--bg); }
-    .hours-input:focus { outline: none; border-color: var(--warn); background: white; }
-    .btn-remove-member { background: none; border: none; cursor: pointer; color: var(--ink-muted); font-size: 0.85rem; padding: 4px; line-height: 1; flex-shrink: 0; }
-    .btn-remove-member:active { color: var(--danger); }
-
-    /* Add member */
-    .add-member-bar { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1.5px dashed var(--warn-border); }
-    .add-member-input { flex: 1; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-family: 'Kodchasan', sans-serif; font-size: 0.9rem; background: white; color: var(--ink); }
-    .add-member-input:focus { outline: none; border-color: var(--warn); }
-    .add-member-input::placeholder { color: var(--ink-muted); }
-    .btn-add-member { padding: 10px 14px; background: var(--warn); color: white; border: none; border-radius: 9px; font-family: 'Kodchasan', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; transition: opacity 0.15s; }
-    .btn-add-member:active { opacity: 0.75; }
-
-    .search-results { background: white; border: 1px solid var(--border); border-radius: 10px; margin-top: 6px; overflow: hidden; display: none; box-shadow: 0 4px 16px rgba(26,60,120,0.10); }
-    .search-result-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.12s; }
-    .search-result-item:last-child { border-bottom: none; }
-    .search-result-item:active { background: var(--warn-bg); }
-    .sri-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--warn-bg); border: 1.5px solid var(--warn-border); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 600; color: var(--warn); flex-shrink: 0; }
-    .sri-name { font-size: 0.87rem; font-weight: 600; color: var(--ink); }
-    .sri-meta { font-size: 0.72rem; color: var(--ink-muted); }
-    .sri-add  { margin-left: auto; font-size: 0.75rem; color: var(--warn); font-weight: 600; flex-shrink: 0; }
-
-    .state-box { text-align: center; padding: 40px 20px; color: var(--ink-muted); font-size: 0.9rem; }
-    .state-box i { font-size: 2.2rem; margin-bottom: 10px; display: block; opacity: 0.4; }
-
-    .btn-save-hours { width: 100%; padding: 15px; background: linear-gradient(135deg, #B45309, #92400E); color: white; border: none; border-radius: 12px; font-family: 'Kodchasan', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 18px; box-shadow: 0 4px 14px rgba(180,83,9,0.3); transition: opacity 0.15s; }
-    .btn-save-hours:active { opacity: 0.8; }
-
-    /* ── Validation ── */
-    .input-err {
-      border-color: var(--danger) !important;
-      background: var(--danger-bg) !important;
-      box-shadow: 0 0 0 3px rgba(192,57,43,0.12) !important;
-    }
-    .field-err-msg {
-      font-size: 0.75rem; color: var(--danger); margin-top: 5px;
-      display: flex; align-items: center; gap: 5px;
-    }
-    .check-grid-err {
-      border: 1.5px solid var(--danger); border-radius: 10px;
-      padding: 8px; background: var(--danger-bg);
-    }
-    .photo-btn-err {
-      border-color: var(--danger) !important;
-      background: var(--danger-bg) !important;
-      color: var(--danger) !important;
-    }
-
-    /* Toast */
-    .toast { position: fixed; bottom: 86px; left: 50%; transform: translateX(-50%) translateY(16px); background: var(--ink); color: white; padding: 10px 22px; border-radius: 30px; font-size: 0.87rem; font-weight: 500; font-family: 'Kodchasan', sans-serif; opacity: 0; pointer-events: none; transition: all 0.28s cubic-bezier(0.4,0,0.2,1); white-space: nowrap; z-index: 300; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
-    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .toast.ok   { background: var(--success); }
-    .toast.err  { background: var(--danger); }
-    .toast.warn { background: var(--warn); }
+    /* MAIN */
+    #mainScreen{overflow:hidden}
+    .app-bar{background:linear-gradient(135deg,#1A73E8 0%,#1557B0 100%);padding:0 16px;padding-top:max(14px,env(safe-area-inset-top));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));min-height:62px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 12px rgba(26,115,232,0.25)}
+    .app-bar-brand{display:flex;align-items:center;gap:10px}
+    .app-bar-logo{width:34px;height:34px;background:rgba(255,255,255,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:white}
+    .app-bar-title{font-size:1rem;font-weight:600;color:white}
+    .app-bar-sub{font-size:0.68rem;color:rgba(255,255,255,0.75);font-weight:300}
+    .app-bar-right{display:flex;align-items:center;gap:8px}
+    .mode-pill{font-size:0.7rem;font-weight:600;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.22);color:white;letter-spacing:0.03em;border:1px solid rgba(255,255,255,0.3)}
+    .logout-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:8px;padding:5px 9px;cursor:pointer;font-size:0.78rem;font-family:'Kodchasan',sans-serif;display:flex;align-items:center;gap:5px}
+    .nav-bar{position:fixed;bottom:0;width:100%;background:white;border-top:1px solid var(--border);display:flex;box-shadow:0 -2px 12px rgba(26,60,120,0.08);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+    .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 0 11px;color:var(--ink-muted);cursor:pointer;font-size:0.72rem;font-weight:500;gap:3px;border:none;background:transparent;font-family:'Kodchasan',sans-serif;transition:color 0.2s;position:relative}
+    .nav-tab i{font-size:1.25rem}
+    .nav-tab.active{color:var(--blue)}
+    .nav-tab.stop-active{color:var(--danger)}
+    .nav-tab.hours-active{color:var(--warn)}
+    .nav-tab::before{content:'';position:absolute;top:0;left:15%;right:15%;height:3px;background:var(--blue);border-radius:0 0 4px 4px;opacity:0;transition:opacity 0.2s}
+    .nav-tab.active::before{opacity:1}
+    .nav-tab.stop-active::before{background:var(--danger);opacity:1}
+    .nav-tab.hours-active::before{background:var(--warn);opacity:1}
+    .tab-page{display:none;flex:1;overflow-y:auto;padding:18px 15px calc(90px + env(safe-area-inset-bottom))}
+    .tab-page.active{display:block}
+    .qr-container{width:100%;border-radius:14px;overflow:hidden;display:none;margin-bottom:16px;border:2px solid var(--blue);box-shadow:0 4px 20px rgba(26,115,232,0.2)}
+    .card{background:var(--white);border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:14px;box-shadow:0 2px 8px rgba(26,60,120,0.06)}
+    .card-header{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--blue-soft);border-bottom:1px solid var(--border)}
+    .card-header.warn-header{background:var(--warn-bg);border-bottom-color:var(--warn-border)}
+    .step-badge{width:28px;height:28px;background:var(--blue);color:white;border-radius:50%;font-size:0.78rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s}
+    .step-badge.done{background:var(--success)}
+    .step-badge.warn{background:var(--warn)}
+    .card-header-text{font-size:0.9rem;font-weight:600;color:var(--ink);flex:1}
+    .card-body{padding:15px 16px}
+    .btn-scan{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border:1.5px solid var(--blue);background:var(--blue-soft);color:var(--blue-dark);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.92rem;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all 0.15s}
+    .btn-scan:active{background:var(--blue-mid)}
+    .btn-scan.warn-scan{border-color:var(--warn);background:var(--warn-bg);color:var(--warn)}
+    .field-val{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:0.9rem;color:var(--ink-muted);min-height:42px;display:flex;align-items:center;font-family:'Kodchasan',sans-serif}
+    .field-val.filled{color:var(--ink);background:white;font-weight:500}
+    .info-box{background:var(--success-bg);border:1px solid rgba(29,138,85,0.25);border-radius:12px;padding:14px 16px;margin-top:12px;display:none}
+    .info-box-head{display:flex;align-items:center;gap:7px;font-size:0.85rem;font-weight:600;color:var(--success);margin-bottom:10px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+    .info-chip-label{font-size:0.7rem;font-weight:500;color:#2E7D5C;text-transform:uppercase;letter-spacing:0.06em}
+    .info-chip-value{font-size:0.9rem;font-weight:600;color:var(--success)}
+    .field-label{font-size:0.78rem;font-weight:500;color:var(--ink-mid);margin-bottom:6px;display:block}
+    .input-row{display:flex;gap:10px;margin-bottom:14px}
+    .ig{flex:1}
+    input[type="number"],input[type="text"],input[type="date"]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:1rem;background:white;color:var(--ink);transition:border-color 0.15s}
+    input[type="number"]:focus,input[type="text"]:focus,input[type="date"]:focus{outline:none;border-color:var(--blue)}
+    .section-label{font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin:16px 0 10px}
+    .photo-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border:1.5px dashed var(--blue);background:var(--blue-soft);color:var(--blue-dark);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.92rem;font-weight:600;cursor:pointer;transition:all 0.15s;margin-top:4px}
+    .photo-btn:active{background:var(--blue-mid)}
+    #photoInput{display:none}
+    .photo-preview{margin-top:10px;position:relative;display:none}
+    .photo-preview img{width:100%;border-radius:10px;border:1.5px solid var(--border);object-fit:cover;max-height:220px;display:block}
+    .photo-preview-bar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(26,43,74,0.65));border-radius:0 0 10px 10px;padding:10px 12px 8px;display:flex;align-items:center;justify-content:space-between}
+    .photo-preview-label{font-size:0.78rem;color:white;font-weight:500;display:flex;align-items:center;gap:6px}
+    .photo-retake{font-size:0.75rem;color:rgba(255,255,255,0.85);font-weight:500;background:rgba(255,255,255,0.2);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Kodchasan',sans-serif}
+    .check-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .check-pill{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:white;transition:all 0.15s;user-select:none}
+    .check-pill input{display:none}
+    .check-dot{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+    .check-pill.on{border-color:var(--blue);background:var(--blue-soft)}
+    .check-pill.on .check-dot{background:var(--blue);border-color:var(--blue)}
+    .check-pill.on .check-dot::after{content:'';display:block;width:5px;height:9px;border:2px solid white;border-top:none;border-left:none;transform:rotate(45deg) translate(-1px,-1px)}
+    .check-text{font-size:0.84rem;font-weight:500;color:var(--ink-mid);font-family:'Kodchasan',sans-serif}
+    .check-pill.on .check-text{color:var(--blue-dark)}
+    .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#1A73E8,#1557B0);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:none;align-items:center;justify-content:center;gap:9px;margin-top:18px;box-shadow:0 4px 14px rgba(26,115,232,0.35);transition:opacity 0.15s}
+    .btn-submit:active{opacity:0.8}
+    .btn-submit.stop-mode{background:linear-gradient(135deg,#E53E3E,#C0392B);box-shadow:0 4px 14px rgba(192,57,43,0.3)}
+    .input-err{border-color:var(--danger)!important;background:var(--danger-bg)!important;box-shadow:0 0 0 3px rgba(192,57,43,0.12)!important}
+    .field-err-msg{font-size:0.75rem;color:var(--danger);margin-top:5px;display:flex;align-items:center;gap:5px}
+    .check-grid-err{border:1.5px solid var(--danger);border-radius:10px;padding:8px;background:var(--danger-bg)}
+    .photo-btn-err{border-color:var(--danger)!important;background:var(--danger-bg)!important;color:var(--danger)!important}
+    .wh-header-card{background:linear-gradient(135deg,#B45309,#92400E);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(180,83,9,0.25);display:flex;align-items:center;gap:14px}
+    .wh-header-icon{width:46px;height:46px;background:rgba(255,255,255,0.2);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;color:white;flex-shrink:0}
+    .wh-header-title{font-size:1rem;font-weight:600;color:white}
+    .wh-header-sub{font-size:0.75rem;color:rgba(255,255,255,0.75);margin-top:2px}
+    .order-info-box{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:12px;padding:14px 16px;margin-top:12px;display:none}
+    .order-info-head{display:flex;align-items:center;gap:7px;font-size:0.85rem;font-weight:600;color:var(--warn);margin-bottom:10px}
+    .order-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+    .order-info-label{font-size:0.7rem;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:0.06em;opacity:0.8}
+    .order-info-value{font-size:0.9rem;font-weight:600;color:var(--warn)}
+    .shift-row{display:flex;gap:9px;margin-bottom:16px}
+    .shift-btn{flex:1;padding:9px 6px;border-radius:9px;border:1.5px solid var(--border);background:white;font-family:'Kodchasan',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .shift-btn i{font-size:1rem}
+    .shift-btn.on{border-color:var(--warn);background:var(--warn-bg);color:var(--warn)}
+    .member-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+    .member-row{background:white;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+    .member-avatar{width:40px;height:40px;border-radius:50%;background:var(--blue-soft);border:1.5px solid var(--blue-mid);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:600;color:var(--blue-dark);flex-shrink:0;line-height:1}
+    .extra-avatar{background:var(--warn-bg)!important;border-color:var(--warn-border)!important;color:var(--warn)!important}
+    .member-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .member-name{font-size:0.9rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .member-id{font-size:0.73rem;color:var(--ink-muted)}
+    .hours-side{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .hours-label{font-size:0.65rem;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:0.04em}
+    .hours-input{width:72px;padding:8px 6px;border:1.5px solid var(--border);border-radius:8px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;text-align:center;color:var(--ink);background:var(--bg)}
+    .hours-input:focus{outline:none;border-color:var(--warn);background:white}
+    .btn-remove-member{background:none;border:none;cursor:pointer;color:var(--ink-muted);font-size:0.85rem;padding:4px;line-height:1;flex-shrink:0}
+    .btn-remove-member:active{color:var(--danger)}
+    .add-member-bar{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1.5px dashed var(--warn-border)}
+    .add-member-input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.9rem;background:white;color:var(--ink)}
+    .add-member-input:focus{outline:none;border-color:var(--warn)}
+    .add-member-input::placeholder{color:var(--ink-muted)}
+    .btn-add-member{padding:10px 14px;background:var(--warn);color:white;border:none;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s}
+    .btn-add-member:active{opacity:0.75}
+    .search-results{background:white;border:1px solid var(--border);border-radius:10px;margin-top:6px;overflow:hidden;display:none;box-shadow:0 4px 16px rgba(26,60,120,0.10)}
+    .search-result-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s}
+    .search-result-item:last-child{border-bottom:none}
+    .search-result-item:active{background:var(--warn-bg)}
+    .sri-avatar{width:32px;height:32px;border-radius:50%;background:var(--warn-bg);border:1.5px solid var(--warn-border);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:600;color:var(--warn);flex-shrink:0}
+    .sri-name{font-size:0.87rem;font-weight:600;color:var(--ink)}
+    .sri-meta{font-size:0.72rem;color:var(--ink-muted)}
+    .sri-add{margin-left:auto;font-size:0.75rem;color:var(--warn);font-weight:600;flex-shrink:0}
+    .state-box{text-align:center;padding:40px 20px;color:var(--ink-muted);font-size:0.9rem}
+    .state-box i{font-size:2.2rem;margin-bottom:10px;display:block;opacity:0.4}
+    .btn-save-hours{width:100%;padding:15px;background:linear-gradient(135deg,#B45309,#92400E);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:18px;box-shadow:0 4px 14px rgba(180,83,9,0.3);transition:opacity 0.15s}
+    .btn-save-hours:active{opacity:0.8}
+    .loading-overlay{position:fixed;inset:0;z-index:500;background:rgba(28,43,74,0.55);display:none;flex-direction:column;align-items:center;justify-content:center}
+    .loading-overlay.show{display:flex}
+    .loading-card{background:white;border-radius:20px;padding:32px 40px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,0.25);min-width:200px}
+    .loading-spinner{width:44px;height:44px;border-radius:50%;border:4px solid var(--blue-soft);border-top-color:var(--blue);animation:spin 0.8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{font-size:0.95rem;font-weight:500;color:var(--ink-mid)}
+    .success-overlay{position:fixed;inset:0;z-index:500;background:rgba(28,43,74,0.55);display:none;align-items:center;justify-content:center}
+    .success-overlay.show{display:flex}
+    .success-card{background:white;border-radius:24px;padding:36px 40px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,0.25);min-width:260px;max-width:320px;width:80vw;animation:popIn 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+    @keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+    .success-icon{width:68px;height:68px;border-radius:50%;background:var(--success-bg);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--success)}
+    .success-title{font-size:1.1rem;font-weight:600;color:var(--ink);text-align:center}
+    .success-sub{font-size:0.85rem;color:var(--ink-muted);text-align:center;line-height:1.5}
+    .success-btn{width:100%;padding:13px;background:var(--success);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity 0.15s}
+    .success-btn:active{opacity:0.8}
+    .toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:white;padding:10px 22px;border-radius:30px;font-size:0.87rem;font-weight:500;font-family:'Kodchasan',sans-serif;opacity:0;pointer-events:none;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .toast.ok{background:var(--success)}
+    .toast.err{background:var(--danger)}
+    .toast.warn{background:var(--warn)}
   </style>
 </head>
 <body>
 
-<!-- ══════════ LOGIN ══════════ -->
+<!-- LOGIN -->
 <div id="loginScreen" class="screen active">
   <div class="login-body">
     <div class="login-top">
-      <div class="login-logo">
-        <div class="login-logo-inner"><i class="fa-solid fa-worm"></i></div>
-      </div>
+      <div class="login-logo"><div class="login-logo-inner"><i class="fa-solid fa-worm"></i></div></div>
       <div class="login-title">ยินดีต้อนรับ</div>
       <div class="login-sub">ระบบสาวไหม · Silk Production<br>กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</div>
     </div>
     <div class="login-divider"></div>
-    <div class="login-err" id="loginErr">
-      <i class="fa-solid fa-circle-exclamation"></i>
-      <span id="loginErrMsg">รหัสไม่ถูกต้อง</span>
-    </div>
+    <div class="login-err" id="loginErr"><i class="fa-solid fa-circle-exclamation"></i><span id="loginErrMsg">รหัสไม่ถูกต้อง</span></div>
     <label class="login-field-label">รหัสพนักงาน</label>
     <div class="login-input-wrap">
-      <input class="login-input" type="text" id="loginLeaderCode"
-             placeholder="กรอกรหัสพนักงานของคุณ"
-             autocomplete="off" autocorrect="off" spellcheck="false"
-             onkeydown="if(event.key==='Enter') doLogin()">
+      <input class="login-input" type="text" id="loginLeaderCode" placeholder="กรอกรหัสพนักงานของคุณ" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">เข้าสู่ระบบ</button>
   </div>
 </div>
 
-<!-- ══════════ MAIN ══════════ -->
+<!-- MAIN -->
 <div id="mainScreen" class="screen">
   <div class="app-bar">
     <div class="app-bar-brand">
       <div class="app-bar-logo"><i class="fa-solid fa-worm"></i></div>
-      <div>
-        <div class="app-bar-title">ระบบสาวไหม</div>
-        <div class="app-bar-sub" id="leaderNameBar">—</div>
-      </div>
+      <div><div class="app-bar-title">ระบบสาวไหม</div><div class="app-bar-sub" id="leaderNameBar">—</div></div>
     </div>
     <div class="app-bar-right">
       <div class="mode-pill" id="modePill">เริ่มผลิต</div>
-      <button class="logout-btn" onclick="doLogout()">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-      </button>
+      <button class="logout-btn" onclick="doLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
     </div>
   </div>
-
   <div class="qr-container" id="readerProd"></div>
   <div class="qr-container" id="readerHours"></div>
 
-  <!-- TAB: Production -->
+  <!-- Production Tab -->
   <div class="tab-page active" id="tabProduction">
     <div class="card">
-      <div class="card-header">
-        <div class="step-badge" id="s1">1</div>
-        <span class="card-header-text">ข้อมูลเครื่องจักร</span>
-      </div>
+      <div class="card-header"><div class="step-badge" id="s1">1</div><span class="card-header-text">ข้อมูลเครื่องจักร</span></div>
       <div class="card-body">
-        <button class="btn-scan" onclick="startScan('machine','prod')">
-          <i class="fa-solid fa-qrcode"></i> สแกน QR เครื่องจักร
-        </button>
+        <button class="btn-scan" onclick="startScan('machine','prod')"><i class="fa-solid fa-qrcode"></i> สแกน QR เครื่องจักร</button>
         <div class="field-val" id="machineDisplay">ยังไม่ได้ระบุ</div>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-header">
-        <div class="step-badge" id="s2">2</div>
-        <span class="card-header-text">ใบสั่งผลิต</span>
-      </div>
+      <div class="card-header"><div class="step-badge" id="s2">2</div><span class="card-header-text">ใบสั่งผลิต</span></div>
       <div class="card-body">
-        <button class="btn-scan" onclick="startScan('order','prod')">
-          <i class="fa-solid fa-file-invoice"></i> สแกน QR ใบสั่งผลิต
-        </button>
+        <button class="btn-scan" onclick="startScan('order','prod')"><i class="fa-solid fa-file-invoice"></i> สแกน QR ใบสั่งผลิต</button>
         <div class="field-val" id="orderDisplay">ยังไม่ได้ระบุ</div>
         <div class="info-box" id="infoBox">
           <div class="info-box-head"><i class="fa-solid fa-circle-check"></i> ตรวจสอบข้อมูลแล้ว</div>
@@ -420,27 +229,16 @@
         </div>
       </div>
     </div>
-
     <div class="card" id="stopModule" style="display:none">
-      <div class="card-header">
-        <div class="step-badge">3</div>
-        <span class="card-header-text">ข้อมูลการหยุดผลิต</span>
-      </div>
+      <div class="card-header"><div class="step-badge">3</div><span class="card-header-text">ข้อมูลการหยุดผลิต</span></div>
       <div class="card-body">
-        <div class="input-row">
-          <div class="ig">
-            <label class="field-label">เวลาเปลี่ยนอัก (นาที)</label>
-            <input type="number" id="changeTime" placeholder="0" min="0" oninput="clearErr('changeTime')">
-          </div>
-        </div>
+        <div class="input-row"><div class="ig"><label class="field-label">เวลาเปลี่ยนอัก (นาที)</label><input type="number" id="changeTime" placeholder="0" min="0" oninput="clearErr('changeTime')"></div></div>
         <div class="input-row">
           <div class="ig"><label class="field-label">จำนวนรอบ</label><input type="number" id="rounds" placeholder="0" min="0" oninput="clearErr('rounds')"></div>
           <div class="ig"><label class="field-label">จำนวนอัก</label><input type="number" id="totalAuk" placeholder="0" min="0" oninput="clearErr('totalAuk')"></div>
         </div>
         <label class="field-label" style="margin-bottom:6px;">รูปถ่ายจำนวนรอบ</label>
-        <button class="photo-btn" id="photoBtnEl" onclick="document.getElementById('photoInput').click()">
-          <i class="fa-solid fa-camera"></i> ถ่ายรูป / เลือกรูป
-        </button>
+        <button class="photo-btn" id="photoBtnEl" onclick="document.getElementById('photoInput').click()"><i class="fa-solid fa-camera"></i> ถ่ายรูป / เลือกรูป</button>
         <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhoto(this)">
         <div class="photo-preview" id="photoPreview">
           <img id="photoImg" src="" alt="รูปถ่าย">
@@ -462,47 +260,24 @@
         </div>
       </div>
     </div>
-
-    <button class="btn-submit" id="submitBtn" onclick="handleSave()">
-      <i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล
-    </button>
+    <button class="btn-submit" id="submitBtn" onclick="handleSave()"><i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล</button>
   </div>
 
-  <!-- TAB: Work Hours -->
+  <!-- Hours Tab -->
   <div class="tab-page" id="tabHours">
-    <div class="wh-header-card">
-      <div class="wh-header-icon"><i class="fa-solid fa-clock"></i></div>
-      <div>
-        <div class="wh-header-title">บันทึกชั่วโมงทำงาน</div>
-        <div class="wh-header-sub" id="whLeaderName">—</div>
-      </div>
-    </div>
-
+    <div class="wh-header-card"><div class="wh-header-icon"><i class="fa-solid fa-clock"></i></div><div><div class="wh-header-title">บันทึกชั่วโมงทำงาน</div><div class="wh-header-sub" id="whLeaderName">—</div></div></div>
     <div class="card">
-      <div class="card-header warn-header">
-        <div class="step-badge warn" id="whS1">1</div>
-        <span class="card-header-text">ใบสั่งผลิต</span>
-      </div>
+      <div class="card-header warn-header"><div class="step-badge warn" id="whS1">1</div><span class="card-header-text">ใบสั่งผลิต</span></div>
       <div class="card-body">
-        <button class="btn-scan warn-scan" onclick="startScan('whOrder','hours')">
-          <i class="fa-solid fa-qrcode"></i> สแกน QR ใบสั่งผลิต
-        </button>
+        <button class="btn-scan warn-scan" onclick="startScan('whOrder','hours')"><i class="fa-solid fa-qrcode"></i> สแกน QR ใบสั่งผลิต</button>
         <div class="field-val" id="whOrderDisplay">ยังไม่ได้ระบุ</div>
-        <div class="order-info-box" id="whOrderInfo">
-          <div class="order-info-head"><i class="fa-solid fa-circle-check"></i> ข้อมูลใบสั่งผลิต</div>
-          <div class="order-info-grid" id="whOrderGrid"></div>
-        </div>
+        <div class="order-info-box" id="whOrderInfo"><div class="order-info-head"><i class="fa-solid fa-circle-check"></i> ข้อมูลใบสั่งผลิต</div><div class="order-info-grid" id="whOrderGrid"></div></div>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-header warn-header">
-        <div class="step-badge warn">2</div>
-        <span class="card-header-text">วันที่และกะ</span>
-      </div>
+      <div class="card-header warn-header"><div class="step-badge warn">2</div><span class="card-header-text">วันที่และกะ</span></div>
       <div class="card-body">
-        <label class="field-label">วันที่</label>
-        <div style="margin-bottom:14px;"><input type="date" id="whDate"></div>
+        <label class="field-label">วันที่</label><div style="margin-bottom:14px;"><input type="date" id="whDate"></div>
         <label class="field-label">กะการทำงาน</label>
         <div class="shift-row">
           <button class="shift-btn" id="shiftA" onclick="selectShift('A')"><i class="fa-solid fa-sun"></i> กะเช้า</button>
@@ -511,32 +286,18 @@
         </div>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-header warn-header">
-        <div class="step-badge warn">3</div>
-        <span class="card-header-text">ชั่วโมงทำงานลูกทีม</span>
-        <span style="font-size:0.72rem;color:var(--ink-muted);margin-left:auto;" id="memberCount"></span>
-      </div>
+      <div class="card-header warn-header"><div class="step-badge warn">3</div><span class="card-header-text">ชั่วโมงทำงานลูกทีม</span><span style="font-size:0.72rem;color:var(--ink-muted);margin-left:auto;" id="memberCount"></span></div>
       <div class="card-body">
-        <div id="memberListArea">
-          <div class="state-box"><i class="fa-solid fa-users"></i>รายชื่อลูกทีมจะแสดงหลังเข้าสู่ระบบ</div>
-        </div>
+        <div id="memberListArea"><div class="state-box"><i class="fa-solid fa-users"></i>รายชื่อลูกทีมจะแสดงหลังเข้าสู่ระบบ</div></div>
         <div class="add-member-bar" id="addMemberBar" style="display:none">
-          <input class="add-member-input" type="text" id="addMemberSearch"
-                 placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน..."
-                 oninput="searchEmployeeFn(this.value)">
-          <button class="btn-add-member" onclick="searchEmployeeFn(document.getElementById('addMemberSearch').value)">
-            <i class="fa-solid fa-magnifying-glass"></i> ค้นหา
-          </button>
+          <input class="add-member-input" type="text" id="addMemberSearch" placeholder="ค้นหาชื่อ หรือ รหัสพนักงาน..." oninput="searchEmployeeFn(this.value)">
+          <button class="btn-add-member" onclick="searchEmployeeFn(document.getElementById('addMemberSearch').value)"><i class="fa-solid fa-magnifying-glass"></i> ค้นหา</button>
         </div>
         <div class="search-results" id="searchResults"></div>
       </div>
     </div>
-
-    <button class="btn-save-hours" onclick="saveWorkHours()">
-      <i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน
-    </button>
+    <button class="btn-save-hours" onclick="saveWorkHours()"><i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน</button>
   </div>
 
   <nav class="nav-bar">
@@ -547,557 +308,306 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-card"><div class="loading-spinner"></div><div class="loading-text" id="loadingText">กำลังโหลด...</div></div></div>
+<div class="success-overlay" id="successOverlay"><div class="success-card"><div class="success-icon"><i class="fa-solid fa-check"></i></div><div class="success-title" id="successTitle">สำเร็จ</div><div class="success-sub" id="successSub"></div><button class="success-btn" onclick="closeSuccess()">ตกลง</button></div></div>
 
 <script>
-  // ══════════════════════════════════════════════════
-  //  ⚙️  CONFIG — ใส่ URL ของ Google Apps Script Web App
-  // ══════════════════════════════════════════════════
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
+// ══════════════════════════════════════════════
+//  CONFIG — ใส่ URL Apps Script ของคุณตรงนี้
+// ══════════════════════════════════════════════
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
 
-  // ══════════════════════════════════════════════════
-  //  API HELPER — fetch POST (เหมือนตอนแรกที่ใช้งานได้)
-  // ══════════════════════════════════════════════════
-  async function api(action, data) {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action, ...data })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+// ══════════════════════════════════════════════
+//  API — ใช้ fetch + no-cors workaround
+//  Apps Script รองรับ POST ด้วย Content-Type: text/plain
+//  โดยไม่ต้อง preflight (simple request)
+// ══════════════════════════════════════════════
+function callAPI(action, data, onSuccess, onError) {
+  var body = JSON.stringify(Object.assign({ action: action }, data));
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: body
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(res) { onSuccess(res); })
+  .catch(function(e) { onError(e.message || 'เชื่อมต่อไม่ได้'); });
+}
+
+// STATE
+var prodMode='start', scannerProd=null, scannerHours=null, currentPlan=null;
+var machineVal='', orderVal='', photoBase64='';
+var leaderCode='', leaderName='';
+var teamMembers=[], extraMembers=[], selectedShift='';
+var whOrderId='', whOrderData=null, _successCb=null;
+
+// UI HELPERS
+function toast(msg,type){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(function(){t.className='toast'},2800)}
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});document.getElementById(id).classList.add('active')}
+function showLoading(msg){document.getElementById('loadingText').textContent=msg||'กำลังโหลด...';document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+function showSuccess(t,s,cb){document.getElementById('successTitle').textContent=t;document.getElementById('successSub').textContent=s||'';document.getElementById('successOverlay').classList.add('show');_successCb=cb||null}
+function closeSuccess(){document.getElementById('successOverlay').classList.remove('show');if(_successCb){_successCb();_successCb=null}}
+function todayISO(){return new Date().toISOString().split('T')[0]}
+function setFV(id,val,filled){var el=document.getElementById(id);if(!el)return;el.textContent=val;el.className='field-val'+(filled?' filled':'')}
+
+// VALIDATION
+function setErr(id,msg){var el=document.getElementById(id);if(!el)return;el.classList.add('input-err');var o=el.parentNode.querySelector('.field-err-msg');if(o)o.remove();if(msg){var d=document.createElement('div');d.className='field-err-msg';d.innerHTML='<i class="fa-solid fa-circle-exclamation"></i>'+msg;el.parentNode.insertBefore(d,el.nextSibling)}}
+function clearErr(id){var el=document.getElementById(id);if(!el)return;el.classList.remove('input-err');var o=el.parentNode.querySelector('.field-err-msg');if(o)o.remove()}
+function clearAllErr(){['changeTime','rounds','totalAuk'].forEach(clearErr);var cg=document.querySelector('.check-grid');if(cg)cg.classList.remove('check-grid-err');var pb=document.getElementById('photoBtnEl');if(pb)pb.classList.remove('photo-btn-err');document.querySelectorAll('.field-err-msg').forEach(function(e){e.remove()})}
+
+// LOGIN
+function doLogin(){
+  var code=document.getElementById('loginLeaderCode').value.trim();
+  if(!code){showLoginErr('กรุณากรอกรหัสหัวหน้าทีม');return}
+  var btn=document.getElementById('loginBtn');
+  btn.disabled=true;btn.textContent='กำลังตรวจสอบ...';
+  showLoading('กำลังตรวจสอบ...');
+  callAPI('login',{leaderCode:code},function(res){
+    hideLoading();btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
+    if(res.success){
+      leaderCode=res.leaderCode;leaderName=res.leaderName;
+      document.getElementById('leaderNameBar').textContent='หัวหน้า: '+leaderName;
+      document.getElementById('whLeaderName').textContent='หัวหน้าทีม: '+leaderName;
+      document.getElementById('loginErr').style.display='none';
+      document.getElementById('loginLeaderCode').value='';
+      loadTeamMembers();showScreen('mainScreen');
+    } else {showLoginErr(res.message||'รหัสไม่ถูกต้อง')}
+  },function(e){hideLoading();btn.disabled=false;btn.textContent='เข้าสู่ระบบ';showLoginErr('เกิดข้อผิดพลาด: '+e)});
+}
+function showLoginErr(msg){document.getElementById('loginErrMsg').textContent=msg;document.getElementById('loginErr').style.display='flex'}
+function doLogout(){leaderCode='';leaderName='';teamMembers=[];extraMembers=[];resetProductionUI();resetHoursUI();showScreen('loginScreen')}
+
+// TABS
+function showTab(tab){
+  document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active')});
+  ['navStart','navStop','navHours'].forEach(function(id){document.getElementById(id).className='nav-tab'});
+  killScan('prod');killScan('hours');
+  if(tab==='production'){
+    document.getElementById('tabProduction').classList.add('active');
+    if(prodMode==='start')document.getElementById('navStart').className='nav-tab active';
+    else document.getElementById('navStop').className='nav-tab active stop-active';
+  } else {
+    document.getElementById('tabHours').classList.add('active');
+    document.getElementById('navHours').className='nav-tab active hours-active';
+    if(!document.getElementById('whDate').value)document.getElementById('whDate').value=todayISO();
   }
+}
 
-  // ── Startup check ──
-  if (API_URL.includes('YOUR_DEPLOYMENT_ID')) {
-    console.error('❌ ยังไม่ได้ใส่ API_URL — แก้ค่า API_URL ใน index.html ก่อน');
+// PRODUCTION
+function setMode(m){prodMode=m;var s=m==='stop';document.getElementById('modePill').textContent=s?'หยุดผลิต':'เริ่มผลิต';document.getElementById('stopModule').style.display=s?'block':'none';document.getElementById('submitBtn').className='btn-submit'+(s?' stop-mode':'');resetProductionUI();showTab('production')}
+function resetProductionUI(){
+  currentPlan=null;machineVal='';orderVal='';
+  setFV('machineDisplay','ยังไม่ได้ระบุ',false);setFV('orderDisplay','ยังไม่ได้ระบุ',false);
+  document.getElementById('infoBox').style.display='none';document.getElementById('submitBtn').style.display='none';
+  document.getElementById('s1').classList.remove('done');document.getElementById('s2').classList.remove('done');
+  document.querySelectorAll('.check-pill').forEach(function(p){p.classList.remove('on');p.querySelector('input').checked=false});
+  ['changeTime','rounds','totalAuk'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=''});
+  clearAllErr();retakePhoto();killScan('prod');
+}
+function resetHoursUI(){
+  whOrderId='';whOrderData=null;setFV('whOrderDisplay','ยังไม่ได้ระบุ',false);
+  document.getElementById('whOrderInfo').style.display='none';document.getElementById('whS1').classList.remove('done');
+  selectedShift='';['A','B','C'].forEach(function(x){document.getElementById('shift'+x).classList.remove('on')});
+  extraMembers=[];renderMemberList();
+  var s=document.getElementById('addMemberSearch');if(s)s.value='';
+  var r=document.getElementById('searchResults');if(r)r.style.display='none';
+  killScan('hours');
+}
+function togglePill(el){
+  el.classList.toggle('on');el.querySelector('input').checked=el.classList.contains('on');
+  if(el.classList.contains('on')){var cg=document.querySelector('.check-grid');if(cg)cg.classList.remove('check-grid-err');var ce=document.querySelector('.check-grid-err-msg');if(ce)ce.remove()}
+}
+
+// PHOTO
+function handlePhoto(input){
+  if(!input.files||!input.files[0])return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=1200,w=img.width,h=img.height;if(w>MAX){h=Math.round(h*MAX/w);w=MAX}
+      var cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+      photoBase64=cv.toDataURL('image/jpeg',0.82);
+      document.getElementById('photoImg').src=photoBase64;
+      document.getElementById('photoPreview').style.display='block';
+      document.getElementById('photoBtnEl').style.display='none';
+      document.getElementById('photoBtnEl').classList.remove('photo-btn-err');
+      var pe=document.querySelector('.photo-btn-err-msg');if(pe)pe.remove();
+    };img.src=e.target.result;
+  };reader.readAsDataURL(input.files[0]);
+}
+function retakePhoto(){
+  photoBase64='';
+  var img=document.getElementById('photoImg');if(img)img.src='';
+  var pp=document.getElementById('photoPreview');if(pp)pp.style.display='none';
+  var pb=document.getElementById('photoBtnEl');if(pb)pb.style.display='flex';
+  var pi=document.getElementById('photoInput');if(pi)pi.value='';
+}
+
+// QR SCANNER
+function killScan(ctx){
+  if(ctx==='prod'||!ctx){if(scannerProd){scannerProd.stop().catch(function(){});scannerProd=null}document.getElementById('readerProd').style.display='none'}
+  if(ctx==='hours'||!ctx){if(scannerHours){scannerHours.stop().catch(function(){});scannerHours=null}document.getElementById('readerHours').style.display='none'}
+}
+function startScan(target,ctx){
+  killScan('prod');killScan('hours');
+  var rid=ctx==='hours'?'readerHours':'readerProd';
+  document.getElementById(rid).style.display='block';
+  var sc=new Html5Qrcode(rid);
+  if(ctx==='hours')scannerHours=sc;else scannerProd=sc;
+  sc.start({facingMode:'environment'},{fps:15,qrbox:{width:230,height:230}},function(msg){
+    sc.stop().catch(function(){});if(ctx==='hours')scannerHours=null;else scannerProd=null;
+    document.getElementById(rid).style.display='none';
+    if(target==='machine'){machineVal=msg;setFV('machineDisplay',msg,true);document.getElementById('s1').classList.add('done');if(machineVal&&orderVal)fetchPlanData()}
+    else if(target==='order'){orderVal=msg;setFV('orderDisplay',msg,true);if(machineVal&&orderVal)fetchPlanData()}
+    else if(target==='whOrder'){whOrderId=msg;setFV('whOrderDisplay',msg,true);fetchWhOrderData(msg)}
+  }).catch(function(e){toast('กล้องมีปัญหา: '+e,'err')});
+}
+
+// FETCH PLAN
+function fetchPlanData(){
+  showLoading('กำลังตรวจสอบใบสั่งผลิต...');
+  callAPI('getPlan',{orderId:orderVal,machineId:machineVal},function(res){
+    hideLoading();
+    if(res.success){
+      currentPlan=res.data;document.getElementById('s2').classList.add('done');
+      document.getElementById('infoGrid').innerHTML=
+        '<div><div class="info-chip-label">เกรด</div><div class="info-chip-value">'+res.data.grade+'</div></div>'+
+        '<div><div class="info-chip-label">ชนิดรัง</div><div class="info-chip-value">'+res.data.cocoonType+'</div></div>'+
+        '<div><div class="info-chip-label">สายพันธุ์</div><div class="info-chip-value">'+res.data.species+'</div></div>'+
+        '<div><div class="info-chip-label">ขนาด</div><div class="info-chip-value">'+res.data.size+'</div></div>';
+      document.getElementById('infoBox').style.display='block';document.getElementById('submitBtn').style.display='flex';
+    } else {toast(res.message,'err');orderVal='';setFV('orderDisplay','ยังไม่ได้ระบุ',false)}
+  },function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err')});
+}
+
+// HANDLE SAVE
+function handleSave(){
+  clearAllErr();
+  var checks=[].slice.call(document.querySelectorAll('.check-pill.on input')).map(function(c){return c.value});
+  if(prodMode==='stop'){
+    var hasErr=false;
+    var ct=document.getElementById('changeTime').value;
+    var rd=document.getElementById('rounds').value;
+    var ak=document.getElementById('totalAuk').value;
+    if(!ct||Number(ct)<0){setErr('changeTime','กรุณากรอกเวลาเปลี่ยนอัก');hasErr=true}
+    if(!rd||Number(rd)<=0){setErr('rounds','กรุณากรอกจำนวนรอบ');hasErr=true}
+    if(!ak||Number(ak)<=0){setErr('totalAuk','กรุณากรอกจำนวนอัก');hasErr=true}
+    if(!photoBase64){var pb=document.getElementById('photoBtnEl');if(pb){pb.classList.add('photo-btn-err');var d=document.createElement('div');d.className='field-err-msg photo-btn-err-msg';d.innerHTML='<i class="fa-solid fa-circle-exclamation"></i>กรุณาถ่ายรูปจำนวนรอบ';pb.parentNode.insertBefore(d,pb.nextSibling)}hasErr=true}
+    if(checks.length===0){var cg=document.querySelector('.check-grid');if(cg){cg.classList.add('check-grid-err');var d2=document.createElement('div');d2.className='field-err-msg check-grid-err-msg';d2.style.marginTop='8px';d2.innerHTML='<i class="fa-solid fa-circle-exclamation"></i>กรุณาเลือกสถานะรังและน้ำอย่างน้อย 1 รายการ';cg.parentNode.appendChild(d2)}hasErr=true}
+    if(hasErr){toast('กรุณากรอกข้อมูลให้ครบ','err');var fe=document.querySelector('.input-err,.photo-btn-err,.check-grid-err');if(fe)fe.scrollIntoView({behavior:'smooth',block:'center'});return}
   }
+  var sb=document.getElementById('submitBtn');
+  sb.disabled=true;sb.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  showLoading('กำลังบันทึกข้อมูล...');
+  var payload={
+    status:prodMode==='start'?'เริ่มผลิต':'หยุดผลิต',
+    machine:machineVal,orderId:orderVal,
+    size:currentPlan?currentPlan.size:'',grade:currentPlan?currentPlan.grade:'',
+    cocoonType:currentPlan?currentPlan.cocoonType:'',species:currentPlan?currentPlan.species:'',
+    shiftLeader1:currentPlan?currentPlan.shiftLeader1:'',shiftLeader2:currentPlan?currentPlan.shiftLeader2:'',
+    changeTime:document.getElementById('changeTime')?document.getElementById('changeTime').value||0:0,
+    rounds:document.getElementById('rounds')?document.getElementById('rounds').value||0:0,
+    totalAuk:document.getElementById('totalAuk')?document.getElementById('totalAuk').value||0:0,
+    notes:checks.join(', '),
+    roundsPhoto:photoBase64
+  };
+  callAPI('saveData',{payload:payload},function(res){
+    hideLoading();sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
+    if(res&&res.success){
+      var ml=prodMode==='start'?'เริ่มผลิต':'หยุดผลิต';
+      showSuccess('บันทึกข้อมูลสำเร็จ','บันทึก'+ml+' เครื่อง '+machineVal+'\nใบสั่งผลิต '+orderVal+' เรียบร้อยแล้ว',function(){setMode(prodMode)});
+    } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||'ไม่ทราบสาเหตุ'),'err')}
+  },function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');sb.disabled=false;sb.innerHTML='<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล'});
+}
 
-  // ── State ──
-  let prodMode    = 'start';
-  let scannerProd  = null;
-  let scannerHours = null;
-  let currentPlan  = null;
-  let machineVal = '', orderVal = '';
-  let photoBase64  = '';
-  let leaderCode = '', leaderName = '';
-  let teamMembers = [], extraMembers = [];
-  let selectedShift = '';
-  let whOrderId = '', whOrderData = null;
+// HOURS
+function fetchWhOrderData(orderId){
+  showLoading('กำลังตรวจสอบใบสั่งผลิต...');
+  callAPI('getOrder',{orderId:orderId},function(res){
+    hideLoading();
+    if(res.success){
+      whOrderData=res.data;document.getElementById('whS1').classList.add('done');
+      document.getElementById('whOrderGrid').innerHTML=
+        '<div><div class="order-info-label">รหัสใบสั่งผลิต</div><div class="order-info-value">'+orderId+'</div></div>'+
+        '<div><div class="order-info-label">เกรด</div><div class="order-info-value">'+res.data.grade+'</div></div>'+
+        '<div><div class="order-info-label">ชนิดรัง</div><div class="order-info-value">'+res.data.cocoonType+'</div></div>'+
+        '<div><div class="order-info-label">สายพันธุ์</div><div class="order-info-value">'+res.data.species+'</div></div>';
+      document.getElementById('whOrderInfo').style.display='block';
+    } else {toast('ไม่พบใบสั่งผลิตนี้','err');whOrderId='';whOrderData=null;setFV('whOrderDisplay','ยังไม่ได้ระบุ',false);document.getElementById('whS1').classList.remove('done')}
+  },function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err')});
+}
 
-  // ── Toast ──
-  function toast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = 'toast show ' + (type || '');
-    setTimeout(() => t.className = 'toast', 2800);
+function loadTeamMembers(){
+  document.getElementById('memberListArea').innerHTML='<div class="state-box"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดรายชื่อ...</div>';
+  callAPI('getMembers',{leaderCode:leaderCode},function(res){
+    if(res.success&&res.members.length>0){teamMembers=res.members;renderMemberList()}
+    else{document.getElementById('memberListArea').innerHTML='<div class="state-box"><i class="fa-solid fa-users-slash"></i>ไม่พบรายชื่อลูกทีม</div>'}
+  },function(){document.getElementById('memberListArea').innerHTML='<div class="state-box"><i class="fa-solid fa-circle-exclamation"></i>โหลดข้อมูลไม่สำเร็จ</div>'});
+}
+
+function renderMemberList(){
+  var all=teamMembers.concat(extraMembers);
+  document.getElementById('memberCount').textContent=all.length+' คน';
+  if(!all.length){document.getElementById('memberListArea').innerHTML='<div class="state-box"><i class="fa-solid fa-users-slash"></i>ไม่พบรายชื่อลูกทีม</div>'}
+  else{
+    document.getElementById('memberListArea').innerHTML='<div class="member-list">'+all.map(function(m,i){
+      var init=(m.empName||'??').trim().substring(0,2);
+      var ie=i>=teamMembers.length;
+      return '<div class="member-row"><div class="'+(ie?'member-avatar extra-avatar':'member-avatar')+'">'+init+'</div><div class="member-info"><div class="member-name">'+m.empName+'</div><div class="member-id">รหัส '+m.empId+'</div></div><div class="hours-side"><span class="hours-label">ชั่วโมง</span><input class="hours-input" type="number" id="hrs_'+i+'" min="0" max="24" step="0.5" placeholder="0.0"></div>'+(ie?'<button class="btn-remove-member" onclick="removeMember('+i+')"><i class="fa-solid fa-xmark"></i></button>':'')+'</div>';
+    }).join('')+'</div>';
   }
+  if(teamMembers.length>0||extraMembers.length>0)document.getElementById('addMemberBar').style.display='flex';
+}
 
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
+function removeMember(idx){var ei=idx-teamMembers.length;if(ei>=0){extraMembers.splice(ei,1);renderMemberList()}}
 
-  function todayISO() { return new Date().toISOString().split('T')[0]; }
+var _st=null;
+function searchEmployeeFn(q){
+  clearTimeout(_st);var box=document.getElementById('searchResults');
+  q=(q||'').trim();if(!q){box.style.display='none';return}
+  _st=setTimeout(function(){
+    box.innerHTML='<div style="padding:12px 14px;font-size:0.82rem;color:var(--ink-muted)"><i class="fa-solid fa-spinner fa-spin"></i> กำลังค้นหา...</div>';box.style.display='block';
+    callAPI('search',{query:q},function(res){
+      if(!res.results||!res.results.length){box.innerHTML='<div style="padding:12px 14px;font-size:0.82rem;color:var(--ink-muted)">ไม่พบพนักงานที่ค้นหา</div>';return}
+      var all=teamMembers.concat(extraMembers);
+      box.innerHTML=res.results.map(function(r){
+        var already=all.some(function(m){return m.empId===r.empId});
+        var init=(r.empName||'??').trim().substring(0,2);
+        var da=already?'':' data-eid="'+r.empId+'" data-ename="'+r.empName.replace(/"/g,'')+'"';
+        return '<div class="search-result-item"'+da+'><div class="sri-avatar">'+init+'</div><div><div class="sri-name">'+r.empName+'</div><div class="sri-meta">รหัส '+r.empId+' · '+(r.leaderName||'—')+'</div></div>'+(already?'<span class="sri-add" style="color:var(--ink-muted)"><i class="fa-solid fa-check"></i> เพิ่มแล้ว</span>':'<span class="sri-add"><i class="fa-solid fa-plus"></i> เพิ่ม</span>')+'</div>';
+      }).join('');
+      box.style.display='block';
+      box.onclick=function(e){var row=e.target.closest('.search-result-item');if(!row||!row.dataset.eid)return;addExtraMember(row.dataset.eid,row.dataset.ename)};
+    },function(){box.innerHTML='<div style="padding:12px 14px;font-size:0.82rem;color:var(--danger)">ค้นหาไม่สำเร็จ</div>'});
+  },350);
+}
 
-  // ══════════ LOGIN ══════════
-  async function doLogin() {
-    const code = document.getElementById('loginLeaderCode').value.trim();
-    if (!code) { showLoginErr('กรุณากรอกรหัสหัวหน้าทีม'); return; }
-    const btn = document.getElementById('loginBtn');
-    btn.disabled = true;
-    btn.textContent = 'กำลังตรวจสอบ...';
-    try {
-      const res = await api('login', { leaderCode: code });
-      if (res.success) {
-        leaderCode = res.leaderCode;
-        leaderName = res.leaderName;
-        document.getElementById('leaderNameBar').textContent = 'หัวหน้า: ' + leaderName;
-        document.getElementById('whLeaderName').textContent  = 'หัวหน้าทีม: ' + leaderName;
-        document.getElementById('loginErr').style.display = 'none';
-        document.getElementById('loginLeaderCode').value = '';
-        await loadTeamMembers();
-        showScreen('mainScreen');
-      } else {
-        showLoginErr(res.message || 'รหัสไม่ถูกต้อง');
-      }
-    } catch(e) {
-      showLoginErr('เชื่อมต่อไม่ได้: ' + e.message);
-    }
-    btn.disabled = false;
-    btn.textContent = 'เข้าสู่ระบบ';
-  }
+function addExtraMember(empId,empName){
+  if(teamMembers.concat(extraMembers).some(function(m){return m.empId===empId})){toast('เพิ่มคนนี้ไปแล้ว','warn');return}
+  extraMembers.push({empId:empId,empName:empName});
+  document.getElementById('addMemberSearch').value='';document.getElementById('searchResults').style.display='none';
+  renderMemberList();toast(empName+' เพิ่มเข้าทีมแล้ว','ok');
+}
 
-  function showLoginErr(msg) {
-    document.getElementById('loginErrMsg').textContent = msg;
-    document.getElementById('loginErr').style.display = 'flex';
-  }
+function selectShift(s){selectedShift=s;['A','B','C'].forEach(function(x){document.getElementById('shift'+x).classList.toggle('on',x===s)})}
 
-  function doLogout() {
-    leaderCode = ''; leaderName = '';
-    teamMembers = []; extraMembers = [];
-    resetProductionUI(); resetHoursUI();
-    showScreen('loginScreen');
-  }
-
-  // ══════════ TABS ══════════
-  function showTab(tab) {
-    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-    document.getElementById('navStart').className = 'nav-tab';
-    document.getElementById('navStop').className  = 'nav-tab';
-    document.getElementById('navHours').className = 'nav-tab';
-    killScan('prod'); killScan('hours');
-    if (tab === 'production') {
-      document.getElementById('tabProduction').classList.add('active');
-      if (prodMode === 'start') document.getElementById('navStart').className = 'nav-tab active';
-      else                      document.getElementById('navStop').className  = 'nav-tab active stop-active';
-    } else {
-      document.getElementById('tabHours').classList.add('active');
-      document.getElementById('navHours').className = 'nav-tab active hours-active';
-      if (!document.getElementById('whDate').value) document.getElementById('whDate').value = todayISO();
-    }
-  }
-
-  // ══════════ PRODUCTION ══════════
-  function setMode(m) {
-    prodMode = m;
-    const stop = prodMode === 'stop';
-    document.getElementById('modePill').textContent = stop ? 'หยุดผลิต' : 'เริ่มผลิต';
-    document.getElementById('stopModule').style.display = stop ? 'block' : 'none';
-    document.getElementById('submitBtn').className = 'btn-submit' + (stop ? ' stop-mode' : '');
-    resetProductionUI();
-    showTab('production');
-  }
-
-  function resetProductionUI() {
-    currentPlan = null; machineVal = ''; orderVal = '';
-    setFV('machineDisplay', 'ยังไม่ได้ระบุ', false);
-    setFV('orderDisplay', 'ยังไม่ได้ระบุ', false);
-    document.getElementById('infoBox').style.display = 'none';
-    document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('s1').classList.remove('done');
-    document.getElementById('s2').classList.remove('done');
-    document.querySelectorAll('.check-pill').forEach(p => { p.classList.remove('on'); p.querySelector('input').checked = false; });
-    ['changeTime','rounds','totalAuk'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-    clearAllErr();
-    retakePhoto(); killScan('prod');
-  }
-
-  function resetHoursUI() {
-    whOrderId = ''; whOrderData = null;
-    setFV('whOrderDisplay', 'ยังไม่ได้ระบุ', false);
-    document.getElementById('whOrderInfo').style.display = 'none';
-    document.getElementById('whS1').classList.remove('done');
-    selectedShift = '';
-    ['A','B','C'].forEach(x => document.getElementById('shift' + x).classList.remove('on'));
-    extraMembers = [];
-    renderMemberList();
-    const s = document.getElementById('addMemberSearch'); if (s) s.value = '';
-    const r = document.getElementById('searchResults'); if (r) r.style.display = 'none';
-    killScan('hours');
-  }
-
-  function setFV(id, val, filled) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = val;
-    el.className = 'field-val' + (filled ? ' filled' : '');
-  }
-
-  function togglePill(el) {
-    el.classList.toggle('on');
-    el.querySelector('input').checked = el.classList.contains('on');
-    // clear checkbox error if any item is now checked
-    if (el.classList.contains('on')) {
-      const cg = document.querySelector('.check-grid');
-      if (cg) cg.classList.remove('check-grid-err');
-      const ce = document.querySelector('.check-grid-err-msg');
-      if (ce) ce.remove();
-    }
-  }
-
-  // ── Photo ──
-  function handlePhoto(input) {
-    if (!input.files || !input.files[0]) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const MAX = 1200; let w = img.width, h = img.height;
-        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
-        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-        cv.getContext('2d').drawImage(img, 0, 0, w, h);
-        photoBase64 = cv.toDataURL('image/jpeg', 0.82);
-        document.getElementById('photoImg').src = photoBase64;
-        document.getElementById('photoPreview').style.display = 'block';
-        document.getElementById('photoBtnEl').style.display = 'none';
-        // clear photo error if any
-        document.getElementById('photoBtnEl').classList.remove('photo-btn-err');
-        const pe = document.querySelector('.photo-btn-err-msg');
-        if (pe) pe.remove();
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-
-  function retakePhoto() {
-    photoBase64 = '';
-    const img = document.getElementById('photoImg'); if (img) img.src = '';
-    const pp  = document.getElementById('photoPreview'); if (pp) pp.style.display = 'none';
-    const pb  = document.getElementById('photoBtnEl'); if (pb) pb.style.display = 'flex';
-    const pi  = document.getElementById('photoInput'); if (pi) pi.value = '';
-  }
-
-  // ── QR Scanner ──
-  function killScan(ctx) {
-    if (ctx === 'prod' || ctx === undefined) {
-      if (scannerProd) { scannerProd.stop().catch(() => {}); scannerProd = null; }
-      document.getElementById('readerProd').style.display = 'none';
-    }
-    if (ctx === 'hours' || ctx === undefined) {
-      if (scannerHours) { scannerHours.stop().catch(() => {}); scannerHours = null; }
-      document.getElementById('readerHours').style.display = 'none';
-    }
-  }
-
-  function startScan(target, ctx) {
-    killScan('prod'); killScan('hours');
-    const readerId = ctx === 'hours' ? 'readerHours' : 'readerProd';
-    document.getElementById(readerId).style.display = 'block';
-    const scannerObj = new Html5Qrcode(readerId);
-    if (ctx === 'hours') scannerHours = scannerObj;
-    else                  scannerProd  = scannerObj;
-    scannerObj.start(
-      { facingMode: 'environment' },
-      { fps: 15, qrbox: { width: 230, height: 230 } },
-      msg => {
-        scannerObj.stop().catch(() => {});
-        if (ctx === 'hours') scannerHours = null; else scannerProd = null;
-        document.getElementById(readerId).style.display = 'none';
-        if (target === 'machine') {
-          machineVal = msg; setFV('machineDisplay', msg, true);
-          document.getElementById('s1').classList.add('done');
-          if (machineVal && orderVal) fetchPlanData();
-        } else if (target === 'order') {
-          orderVal = msg; setFV('orderDisplay', msg, true);
-          if (machineVal && orderVal) fetchPlanData();
-        } else if (target === 'whOrder') {
-          whOrderId = msg; setFV('whOrderDisplay', msg, true);
-          fetchWhOrderData(msg);
-        }
-      }
-    ).catch(e => toast('กล้องมีปัญหา: ' + e, 'err'));
-  }
-
-  // ── Fetch plan (production tab) ──
-  async function fetchPlanData() {
-    try {
-      const res = await api('getPlan', { orderId: orderVal, machineId: machineVal });
-      if (res.success) {
-        currentPlan = res.data;
-        document.getElementById('s2').classList.add('done');
-        document.getElementById('infoGrid').innerHTML =
-          '<div><div class="info-chip-label">เกรด</div><div class="info-chip-value">' + res.data.grade + '</div></div>' +
-          '<div><div class="info-chip-label">ชนิดรัง</div><div class="info-chip-value">' + res.data.cocoonType + '</div></div>' +
-          '<div><div class="info-chip-label">สายพันธุ์</div><div class="info-chip-value">' + res.data.species + '</div></div>' +
-          '<div><div class="info-chip-label">ขนาด</div><div class="info-chip-value">' + res.data.size + '</div></div>';
-        document.getElementById('infoBox').style.display = 'block';
-        document.getElementById('submitBtn').style.display = 'flex';
-      } else {
-        toast(res.message, 'err');
-        orderVal = ''; setFV('orderDisplay', 'ยังไม่ได้ระบุ', false);
-      }
-    } catch(e) { toast('เชื่อมต่อไม่ได้', 'err'); }
-  }
-
-  // ── Validation helpers ──
-  function setErr(elId, msg) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    el.classList.add('input-err');
-    // remove old msg
-    const old = el.parentNode.querySelector('.field-err-msg');
-    if (old) old.remove();
-    if (msg) {
-      const d = document.createElement('div');
-      d.className = 'field-err-msg';
-      d.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>' + msg;
-      el.parentNode.insertBefore(d, el.nextSibling);
-    }
-  }
-  function clearErr(elId) {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    el.classList.remove('input-err');
-    const old = el.parentNode.querySelector('.field-err-msg');
-    if (old) old.remove();
-  }
-  function clearAllErr() {
-    ['changeTime','rounds','totalAuk'].forEach(clearErr);
-    const cg = document.getElementById('checkGridWrap');
-    if (cg) cg.classList.remove('check-grid-err');
-    const pb = document.getElementById('photoBtnEl');
-    if (pb) pb.classList.remove('photo-btn-err');
-    document.querySelectorAll('.field-err-msg').forEach(e => e.remove());
-  }
-
-  async function handleSave() {
-    clearAllErr();
-    const checks = [...document.querySelectorAll('.check-pill.on input')].map(c => c.value);
-
-    // ── Validation (เฉพาะโหมดหยุดผลิต) ──
-    if (prodMode === 'stop') {
-      let hasErr = false;
-      const ct = document.getElementById('changeTime')?.value;
-      const rd = document.getElementById('rounds')?.value;
-      const ak = document.getElementById('totalAuk')?.value;
-
-      if (!ct || ct === '' || Number(ct) < 0) {
-        setErr('changeTime', 'กรุณากรอกเวลาเปลี่ยนอัก'); hasErr = true;
-      }
-      if (!rd || rd === '' || Number(rd) <= 0) {
-        setErr('rounds', 'กรุณากรอกจำนวนรอบ'); hasErr = true;
-      }
-      if (!ak || ak === '' || Number(ak) <= 0) {
-        setErr('totalAuk', 'กรุณากรอกจำนวนอัก'); hasErr = true;
-      }
-      if (!photoBase64) {
-        const pb = document.getElementById('photoBtnEl');
-        if (pb) {
-          pb.classList.add('photo-btn-err');
-          // add err msg after btn
-          const old = pb.parentNode.querySelector('.photo-btn-err-msg');
-          if (!old) {
-            const d = document.createElement('div');
-            d.className = 'field-err-msg photo-btn-err-msg';
-            d.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>กรุณาถ่ายรูปจำนวนรอบ';
-            pb.parentNode.insertBefore(d, pb.nextSibling);
-          }
-        }
-        hasErr = true;
-      }
-      if (checks.length === 0) {
-        const cg = document.querySelector('.check-grid');
-        if (cg) {
-          cg.classList.add('check-grid-err');
-          const old = cg.parentNode.querySelector('.check-grid-err-msg');
-          if (!old) {
-            const d = document.createElement('div');
-            d.className = 'field-err-msg check-grid-err-msg';
-            d.style.marginTop = '8px';
-            d.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>กรุณาเลือกสถานะรังและน้ำอย่างน้อย 1 รายการ';
-            cg.parentNode.appendChild(d);
-          }
-        }
-        hasErr = true;
-      }
-      if (hasErr) {
-        toast('กรุณากรอกข้อมูลให้ครบ', 'err');
-        // scroll to first error
-        const firstErr = document.querySelector('.input-err, .photo-btn-err, .check-grid-err');
-        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-    }
-
-    const sb = document.getElementById('submitBtn');
-    sb.disabled = true;
-    sb.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-    showLoading('กำลังบันทึกข้อมูล...');
-    try {
-      // ส่ง base64 ไปพร้อม payload เลย — Apps Script จัดการอัปโหลดรูปเอง
-      const res = await api('saveData', {
-        payload: {
-          status: prodMode === 'start' ? 'เริ่มผลิต' : 'หยุดผลิต',
-          machine: machineVal, orderId: orderVal, ...currentPlan,
-          changeTime: document.getElementById('changeTime')?.value || 0,
-          rounds:     document.getElementById('rounds')?.value || 0,
-          totalAuk:   document.getElementById('totalAuk')?.value || 0,
-          notes: checks.join(', '),
-          roundsPhoto: photoBase64
-        }
-      });
-      hideLoading();
-      sb.disabled = false;
-      sb.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
-      if (res && res.success) {
-        const modeLabel = prodMode === 'start' ? 'เริ่มผลิต' : 'หยุดผลิต';
-        showSuccess(
-          'บันทึกข้อมูลสำเร็จ',
-          'บันทึก' + modeLabel + ' เครื่อง ' + machineVal + '\nใบสั่งผลิต ' + orderVal + ' เรียบร้อยแล้ว',
-          () => setMode(prodMode)
-        );
-      } else {
-        toast('เกิดข้อผิดพลาด: ' + (res && res.message || 'ไม่ทราบสาเหตุ'), 'err');
-      }
-    } catch(e) {
-      hideLoading();
-      toast('เกิดข้อผิดพลาด: ' + e.message, 'err');
-      sb.disabled = false;
-      sb.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ยืนยันบันทึกข้อมูล';
-    }
-  }
-
-  // ── Fetch order (hours tab) ──
-  async function fetchWhOrderData(orderId) {
-    try {
-      const res = await api('getOrder', { orderId });
-      if (res.success) {
-        whOrderData = res.data;
-        document.getElementById('whS1').classList.add('done');
-        document.getElementById('whOrderGrid').innerHTML =
-          '<div><div class="order-info-label">รหัสใบสั่งผลิต</div><div class="order-info-value">' + orderId + '</div></div>' +
-          '<div><div class="order-info-label">เกรด</div><div class="order-info-value">' + res.data.grade + '</div></div>' +
-          '<div><div class="order-info-label">ชนิดรัง</div><div class="order-info-value">' + res.data.cocoonType + '</div></div>' +
-          '<div><div class="order-info-label">สายพันธุ์</div><div class="order-info-value">' + res.data.species + '</div></div>';
-        document.getElementById('whOrderInfo').style.display = 'block';
-      } else {
-        toast('ไม่พบใบสั่งผลิตนี้', 'err');
-        whOrderId = ''; whOrderData = null;
-        setFV('whOrderDisplay', 'ยังไม่ได้ระบุ', false);
-        document.getElementById('whS1').classList.remove('done');
-      }
-    } catch(e) { toast('เชื่อมต่อไม่ได้', 'err'); }
-  }
-
-  // ── Team members ──
-  async function loadTeamMembers() {
-    document.getElementById('memberListArea').innerHTML =
-      '<div class="state-box"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดรายชื่อ...</div>';
-    document.getElementById('memberCount').textContent = '';
-    try {
-      const res = await api('getMembers', { leaderCode });
-      if (res.success && res.members.length > 0) {
-        teamMembers = res.members;
-        renderMemberList();
-      } else {
-        document.getElementById('memberListArea').innerHTML =
-          '<div class="state-box"><i class="fa-solid fa-users-slash"></i>ไม่พบรายชื่อลูกทีม</div>';
-      }
-    } catch(e) {
-      document.getElementById('memberListArea').innerHTML =
-        '<div class="state-box"><i class="fa-solid fa-circle-exclamation"></i>โหลดข้อมูลไม่สำเร็จ</div>';
-    }
-  }
-
-  function renderMemberList() {
-    const all = teamMembers.concat(extraMembers);
-    document.getElementById('memberCount').textContent = all.length + ' คน';
-    if (all.length === 0) {
-      document.getElementById('memberListArea').innerHTML =
-        '<div class="state-box"><i class="fa-solid fa-users-slash"></i>ไม่พบรายชื่อลูกทีม</div>';
-    } else {
-      const rows = all.map(function(m, i) {
-        var init = (m.empName || '??').trim().substring(0, 2);
-        var isExtra = i >= teamMembers.length;
-        var avatarClass = isExtra ? 'member-avatar extra-avatar' : 'member-avatar';
-        var removeBtn = isExtra
-          ? '<button class="btn-remove-member" onclick="removeMember(' + i + ')"><i class="fa-solid fa-xmark"></i></button>'
-          : '';
-        return '<div class="member-row" id="mrow_' + i + '">'
-          + '<div class="' + avatarClass + '">' + init + '</div>'
-          + '<div class="member-info"><div class="member-name">' + m.empName + '</div>'
-          + '<div class="member-id">รหัส ' + m.empId + '</div></div>'
-          + '<div class="hours-side"><span class="hours-label">ชั่วโมง</span>'
-          + '<input class="hours-input" type="number" id="hrs_' + i + '" min="0" max="24" step="0.5" placeholder="0.0"></div>'
-          + removeBtn + '</div>';
-      });
-      document.getElementById('memberListArea').innerHTML =
-        '<div class="member-list">' + rows.join('') + '</div>';
-    }
-    if (teamMembers.length > 0 || extraMembers.length > 0)
-      document.getElementById('addMemberBar').style.display = 'flex';
-  }
-
-  function removeMember(idx) {
-    var extraIdx = idx - teamMembers.length;
-    if (extraIdx >= 0) { extraMembers.splice(extraIdx, 1); renderMemberList(); }
-  }
-
-  var searchDebounce = null;
-  function searchEmployeeFn(q) {
-    clearTimeout(searchDebounce);
-    var box = document.getElementById('searchResults');
-    q = (q || '').trim();
-    if (q.length < 1) { box.style.display = 'none'; return; }
-    searchDebounce = setTimeout(async function() {
-      box.innerHTML = '<div style="padding:12px 14px;font-size:0.82rem;color:var(--ink-muted)"><i class="fa-solid fa-spinner fa-spin"></i> กำลังค้นหา...</div>';
-      box.style.display = 'block';
-      try {
-        var res = await api('search', { query: q });
-        if (!res.results || res.results.length === 0) {
-          box.innerHTML = '<div style="padding:12px 14px;font-size:0.82rem;color:var(--ink-muted)">ไม่พบพนักงานที่ค้นหา</div>';
-          return;
-        }
-        var all = teamMembers.concat(extraMembers);
-        box.innerHTML = res.results.map(function(r) {
-          var already = all.some(function(m) { return m.empId === r.empId; });
-          var init = (r.empName || '??').trim().substring(0, 2);
-          var dataAttrs = already ? '' : ' data-eid="' + r.empId + '" data-ename="' + r.empName.replace(/"/g, '') + '"';
-          var addBtn = already
-            ? '<span class="sri-add" style="color:var(--ink-muted)"><i class="fa-solid fa-check"></i> เพิ่มแล้ว</span>'
-            : '<span class="sri-add"><i class="fa-solid fa-plus"></i> เพิ่ม</span>';
-          return '<div class="search-result-item"' + dataAttrs + '>'
-            + '<div class="sri-avatar">' + init + '</div>'
-            + '<div><div class="sri-name">' + r.empName + '</div>'
-            + '<div class="sri-meta">รหัส ' + r.empId + ' · ' + (r.leaderName || '—') + '</div></div>'
-            + addBtn + '</div>';
-        }).join('');
-        box.style.display = 'block';
-        box.onclick = function(e) {
-          var row = e.target.closest('.search-result-item');
-          if (!row || !row.dataset.eid) return;
-          addExtraMember(row.dataset.eid, row.dataset.ename);
-        };
-      } catch(e) {
-        box.innerHTML = '<div style="padding:12px 14px;font-size:0.82rem;color:var(--danger)">ค้นหาไม่สำเร็จ</div>';
-      }
-    }, 350);
-  }
-
-  function addExtraMember(empId, empName) {
-    var all = teamMembers.concat(extraMembers);
-    if (all.some(function(m) { return m.empId === empId; })) { toast('เพิ่มคนนี้ไปแล้ว', 'warn'); return; }
-    extraMembers.push({ empId: empId, empName: empName });
-    document.getElementById('addMemberSearch').value = '';
-    document.getElementById('searchResults').style.display = 'none';
-    renderMemberList();
-    toast(empName + ' เพิ่มเข้าทีมแล้ว', 'ok');
-  }
-
-  function selectShift(s) {
-    selectedShift = s;
-    ['A','B','C'].forEach(function(x) { document.getElementById('shift' + x).classList.toggle('on', x === s); });
-  }
-
-  async function saveWorkHours() {
-    var date = document.getElementById('whDate').value;
-    if (!date)          { toast('กรุณาเลือกวันที่', 'warn'); return; }
-    if (!selectedShift) { toast('กรุณาเลือกกะการทำงาน', 'warn'); return; }
-    if (teamMembers.length === 0) { toast('ไม่มีรายชื่อลูกทีม', 'warn'); return; }
-    var allM = teamMembers.concat(extraMembers);
-    var rows = allM.map(function(m, i) {
-      return { empId: m.empId, empName: m.empName, isExtra: i >= teamMembers.length,
-               hours: parseFloat(document.getElementById('hrs_' + i)?.value) || 0 };
-    });
-    if (!rows.some(function(r) { return r.hours > 0; })) { toast('กรุณากรอกชั่วโมงอย่างน้อย 1 คน', 'warn'); return; }
-    var btn = document.querySelector('.btn-save-hours');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-    try {
-      await api('saveHours', {
-        payload: { date: date, shift: selectedShift, leaderCode: leaderCode, leaderName: leaderName,
-                   orderId: whOrderId, orderData: whOrderData, rows: rows }
-      });
-      toast('บันทึกชั่วโมงทำงานสำเร็จ', 'ok');
-      resetHoursUI();
-      document.getElementById('whDate').value = todayISO();
-    } catch(e) {
-      toast('เกิดข้อผิดพลาด: ' + e.message, 'err');
-    }
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน';
-  }
+function saveWorkHours(){
+  var date=document.getElementById('whDate').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  if(!selectedShift){toast('กรุณาเลือกกะการทำงาน','warn');return}
+  if(!teamMembers.length){toast('ไม่มีรายชื่อลูกทีม','warn');return}
+  var allM=teamMembers.concat(extraMembers);
+  var rows=allM.map(function(m,i){return{empId:m.empId,empName:m.empName,isExtra:i>=teamMembers.length,hours:parseFloat((document.getElementById('hrs_'+i)||{}).value)||0}});
+  if(!rows.some(function(r){return r.hours>0})){toast('กรุณากรอกชั่วโมงอย่างน้อย 1 คน','warn');return}
+  var btn=document.querySelector('.btn-save-hours');
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  showLoading('กำลังบันทึกชั่วโมงทำงาน...');
+  callAPI('saveHours',{payload:{date:date,shift:selectedShift,leaderCode:leaderCode,leaderName:leaderName,orderId:whOrderId,orderData:whOrderData,rows:rows}},
+    function(){hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน';showSuccess('บันทึกสำเร็จ','บันทึกชั่วโมงทำงานเรียบร้อยแล้ว',function(){resetHoursUI();document.getElementById('whDate').value=todayISO()})},
+    function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน'});
+}
 </script>
 </body>
 </html>
