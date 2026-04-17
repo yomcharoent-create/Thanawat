@@ -196,6 +196,43 @@
     .nav-tab.report-active{color:var(--success)}
     .nav-tab.report-active::before{background:var(--success);opacity:1}
 
+    /* ── Confirm Dialog ── */
+    .confirm-overlay{position:fixed;inset:0;z-index:600;background:rgba(28,43,74,0.6);display:none;align-items:flex-end;justify-content:center}
+    .confirm-overlay.show{display:flex}
+    .confirm-sheet{background:white;border-radius:20px 20px 0 0;padding:24px 20px 32px;width:100%;max-width:480px;animation:slideUp 0.25s ease-out}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .confirm-title{font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:8px}
+    .confirm-sub{font-size:0.85rem;color:var(--ink-muted);margin-bottom:22px;line-height:1.5}
+    .confirm-btns{display:flex;gap:10px}
+    .confirm-btn-cancel{flex:1;padding:13px;border:1.5px solid var(--border);background:white;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;color:var(--ink-mid);cursor:pointer}
+    .confirm-btn-ok{flex:1;padding:13px;border:none;background:var(--danger);border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;color:white;cursor:pointer}
+
+    /* ── History badge on nav ── */
+    .nav-badge{position:absolute;top:6px;right:18%;width:8px;height:8px;background:var(--danger);border-radius:50%}
+
+    /* ── History Tab ── */
+    .hist-card{background:white;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:10px;box-shadow:0 1px 4px rgba(26,60,120,0.06)}
+    .hist-header{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--border)}
+    .hist-status{font-size:0.72rem;font-weight:600;padding:3px 9px;border-radius:20px}
+    .hist-status.start{background:var(--success-bg);color:var(--success)}
+    .hist-status.stop{background:var(--danger-bg);color:var(--danger)}
+    .hist-time{font-size:0.78rem;color:var(--ink-muted);margin-left:auto}
+    .hist-body{padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+    .hist-item-label{font-size:0.68rem;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.05em}
+    .hist-item-value{font-size:0.85rem;font-weight:500;color:var(--ink)}
+
+    /* ── Summary tab extras ── */
+    .period-row{display:flex;gap:8px;margin-bottom:16px}
+    .period-btn{flex:1;padding:9px;border:1.5px solid var(--border);background:white;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s}
+    .period-btn.on{border-color:var(--success);background:var(--success-bg);color:var(--success)}
+
+    /* ── Alert row ── */
+    .alert-row{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--danger-bg);border:1px solid rgba(192,57,43,0.2);border-radius:10px;margin-bottom:8px}
+    .alert-icon{color:var(--danger);font-size:1rem;flex-shrink:0}
+    .alert-name{font-size:0.87rem;font-weight:600;color:var(--danger)}
+    .alert-detail{font-size:0.75rem;color:var(--danger);opacity:0.8}
+    .alert-hrs{margin-left:auto;font-size:0.85rem;font-weight:700;color:var(--danger);flex-shrink:0}
+
     .toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:white;padding:10px 22px;border-radius:30px;font-size:0.87rem;font-weight:500;font-family:'Kodchasan',sans-serif;opacity:0;pointer-events:none;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .toast.ok{background:var(--success)}
@@ -335,9 +372,14 @@
     <div class="card">
       <div class="card-header" style="background:var(--success-bg);border-bottom-color:rgba(29,138,85,0.2)">
         <div class="step-badge" style="background:var(--success)"><i class="fa-solid fa-calendar" style="font-size:0.7rem"></i></div>
-        <span class="card-header-text">เลือกวันที่</span>
+        <span class="card-header-text">ช่วงเวลา</span>
       </div>
       <div class="card-body">
+        <div class="period-row">
+          <button class="period-btn on" id="periodDay" onclick="selectPeriod('day')">รายวัน</button>
+          <button class="period-btn" id="periodWeek" onclick="selectPeriod('week')">รายสัปดาห์</button>
+          <button class="period-btn" id="periodMonth" onclick="selectPeriod('month')">รายเดือน</button>
+        </div>
         <div class="report-date-row">
           <input type="date" id="reportDate">
           <button class="btn-load-report" onclick="loadReport()">
@@ -355,11 +397,38 @@
     </div>
   </div>
 
+  <!-- History Tab -->
+  <div class="tab-page" id="tabHistory">
+    <div class="wh-header-card" style="background:linear-gradient(135deg,#1557B0,#0D3A7A)">
+      <div class="wh-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <div>
+        <div class="wh-header-title">ประวัติการบันทึกวันนี้</div>
+        <div class="wh-header-sub" id="histLeaderName">—</div>
+      </div>
+    </div>
+    <div id="histContent">
+      <div class="state-box"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-sheet">
+      <div class="confirm-title" id="confirmTitle">ยืนยันการออก</div>
+      <div class="confirm-sub" id="confirmSub">ข้อมูลที่กรอกจะหายไป ต้องการออกหรือไม่?</div>
+      <div class="confirm-btns">
+        <button class="confirm-btn-cancel" onclick="closeConfirm(false)">ยกเลิก</button>
+        <button class="confirm-btn-ok" id="confirmOkBtn" onclick="closeConfirm(true)">ออก</button>
+      </div>
+    </div>
+  </div>
+
   <nav class="nav-bar">
-    <button class="nav-tab active" id="navStart" onclick="setMode('start')"><i class="fa-solid fa-circle-play"></i>เริ่มผลิต</button>
-    <button class="nav-tab" id="navStop" onclick="setMode('stop')"><i class="fa-solid fa-circle-stop"></i>หยุดผลิต</button>
-    <button class="nav-tab" id="navHours" onclick="showTab('hours')"><i class="fa-solid fa-clock"></i>ชั่วโมงงาน</button>
+    <button class="nav-tab active" id="navStart" onclick="confirmSwitch('start')"><i class="fa-solid fa-circle-play"></i>เริ่มผลิต</button>
+    <button class="nav-tab" id="navStop" onclick="confirmSwitch('stop')"><i class="fa-solid fa-circle-stop"></i>หยุดผลิต</button>
+    <button class="nav-tab" id="navHours" onclick="confirmSwitch('hours')"><i class="fa-solid fa-clock"></i>ชั่วโมงงาน</button>
     <button class="nav-tab" id="navReport" onclick="showTab('report')"><i class="fa-solid fa-chart-bar"></i>รายงาน</button>
+    <button class="nav-tab" id="navHistory" onclick="showTab('history')"><i class="fa-solid fa-clock-rotate-left"></i>ประวัติ</button>
   </nav>
 </div>
 
@@ -388,55 +457,84 @@ function callAPI(action, data, onSuccess, onError) {
 
 
 // REPORT
+var reportPeriod='day';
+var LOW_HOURS_THRESHOLD=4; // แจ้งเตือนถ้าน้อยกว่านี้
+
+function selectPeriod(p){
+  reportPeriod=p;
+  ['day','week','month'].forEach(function(x){
+    document.getElementById('period'+x.charAt(0).toUpperCase()+x.slice(1)).classList.toggle('on',x===p);
+  });
+}
+
 function loadReport(){
   var date=document.getElementById('reportDate').value;
   if(!date){toast('กรุณาเลือกวันที่','warn');return}
   var area=document.getElementById('reportContent');
   area.innerHTML='<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
-  callAPI('getReport',{leaderCode:leaderCode,date:date},function(res){
-    if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+( res.message||'โหลดไม่ได้')+'</div>';return}
+  callAPI('getReport',{leaderCode:leaderCode,date:date,period:reportPeriod},function(res){
+    if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+(res.message||'โหลดไม่ได้')+'</div>';return}
     var rows=res.rows||[];
-    if(!rows.length){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลวันที่ '+date+'</div>';return}
+    if(!rows.length){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>';return}
 
-    // summary
-    var totalHrs=0,members={};
+    // รวมชั่วโมงแต่ละคน
+    var memberMap={};
+    var totalHrs=0;
     rows.forEach(function(r){
       totalHrs+=parseFloat(r.hours)||0;
-      if(!members[r.empId])members[r.empId]={name:r.empName,hrs:0};
-      members[r.empId].hrs+=parseFloat(r.hours)||0;
+      if(!memberMap[r.empId])memberMap[r.empId]={name:r.empName,id:r.empId,hrs:0,shifts:[]};
+      memberMap[r.empId].hrs+=parseFloat(r.hours)||0;
+      if(r.shiftLabel && memberMap[r.empId].shifts.indexOf(r.shiftLabel)<0) memberMap[r.empId].shifts.push(r.shiftLabel);
     });
-    var memCount=Object.keys(members).length;
+    var members=Object.values(memberMap);
+    var alerts=members.filter(function(m){return m.hrs<LOW_HOURS_THRESHOLD});
 
-    var shiftMap={A:'กะเช้า',B:'กะบ่าย',C:'กะดึก'};
+    var periodLabel=reportPeriod==='day'?'วันที่ '+date:reportPeriod==='week'?'สัปดาห์ของ '+date:'เดือนของ '+date;
+    var html='';
 
-    // build HTML
-    var html='<div class="report-summary">'
+    // แจ้งเตือนชั่วโมงน้อย
+    if(alerts.length){
+      html+='<div class="card" style="border-color:rgba(192,57,43,0.25);margin-bottom:14px">'
+        +'<div class="card-header" style="background:var(--danger-bg);border-bottom-color:rgba(192,57,43,0.15)">'
+        +'<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);margin-right:8px"></i>'
+        +'<span class="card-header-text" style="color:var(--danger)">ชั่วโมงน้อยกว่า '+LOW_HOURS_THRESHOLD+' ชม.</span>'
+        +'</div><div class="card-body">';
+      alerts.forEach(function(m){
+        html+='<div class="alert-row">'
+          +'<i class="fa-solid fa-user-clock alert-icon"></i>'
+          +'<div><div class="alert-name">'+m.name+'</div>'
+          +'<div class="alert-detail">รหัส '+m.id+'</div></div>'
+          +'<div class="alert-hrs">'+m.hrs.toFixed(1)+' ชม.</div>'
+          +'</div>';
+      });
+      html+='</div></div>';
+    }
+
+    // Summary cards
+    html+='<div class="report-summary">'
       +'<div class="summary-card"><div class="summary-num">'+totalHrs.toFixed(1)+'</div><div class="summary-label">ชั่วโมงรวม</div></div>'
-      +'<div class="summary-card"><div class="summary-num">'+memCount+'</div><div class="summary-label">จำนวนคน</div></div>'
+      +'<div class="summary-card"><div class="summary-num">'+members.length+'</div><div class="summary-label">จำนวนคน</div></div>'
       +'</div>';
 
+    // ตารางสรุปรายคน
     html+='<div class="report-table-wrap">'
-      +'<div class="report-table-head"><i class="fa-solid fa-list" style="color:var(--success);margin-right:8px"></i><span class="report-table-title">รายละเอียด</span></div>'
-      +'<table class="report-tbl">'
-      +'<thead><tr><th>ชื่อพนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
+      +'<div class="report-table-head"><i class="fa-solid fa-users" style="color:var(--success);margin-right:8px"></i>'
+      +'<span class="report-table-title">'+periodLabel+'</span></div>'
+      +'<table class="report-tbl"><thead><tr><th>พนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
 
-    rows.forEach(function(r){
-      var hrs=parseFloat(r.hours)||0;
-      var badge=hrs>=8?'high':hrs>=4?'mid':'low';
-      var sCode=r.shift||'';
-      var sDot=sCode==='A'?'A':sCode==='B'?'B':'C';
-      var sLabel=shiftMap[sCode]||r.shiftLabel||sCode;
+    members.sort(function(a,b){return b.hrs-a.hrs}).forEach(function(m){
+      var badge=m.hrs>=8?'high':m.hrs>=LOW_HOURS_THRESHOLD?'mid':'low';
       html+='<tr>'
-        +'<td><div style="font-weight:600;color:var(--ink)">'+r.empName+'</div>'
-        +'<div style="font-size:0.72rem;color:var(--ink-muted)">รหัส '+r.empId+'</div></td>'
-        +'<td><span class="shift-dot '+sDot+'"></span>'+sLabel+'</td>'
-        +'<td><span class="hrs-badge '+badge+'">'+hrs.toFixed(1)+' ชม.</span></td>'
+        +'<td><div style="font-weight:600;color:var(--ink)">'+m.name+'</div>'
+        +'<div style="font-size:0.72rem;color:var(--ink-muted)">'+m.id+'</div></td>'
+        +'<td style="font-size:0.8rem;color:var(--ink-mid)">'+m.shifts.join(', ')+'</td>'
+        +'<td><span class="hrs-badge '+badge+'">'+m.hrs.toFixed(1)+' ชม.</span></td>'
         +'</tr>';
     });
     html+='</tbody></table></div>';
     area.innerHTML=html;
   },function(e){
-    area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>เกิดข้อผิดพลาด: '+e+'</div>';
+    area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+e+'</div>';
   });
 }
 
@@ -487,7 +585,9 @@ function doLogout(){leaderCode='';leaderName='';teamMembers=[];extraMembers=[];r
 // TABS
 function showTab(tab){
   document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active')});
-  ['navStart','navStop','navHours','navReport'].forEach(function(id){document.getElementById(id).className='nav-tab'});
+  ['navStart','navStop','navHours','navReport','navHistory'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.className='nav-tab';
+  });
   killScan('prod');killScan('hours');
   if(tab==='production'){
     document.getElementById('tabProduction').classList.add('active');
@@ -498,11 +598,68 @@ function showTab(tab){
     document.getElementById('navReport').className='nav-tab active report-active';
     document.getElementById('reportLeaderName').textContent='หัวหน้าทีม: '+leaderName;
     if(!document.getElementById('reportDate').value)document.getElementById('reportDate').value=todayISO();
+  } else if(tab==='history'){
+    document.getElementById('tabHistory').classList.add('active');
+    document.getElementById('navHistory').className='nav-tab active';
+    document.getElementById('histLeaderName').textContent='หัวหน้า: '+leaderName;
+    loadHistory();
   } else {
     document.getElementById('tabHours').classList.add('active');
     document.getElementById('navHours').className='nav-tab active hours-active';
     if(!document.getElementById('whDate').value)document.getElementById('whDate').value=todayISO();
   }
+}
+
+// ── Confirm before switching when data entered ──
+var _confirmCb=null;
+function confirmSwitch(target){
+  var hasData=(machineVal||orderVal||currentPlan);
+  if(hasData && (target==='start'||target==='stop') && (target!==prodMode||document.getElementById('tabHours').classList.contains('active'))){
+    showConfirm('ออกจากหน้านี้?','ข้อมูลที่กรอกไว้จะหายไป ยืนยันหรือไม่?',function(){
+      if(target==='start'||target==='stop') setMode(target);
+      else showTab(target);
+    });
+  } else {
+    if(target==='start'||target==='stop') setMode(target);
+    else showTab(target);
+  }
+}
+function showConfirm(title,sub,cb){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmSub').textContent=sub;
+  document.getElementById('confirmOverlay').classList.add('show');
+  _confirmCb=cb||null;
+}
+function closeConfirm(ok){
+  document.getElementById('confirmOverlay').classList.remove('show');
+  if(ok && _confirmCb){_confirmCb();_confirmCb=null;}
+}
+
+// ── History ──
+function loadHistory(){
+  var area=document.getElementById('histContent');
+  area.innerHTML='<div class="state-box"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+  callAPI('getHistory',{leaderCode:leaderCode,date:todayISO()},function(res){
+    if(!res.success||!res.rows||!res.rows.length){
+      area.innerHTML='<div class="state-box"><i class="fa-solid fa-inbox"></i>ยังไม่มีการบันทึกวันนี้</div>';return;
+    }
+    area.innerHTML=res.rows.map(function(r){
+      var isSt=r.status==='เริ่มผลิต';
+      var t=r.time||'';
+      return '<div class="hist-card">'
+        +'<div class="hist-header">'
+        +'<span class="hist-status '+(isSt?'start':'stop')+'">'+r.status+'</span>'
+        +'<span style="font-size:0.82rem;font-weight:500;color:var(--ink)">เครื่อง '+r.machine+'</span>'
+        +'<span class="hist-time">'+t+'</span>'
+        +'</div>'
+        +'<div class="hist-body">'
+        +'<div><div class="hist-item-label">ใบสั่งผลิต</div><div class="hist-item-value">'+r.orderId+'</div></div>'
+        +'<div><div class="hist-item-label">เกรด</div><div class="hist-item-value">'+r.grade+'</div></div>'
+        +(r.rounds&&r.rounds!=='-'?'<div><div class="hist-item-label">รอบ</div><div class="hist-item-value">'+r.rounds+'</div></div>':'')
+        +(r.notes&&r.notes!=='-'?'<div><div class="hist-item-label">หมายเหตุ</div><div class="hist-item-value">'+r.notes+'</div></div>':'')
+        +'</div></div>';
+    }).join('');
+  },function(){area.innerHTML='<div class="state-box"><i class="fa-solid fa-circle-exclamation"></i>โหลดไม่สำเร็จ</div>'});
 }
 
 // PRODUCTION
