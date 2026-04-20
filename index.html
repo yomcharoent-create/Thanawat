@@ -471,76 +471,78 @@ function loadReportAndCheck(){
   loadReport();
 }
 
-function loadReport(){
-  var date=document.getElementById('reportDate').value;
-  if(!date){toast('กรุณาเลือกวันที่','warn');return}
-  var area=document.getElementById('reportContent');
-  area.innerHTML='<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
-  callAPI('getReport',{leaderCode:leaderCode,date:date,period:reportPeriod},function(res){
-    if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+(res.message||'โหลดไม่ได้')+'</div>';return}
-    var rows=res.rows||[];
-    if(!rows.length){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>';return}
+function loadReport() {
+  var date = document.getElementById('reportDate').value;
+  if (!date) { toast('กรุณาเลือกวันที่', 'warn'); return }
+  var area = document.getElementById('reportContent');
+  area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+  
+  callAPI('getReport', { leaderCode: leaderCode, date: date, period: reportPeriod }, function(res) {
+    if (!res.success) { area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>' + (res.message || 'โหลดไม่ได้') + '</div>'; return }
+    var rows = res.rows || [];
+    if (!rows.length) { area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>'; return }
 
-    // รวมชั่วโมงแต่ละคน
-    var memberMap={};
-    var totalHrs=0;
-    rows.forEach(function(r){
-      totalHrs+=parseFloat(r.hours)||0;
-      if(!memberMap[r.empId])memberMap[r.empId]={name:r.empName,id:r.empId,hrs:0,shifts:[]};
-      memberMap[r.empId].hrs+=parseFloat(r.hours)||0;
-      if(r.shiftLabel && memberMap[r.empId].shifts.indexOf(r.shiftLabel)<0) memberMap[r.empId].shifts.push(r.shiftLabel);
+    // ─── 1. จัดกลุ่มข้อมูลตาม Order ID ───
+    var orderMap = {};
+    var grandTotalHrs = 0;
+
+    rows.forEach(function(r) {
+      var oid = r.orderId || 'ไม่ระบุใบสั่ง';
+      if (!orderMap[oid]) {
+        orderMap[oid] = { members: {}, totalOrderHrs: 0 };
+      }
+      
+      // รวมชั่วโมงรายคนภายใน Order นั้นๆ
+      if (!orderMap[oid].members[r.empId]) {
+        orderMap[oid].members[r.empId] = { name: r.empName, id: r.empId, hrs: 0, shift: r.shiftLabel };
+      }
+      var h = parseFloat(r.hours) || 0;
+      orderMap[oid].members[r.empId].hrs += h;
+      orderMap[oid].totalOrderHrs += h;
+      grandTotalHrs += h;
     });
-    var members=Object.values(memberMap);
-    var alerts=members.filter(function(m){return m.hrs<LOW_HOURS_THRESHOLD});
 
-    var periodLabel=reportPeriod==='day'?'วันที่ '+date:reportPeriod==='week'?'สัปดาห์ของ '+date:'เดือนของ '+date;
-    var html='';
+    // ─── 2. สร้าง HTML แสดงผล ───
+    var html = '';
 
-    // แจ้งเตือนชั่วโมงน้อย
-    if(alerts.length){
-      html+='<div class="card" style="border-color:rgba(192,57,43,0.25);margin-bottom:14px">'
-        +'<div class="card-header" style="background:var(--danger-bg);border-bottom-color:rgba(192,57,43,0.15)">'
-        +'<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);margin-right:8px"></i>'
-        +'<span class="card-header-text" style="color:var(--danger)">ชั่วโมงน้อยกว่า '+LOW_HOURS_THRESHOLD+' ชม.</span>'
-        +'</div><div class="card-body">';
-      alerts.forEach(function(m){
-        html+='<div class="alert-row">'
-          +'<i class="fa-solid fa-user-clock alert-icon"></i>'
-          +'<div><div class="alert-name">'+m.name+'</div>'
-          +'<div class="alert-detail">รหัส '+m.id+'</div></div>'
-          +'<div class="alert-hrs">'+m.hrs.toFixed(1)+' ชม.</div>'
-          +'</div>';
+    // Summary Card รวมทั้งหมด
+    html += '<div class="report-summary">'
+      + '<div class="summary-card" style="grid-column: span 2"><div class="summary-num">' + grandTotalHrs.toFixed(1) + '</div><div class="summary-label">ชั่วโมงรวมทุกใบสั่งผลิต</div></div>'
+      + '</div>';
+
+    // วนลูปตาม Order ID
+    Object.keys(orderMap).forEach(function(oid) {
+      var orderData = orderMap[oid];
+      var membersInOrder = Object.values(orderData.members);
+
+      html += '<div class="card" style="margin-bottom:20px; border-left: 5px solid var(--success);">'
+        + '<div class="card-header" style="background:var(--success-bg);">'
+        + '<i class="fa-solid fa-file-invoice" style="color:var(--success); margin-right:8px"></i>'
+        + '<span class="card-header-text">ใบสั่งผลิต: <span style="color:var(--blue-dark)">' + oid + '</span></span>'
+        + '<span style="font-size:0.85rem; font-weight:700; color:var(--success)">' + orderData.totalOrderHrs.toFixed(1) + ' ชม.</span>'
+        + '</div>'
+        + '<div class="report-table-wrap">'
+        + '<table class="report-tbl"><thead><tr><th>พนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
+
+      membersInOrder.forEach(function(m) {
+        var badge = m.hrs >= 8 ? 'high' : m.hrs >= LOW_HOURS_THRESHOLD ? 'mid' : 'low';
+        html += '<tr>'
+          + '<td><div style="font-weight:600;color:var(--ink)">' + m.name + '</div>'
+          + '<div style="font-size:0.72rem;color:var(--ink-muted)">' + m.id + '</div></td>'
+          + '<td style="font-size:0.8rem;color:var(--ink-mid)">' + (m.shift || '-') + '</td>'
+          + '<td><span class="hrs-badge ' + badge + '">' + m.hrs.toFixed(1) + ' ชม.</span></td>'
+          + '</tr>';
       });
-      html+='</div></div>';
-    }
 
-    // Summary cards
-    html+='<div class="report-summary">'
-      +'<div class="summary-card"><div class="summary-num">'+totalHrs.toFixed(1)+'</div><div class="summary-label">ชั่วโมงรวม</div></div>'
-      +'<div class="summary-card"><div class="summary-num">'+members.length+'</div><div class="summary-label">จำนวนคน</div></div>'
-      +'</div>';
-
-    // ตารางสรุปรายคน
-    html+='<div class="report-table-wrap">'
-      +'<div class="report-table-head"><i class="fa-solid fa-users" style="color:var(--success);margin-right:8px"></i>'
-      +'<span class="report-table-title">'+periodLabel+'</span></div>'
-      +'<table class="report-tbl"><thead><tr><th>พนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
-
-    members.sort(function(a,b){return b.hrs-a.hrs}).forEach(function(m){
-      var badge=m.hrs>=8?'high':m.hrs>=LOW_HOURS_THRESHOLD?'mid':'low';
-      html+='<tr>'
-        +'<td><div style="font-weight:600;color:var(--ink)">'+m.name+'</div>'
-        +'<div style="font-size:0.72rem;color:var(--ink-muted)">'+m.id+'</div></td>'
-        +'<td style="font-size:0.8rem;color:var(--ink-mid)">'+m.shifts.join(', ')+'</td>'
-        +'<td><span class="hrs-badge '+badge+'">'+m.hrs.toFixed(1)+' ชม.</span></td>'
-        +'</tr>';
+      html += '</tbody></table></div></div>';
     });
-    html+='</tbody></table></div>';
-    // เพิ่มส่วนเช็คการกรอกด้านล่างรายงาน
+
+    // ส่วนเช็คพนักงานที่ยังไม่ได้กรอก (Check Section)
     html += buildCheckSection();
-    area.innerHTML=html;
-  },function(e){
-    area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+e+'</div>';
+    area.innerHTML = html;
+    
+  }, function(e) {
+    area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>' + e + '</div>';
   });
 }
 
