@@ -787,7 +787,6 @@ function handleSave(){
     if(!ct||Number(ct)<0){setErr('changeTime','กรุณากรอกเวลาเปลี่ยนอัก');hasErr=true}
     if(!rd||Number(rd)<=0){setErr('rounds','กรุณากรอกจำนวนรอบ');hasErr=true}
     if(!ak||Number(ak)<=0){setErr('totalAuk','กรุณากรอกจำนวนอัก');hasErr=true}
-    if(!photoBase64){var pb=document.getElementById('photoBtnEl');if(pb){pb.classList.add('photo-btn-err');var d=document.createElement('div');d.className='field-err-msg photo-btn-err-msg';d.innerHTML='<i class="fa-solid fa-circle-exclamation"></i>กรุณาถ่ายรูปจำนวนรอบ';pb.parentNode.insertBefore(d,pb.nextSibling)}hasErr=true}
     if(checks.length===0){var cg=document.querySelector('.check-grid');if(cg){cg.classList.add('check-grid-err');var d2=document.createElement('div');d2.className='field-err-msg check-grid-err-msg';d2.style.marginTop='8px';d2.innerHTML='<i class="fa-solid fa-circle-exclamation"></i>กรุณาเลือกสถานะรังและน้ำอย่างน้อย 1 รายการ';cg.parentNode.appendChild(d2)}hasErr=true}
     if(hasErr){toast('กรุณากรอกข้อมูลให้ครบ','err');var fe=document.querySelector('.input-err,.photo-btn-err,.check-grid-err');if(fe)fe.scrollIntoView({behavior:'smooth',block:'center'});return}
   }
