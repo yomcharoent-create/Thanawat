@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ระบบสาวไหม</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
@@ -15,7 +15,7 @@
       --danger:#C0392B;--danger-bg:#FDEDEC;--warn:#B45309;--warn-bg:#FEF3C7;--warn-border:#FDE68A;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-    body{font-family:'Prompt',sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    body{font-family:'Kodchasan',sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100vh;overflow:hidden}
     .screen{display:none;flex-direction:column;height:100vh}
     .screen.active{display:flex}
 
@@ -30,10 +30,10 @@
     .login-body{width:100%;background:white;border-radius:20px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(26,60,120,0.09);padding:32px 24px 28px}
     .login-field-label{font-size:0.82rem;font-weight:600;color:var(--ink);margin-bottom:8px;display:block}
     .login-input-wrap{position:relative;margin-bottom:20px}
-    .login-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:'Prompt',sans-serif;font-size:1rem;color:var(--ink);background:var(--bg);transition:all 0.18s;-webkit-appearance:none}
+    .login-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;color:var(--ink);background:var(--bg);transition:all 0.18s;-webkit-appearance:none}
     .login-input::placeholder{color:var(--ink-muted)}
     .login-input:focus{outline:none;border-color:var(--blue);background:white;box-shadow:0 0 0 4px rgba(26,115,232,0.1)}
-    .login-btn{width:100%;padding:15px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.15s;box-shadow:0 4px 14px rgba(26,115,232,0.3)}
+    .login-btn{width:100%;padding:15px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.15s;box-shadow:0 4px 14px rgba(26,115,232,0.3)}
     .login-btn:active{background:var(--blue-dark);transform:scale(0.98)}
     .login-err{background:var(--danger-bg);border:1px solid rgba(192,57,43,0.2);border-radius:10px;padding:11px 14px;font-size:0.83rem;color:var(--danger);margin-bottom:18px;display:none;align-items:center;gap:9px}
 
@@ -81,10 +81,10 @@
     .field-label{font-size:0.78rem;font-weight:500;color:var(--ink-mid);margin-bottom:6px;display:block}
     .input-row{display:flex;gap:10px;margin-bottom:14px}
     .ig{flex:1}
-    input[type="number"],input[type="text"],input[type="date"]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Prompt',sans-serif;font-size:1rem;background:white;color:var(--ink);transition:border-color 0.15s}
+    input[type="number"],input[type="text"],input[type="date"]{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:1rem;background:white;color:var(--ink);transition:border-color 0.15s}
     input[type="number"]:focus,input[type="text"]:focus,input[type="date"]:focus{outline:none;border-color:var(--blue)}
     .section-label{font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin:16px 0 10px}
-    textarea.note-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Prompt',sans-serif;font-size:0.95rem;color:var(--ink);background:white;resize:none;line-height:1.5;transition:border-color 0.15s}
+    textarea.note-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;color:var(--ink);background:white;resize:none;line-height:1.5;transition:border-color 0.15s}
     textarea.note-input:focus{outline:none;border-color:var(--blue)}
     textarea.note-input::placeholder{color:var(--ink-muted)}
 
@@ -95,9 +95,9 @@
     .check-pill.on{border-color:var(--blue);background:var(--blue-soft)}
     .check-pill.on .check-dot{background:var(--blue);border-color:var(--blue)}
     .check-pill.on .check-dot::after{content:'';display:block;width:5px;height:9px;border:2px solid white;border-top:none;border-left:none;transform:rotate(45deg) translate(-1px,-1px)}
-    .check-text{font-size:0.84rem;font-weight:500;color:var(--ink-mid);font-family:'Prompt',sans-serif}
+    .check-text{font-size:0.84rem;font-weight:500;color:var(--ink-mid);font-family:'Kodchasan',sans-serif}
     .check-pill.on .check-text{color:var(--blue-dark)}
-    .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#1A73E8,#1557B0);color:white;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:none;align-items:center;justify-content:center;gap:9px;margin-top:18px;box-shadow:0 4px 14px rgba(26,115,232,0.35);transition:opacity 0.15s}
+    .btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,#1A73E8,#1557B0);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:none;align-items:center;justify-content:center;gap:9px;margin-top:18px;box-shadow:0 4px 14px rgba(26,115,232,0.35);transition:opacity 0.15s}
     .btn-submit:active{opacity:0.8}
     .btn-submit.stop-mode{background:linear-gradient(135deg,#E53E3E,#C0392B);box-shadow:0 4px 14px rgba(192,57,43,0.3)}
     .input-err{border-color:var(--danger)!important;background:var(--danger-bg)!important;box-shadow:0 0 0 3px rgba(192,57,43,0.12)!important}
@@ -113,7 +113,7 @@
     .order-info-label{font-size:0.7rem;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:0.06em;opacity:0.8}
     .order-info-value{font-size:0.9rem;font-weight:600;color:var(--warn)}
     .shift-row{display:flex;gap:9px;margin-bottom:16px}
-    .shift-btn{flex:1;padding:9px 6px;border-radius:9px;border:1.5px solid var(--border);background:white;font-family:'Prompt',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .shift-btn{flex:1;padding:9px 6px;border-radius:9px;border:1.5px solid var(--border);background:white;font-family:'Kodchasan',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s;display:flex;flex-direction:column;align-items:center;gap:3px}
     .shift-btn i{font-size:1rem}
     .shift-btn.on{border-color:var(--warn);background:var(--warn-bg);color:var(--warn)}
     .member-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
@@ -125,15 +125,15 @@
     .member-id{font-size:0.73rem;color:var(--ink-muted)}
     .hours-side{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px}
     .hours-label{font-size:0.65rem;font-weight:500;color:var(--warn);text-transform:uppercase;letter-spacing:0.04em}
-    .hours-input{width:72px;padding:8px 6px;border:1.5px solid var(--border);border-radius:8px;font-family:'Prompt',sans-serif;font-size:1rem;font-weight:600;text-align:center;color:var(--ink);background:var(--bg)}
+    .hours-input{width:72px;padding:8px 6px;border:1.5px solid var(--border);border-radius:8px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;text-align:center;color:var(--ink);background:var(--bg)}
     .hours-input:focus{outline:none;border-color:var(--warn);background:white}
     .btn-remove-member{background:none;border:none;cursor:pointer;color:var(--ink-muted);font-size:0.85rem;padding:4px;line-height:1;flex-shrink:0}
     .btn-remove-member:active{color:var(--danger)}
     .add-member-bar{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1.5px dashed var(--warn-border)}
-    .add-member-input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Prompt',sans-serif;font-size:0.9rem;background:white;color:var(--ink)}
+    .add-member-input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.9rem;background:white;color:var(--ink)}
     .add-member-input:focus{outline:none;border-color:var(--warn)}
     .add-member-input::placeholder{color:var(--ink-muted)}
-    .btn-add-member{padding:10px 14px;background:var(--warn);color:white;border:none;border-radius:9px;font-family:'Prompt',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s}
+    .btn-add-member{padding:10px 14px;background:var(--warn);color:white;border:none;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0;transition:opacity 0.15s}
     .btn-add-member:active{opacity:0.75}
     .search-results{background:white;border:1px solid var(--border);border-radius:10px;margin-top:6px;overflow:hidden;display:none;box-shadow:0 4px 16px rgba(26,60,120,0.10)}
     .search-result-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.12s}
@@ -145,7 +145,7 @@
     .sri-add{margin-left:auto;font-size:0.75rem;color:var(--warn);font-weight:600;flex-shrink:0}
     .state-box{text-align:center;padding:40px 20px;color:var(--ink-muted);font-size:0.9rem}
     .state-box i{font-size:2.2rem;margin-bottom:10px;display:block;opacity:0.4}
-    .btn-save-hours{width:100%;padding:15px;background:linear-gradient(135deg,#B45309,#92400E);color:white;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:18px;box-shadow:0 4px 14px rgba(180,83,9,0.3);transition:opacity 0.15s}
+    .btn-save-hours{width:100%;padding:15px;background:linear-gradient(135deg,#B45309,#92400E);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:18px;box-shadow:0 4px 14px rgba(180,83,9,0.3);transition:opacity 0.15s}
     .btn-save-hours:active{opacity:0.8}
     .loading-overlay{position:fixed;inset:0;z-index:500;background:rgba(28,43,74,0.55);display:none;flex-direction:column;align-items:center;justify-content:center}
     .loading-overlay.show{display:flex}
@@ -160,7 +160,7 @@
     .success-icon{width:68px;height:68px;border-radius:50%;background:var(--success-bg);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--success)}
     .success-title{font-size:1.1rem;font-weight:600;color:var(--ink);text-align:center}
     .success-sub{font-size:0.85rem;color:var(--ink-muted);text-align:center;line-height:1.5}
-    .success-btn{width:100%;padding:13px;background:var(--success);color:white;border:none;border-radius:12px;font-family:'Prompt',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity 0.15s}
+    .success-btn{width:100%;padding:13px;background:var(--success);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:6px;transition:opacity 0.15s}
     .success-btn:active{opacity:0.8}
     /* ── Report Tab ── */
     .report-header-card{background:linear-gradient(135deg,#1D8A55,#145A38);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(29,138,85,0.25);display:flex;align-items:center;gap:14px}
@@ -168,8 +168,8 @@
     .report-header-title{font-size:1rem;font-weight:600;color:white}
     .report-header-sub{font-size:0.75rem;color:rgba(255,255,255,0.75);margin-top:2px}
     .report-date-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px}
-    .report-date-row input[type="date"]{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Prompt',sans-serif;font-size:0.95rem;background:white;color:var(--ink)}
-    .btn-load-report{padding:11px 18px;background:var(--success);color:white;border:none;border-radius:9px;font-family:'Prompt',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:opacity 0.15s;flex-shrink:0}
+    .report-date-row input[type="date"]{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;background:white;color:var(--ink)}
+    .btn-load-report{padding:11px 18px;background:var(--success);color:white;border:none;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:7px;transition:opacity 0.15s;flex-shrink:0}
     .btn-load-report:active{opacity:0.8}
     .report-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
     .summary-card{background:white;border-radius:12px;border:1px solid var(--border);padding:14px 16px;text-align:center}
@@ -204,8 +204,8 @@
     .confirm-title{font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:8px}
     .confirm-sub{font-size:0.85rem;color:var(--ink-muted);margin-bottom:22px;line-height:1.5}
     .confirm-btns{display:flex;gap:10px}
-    .confirm-btn-cancel{flex:1;padding:13px;border:1.5px solid var(--border);background:white;border-radius:12px;font-family:'Prompt',sans-serif;font-size:0.95rem;font-weight:600;color:var(--ink-mid);cursor:pointer}
-    .confirm-btn-ok{flex:1;padding:13px;border:none;background:var(--danger);border-radius:12px;font-family:'Prompt',sans-serif;font-size:0.95rem;font-weight:600;color:white;cursor:pointer}
+    .confirm-btn-cancel{flex:1;padding:13px;border:1.5px solid var(--border);background:white;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;color:var(--ink-mid);cursor:pointer}
+    .confirm-btn-ok{flex:1;padding:13px;border:none;background:var(--danger);border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:600;color:white;cursor:pointer}
 
     /* ── History badge on nav ── */
     .nav-badge{position:absolute;top:6px;right:18%;width:8px;height:8px;background:var(--danger);border-radius:50%}
@@ -223,7 +223,7 @@
 
     /* ── Summary tab extras ── */
     .period-row{display:flex;gap:8px;margin-bottom:16px}
-    .period-btn{flex:1;padding:9px;border:1.5px solid var(--border);background:white;border-radius:9px;font-family:'Prompt',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s}
+    .period-btn{flex:1;padding:9px;border:1.5px solid var(--border);background:white;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s}
     .period-btn.on{border-color:var(--success);background:var(--success-bg);color:var(--success)}
 
     /* ── Alert row ── */
@@ -471,78 +471,76 @@ function loadReportAndCheck(){
   loadReport();
 }
 
-function loadReport() {
-  var date = document.getElementById('reportDate').value;
-  if (!date) { toast('กรุณาเลือกวันที่', 'warn'); return }
-  var area = document.getElementById('reportContent');
-  area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
-  
-  callAPI('getReport', { leaderCode: leaderCode, date: date, period: reportPeriod }, function(res) {
-    if (!res.success) { area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>' + (res.message || 'โหลดไม่ได้') + '</div>'; return }
-    var rows = res.rows || [];
-    if (!rows.length) { area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>'; return }
+function loadReport(){
+  var date=document.getElementById('reportDate').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  var area=document.getElementById('reportContent');
+  area.innerHTML='<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+  callAPI('getReport',{leaderCode:leaderCode,date:date,period:reportPeriod},function(res){
+    if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+(res.message||'โหลดไม่ได้')+'</div>';return}
+    var rows=res.rows||[];
+    if(!rows.length){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>';return}
 
-    // ─── 1. จัดกลุ่มข้อมูลตาม Order ID ───
-    var orderMap = {};
-    var grandTotalHrs = 0;
-
-    rows.forEach(function(r) {
-      var oid = r.orderId || 'ไม่ระบุใบสั่ง';
-      if (!orderMap[oid]) {
-        orderMap[oid] = { members: {}, totalOrderHrs: 0 };
-      }
-      
-      // รวมชั่วโมงรายคนภายใน Order นั้นๆ
-      if (!orderMap[oid].members[r.empId]) {
-        orderMap[oid].members[r.empId] = { name: r.empName, id: r.empId, hrs: 0, shift: r.shiftLabel };
-      }
-      var h = parseFloat(r.hours) || 0;
-      orderMap[oid].members[r.empId].hrs += h;
-      orderMap[oid].totalOrderHrs += h;
-      grandTotalHrs += h;
+    // รวมชั่วโมงแต่ละคน
+    var memberMap={};
+    var totalHrs=0;
+    rows.forEach(function(r){
+      totalHrs+=parseFloat(r.hours)||0;
+      if(!memberMap[r.empId])memberMap[r.empId]={name:r.empName,id:r.empId,hrs:0,shifts:[]};
+      memberMap[r.empId].hrs+=parseFloat(r.hours)||0;
+      if(r.shiftLabel && memberMap[r.empId].shifts.indexOf(r.shiftLabel)<0) memberMap[r.empId].shifts.push(r.shiftLabel);
     });
+    var members=Object.values(memberMap);
+    var alerts=members.filter(function(m){return m.hrs<LOW_HOURS_THRESHOLD});
 
-    // ─── 2. สร้าง HTML แสดงผล ───
-    var html = '';
+    var periodLabel=reportPeriod==='day'?'วันที่ '+date:reportPeriod==='week'?'สัปดาห์ของ '+date:'เดือนของ '+date;
+    var html='';
 
-    // Summary Card รวมทั้งหมด
-    html += '<div class="report-summary">'
-      + '<div class="summary-card" style="grid-column: span 2"><div class="summary-num">' + grandTotalHrs.toFixed(1) + '</div><div class="summary-label">ชั่วโมงรวมทุกใบสั่งผลิต</div></div>'
-      + '</div>';
-
-    // วนลูปตาม Order ID
-    Object.keys(orderMap).forEach(function(oid) {
-      var orderData = orderMap[oid];
-      var membersInOrder = Object.values(orderData.members);
-
-      html += '<div class="card" style="margin-bottom:20px; border-left: 5px solid var(--success);">'
-        + '<div class="card-header" style="background:var(--success-bg);">'
-        + '<i class="fa-solid fa-file-invoice" style="color:var(--success); margin-right:8px"></i>'
-        + '<span class="card-header-text">ใบสั่งผลิต: <span style="color:var(--blue-dark)">' + oid + '</span></span>'
-        + '<span style="font-size:0.85rem; font-weight:700; color:var(--success)">' + orderData.totalOrderHrs.toFixed(1) + ' ชม.</span>'
-        + '</div>'
-        + '<div class="report-table-wrap">'
-        + '<table class="report-tbl"><thead><tr><th>พนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
-
-      membersInOrder.forEach(function(m) {
-        var badge = m.hrs >= 8 ? 'high' : m.hrs >= LOW_HOURS_THRESHOLD ? 'mid' : 'low';
-        html += '<tr>'
-          + '<td><div style="font-weight:600;color:var(--ink)">' + m.name + '</div>'
-          + '<div style="font-size:0.72rem;color:var(--ink-muted)">' + m.id + '</div></td>'
-          + '<td style="font-size:0.8rem;color:var(--ink-mid)">' + (m.shift || '-') + '</td>'
-          + '<td><span class="hrs-badge ' + badge + '">' + m.hrs.toFixed(1) + ' ชม.</span></td>'
-          + '</tr>';
+    // แจ้งเตือนชั่วโมงน้อย
+    if(alerts.length){
+      html+='<div class="card" style="border-color:rgba(192,57,43,0.25);margin-bottom:14px">'
+        +'<div class="card-header" style="background:var(--danger-bg);border-bottom-color:rgba(192,57,43,0.15)">'
+        +'<i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);margin-right:8px"></i>'
+        +'<span class="card-header-text" style="color:var(--danger)">ชั่วโมงน้อยกว่า '+LOW_HOURS_THRESHOLD+' ชม.</span>'
+        +'</div><div class="card-body">';
+      alerts.forEach(function(m){
+        html+='<div class="alert-row">'
+          +'<i class="fa-solid fa-user-clock alert-icon"></i>'
+          +'<div><div class="alert-name">'+m.name+'</div>'
+          +'<div class="alert-detail">รหัส '+m.id+'</div></div>'
+          +'<div class="alert-hrs">'+m.hrs.toFixed(1)+' ชม.</div>'
+          +'</div>';
       });
+      html+='</div></div>';
+    }
 
-      html += '</tbody></table></div></div>';
+    // Summary cards
+    html+='<div class="report-summary">'
+      +'<div class="summary-card"><div class="summary-num">'+totalHrs.toFixed(1)+'</div><div class="summary-label">ชั่วโมงรวม</div></div>'
+      +'<div class="summary-card"><div class="summary-num">'+members.length+'</div><div class="summary-label">จำนวนคน</div></div>'
+      +'</div>';
+
+    // ตารางสรุปรายคน
+    html+='<div class="report-table-wrap">'
+      +'<div class="report-table-head"><i class="fa-solid fa-users" style="color:var(--success);margin-right:8px"></i>'
+      +'<span class="report-table-title">'+periodLabel+'</span></div>'
+      +'<table class="report-tbl"><thead><tr><th>พนักงาน</th><th>กะ</th><th>ชั่วโมง</th></tr></thead><tbody>';
+
+    members.sort(function(a,b){return b.hrs-a.hrs}).forEach(function(m){
+      var badge=m.hrs>=8?'high':m.hrs>=LOW_HOURS_THRESHOLD?'mid':'low';
+      html+='<tr>'
+        +'<td><div style="font-weight:600;color:var(--ink)">'+m.name+'</div>'
+        +'<div style="font-size:0.72rem;color:var(--ink-muted)">'+m.id+'</div></td>'
+        +'<td style="font-size:0.8rem;color:var(--ink-mid)">'+m.shifts.join(', ')+'</td>'
+        +'<td><span class="hrs-badge '+badge+'">'+m.hrs.toFixed(1)+' ชม.</span></td>'
+        +'</tr>';
     });
-
-    // ส่วนเช็คพนักงานที่ยังไม่ได้กรอก (Check Section)
+    html+='</tbody></table></div>';
+    // เพิ่มส่วนเช็คการกรอกด้านล่างรายงาน
     html += buildCheckSection();
-    area.innerHTML = html;
-    
-  }, function(e) {
-    area.innerHTML = '<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>' + e + '</div>';
+    area.innerHTML=html;
+  },function(e){
+    area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+e+'</div>';
   });
 }
 
