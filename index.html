@@ -891,6 +891,15 @@ function selectShift(s){selectedShift=s;['A','B','C'].forEach(function(x){docume
 
 function saveWorkHours(){
   var date=document.getElementById('whDate').value;
+  if(!whOrderId){
+    // highlight step 1
+    var s1=document.getElementById('whS1');
+    if(s1){s1.style.animation='none';s1.style.background='var(--danger)';setTimeout(function(){s1.style.background='var(--warn)'},1500)}
+    toast('กรุณาสแกน QR ใบสั่งผลิตก่อน','err');
+    var el=document.querySelector('.btn-scan.warn-scan');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   if(!date){toast('กรุณาเลือกวันที่','warn');return}
   if(!selectedShift){toast('กรุณาเลือกกะการทำงาน','warn');return}
   if(!teamMembers.length){toast('ไม่มีรายชื่อลูกทีม','warn');return}
