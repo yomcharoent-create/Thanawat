@@ -223,6 +223,8 @@
 
     /* ── Summary tab extras ── */
     .period-row{display:flex;gap:8px;margin-bottom:16px}
+    .team-select{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.92rem;background:white;color:var(--ink);margin-bottom:12px;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239AA5B4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+    .team-select:focus{outline:none;border-color:var(--blue)}
     .period-btn{flex:1;padding:9px;border:1.5px solid var(--border);background:white;border-radius:9px;font-family:'Kodchasan',sans-serif;font-size:0.82rem;font-weight:500;color:var(--ink-mid);cursor:pointer;transition:all 0.15s}
     .period-btn.on{border-color:var(--success);background:var(--success-bg);color:var(--success)}
 
@@ -380,6 +382,9 @@
           <button class="period-btn" id="periodWeek" onclick="selectPeriod('week')">รายสัปดาห์</button>
           <button class="period-btn" id="periodMonth" onclick="selectPeriod('month')">รายเดือน</button>
         </div>
+        <select class="team-select" id="reportTeamFilter">
+          <option value="all">ทุกทีม</option>
+        </select>
         <div class="report-date-row">
           <input type="date" id="reportDate">
           <button class="btn-load-report" onclick="loadReportAndCheck()">
@@ -458,6 +463,31 @@ function callAPI(action, data, onSuccess, onError) {
 
 // REPORT
 var reportPeriod='day';
+
+function populateTeamFilter(){
+  var sel=document.getElementById('reportTeamFilter');
+  if(!sel) return;
+  // เก็บค่าที่เลือกไว้
+  var current=sel.value;
+  sel.innerHTML='<option value="all">ทุกทีม</option>';
+  // สร้างรายการทีมจาก teamMembers (ถ้าเป็นหัวหน้าทีม) หรือดึงจาก sheet (ผู้คุมงาน)
+  if(userRole==='ผู้คุมงาน'){
+    callAPI('getLeaderList',{},function(res){
+      if(res.leaders){
+        res.leaders.forEach(function(l){
+          var opt=document.createElement('option');
+          opt.value=l.leaderCode;
+          opt.textContent=l.leaderName;
+          sel.appendChild(opt);
+        });
+        if(current) sel.value=current;
+      }
+    },function(){});
+  } else {
+    // หัวหน้าทีมเห็นแค่ทีมตัวเอง ไม่ต้องเลือก
+    sel.style.display='none';
+  }
+}
 var LOW_HOURS_THRESHOLD=4; // แจ้งเตือนถ้าน้อยกว่านี้
 
 function selectPeriod(p){
@@ -476,10 +506,21 @@ function loadReport(){
   if(!date){toast('กรุณาเลือกวันที่','warn');return}
   var area=document.getElementById('reportContent');
   area.innerHTML='<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
-  var apiAction = userRole==='ผู้คุมงาน' ? 'getAllTeamsReport' : 'getReport';
-  var apiData   = userRole==='ผู้คุมงาน'
-    ? {date:date,period:reportPeriod}
-    : {leaderCode:leaderCode,date:date,period:reportPeriod};
+  var teamFilter=document.getElementById('reportTeamFilter')?document.getElementById('reportTeamFilter').value:'all';
+  var apiAction, apiData;
+  if(userRole==='ผู้คุมงาน'){
+    if(teamFilter && teamFilter!=='all'){
+      // เลือกทีมเฉพาะ — ใช้ getReport กรองด้วย leaderCode นั้น
+      apiAction='getReport';
+      apiData={leaderCode:teamFilter,date:date,period:reportPeriod};
+    } else {
+      apiAction='getAllTeamsReport';
+      apiData={date:date,period:reportPeriod};
+    }
+  } else {
+    apiAction='getReport';
+    apiData={leaderCode:leaderCode,date:date,period:reportPeriod};
+  }
   callAPI(apiAction,apiData,function(res){
     if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+(res.message||'โหลดไม่ได้')+'</div>';return}
     var rows=res.rows||[];
@@ -683,6 +724,7 @@ function showTab(tab){
     document.getElementById('navReport').className='nav-tab active report-active';
     document.getElementById('reportLeaderName').textContent='หัวหน้าทีม: '+leaderName;
     if(!document.getElementById('reportDate').value)document.getElementById('reportDate').value=todayISO();
+    populateTeamFilter();
   } else if(tab==='history'){
     document.getElementById('tabHistory').classList.add('active');
     document.getElementById('navHistory').className='nav-tab active';
