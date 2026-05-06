@@ -476,7 +476,11 @@ function loadReport(){
   if(!date){toast('กรุณาเลือกวันที่','warn');return}
   var area=document.getElementById('reportContent');
   area.innerHTML='<div class="report-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
-  callAPI('getReport',{leaderCode:leaderCode,date:date,period:reportPeriod},function(res){
+  var apiAction = userRole==='ผู้คุมงาน' ? 'getAllTeamsReport' : 'getReport';
+  var apiData   = userRole==='ผู้คุมงาน'
+    ? {date:date,period:reportPeriod}
+    : {leaderCode:leaderCode,date:date,period:reportPeriod};
+  callAPI(apiAction,apiData,function(res){
     if(!res.success){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-circle-exclamation"></i>'+(res.message||'โหลดไม่ได้')+'</div>';return}
     var rows=res.rows||[];
     if(!rows.length){area.innerHTML='<div class="report-empty"><i class="fa-solid fa-calendar-xmark"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>';return}
@@ -494,6 +498,25 @@ function loadReport(){
     var alerts=members.filter(function(m){return m.hrs<LOW_HOURS_THRESHOLD});
 
     var periodLabel=reportPeriod==='day'?'วันที่ '+date:reportPeriod==='week'?'สัปดาห์ของ '+date:'เดือนของ '+date;
+    // ผู้คุมงาน: จัดกลุ่มตามทีม
+    if(userRole==='ผู้คุมงาน'){
+      var teamMap={};
+      rows.forEach(function(r){
+        var k=r.leaderCode||'?';
+        if(!teamMap[k])teamMap[k]={leaderName:r.leaderName||k,hrs:0,count:0};
+        teamMap[k].hrs+=parseFloat(r.hours)||0;
+        teamMap[k].count++;
+      });
+      var teamSummary='<div class="card" style="margin-bottom:14px"><div class="card-header" style="background:var(--blue-soft);border-bottom-color:var(--border)">'
+        +'<div class="step-badge"><i class="fa-solid fa-users" style="font-size:0.7rem"></i></div>'
+        +'<span class="card-header-text">สรุปรายทีม</span></div>'
+        +'<div class="card-body"><table class="report-tbl"><thead><tr><th>ทีม</th><th>คน</th><th>ชม.รวม</th></tr></thead><tbody>';
+      Object.values(teamMap).sort(function(a,b){return b.hrs-a.hrs}).forEach(function(t){
+        teamSummary+='<tr><td style="font-weight:600">'+t.leaderName+'</td><td>'+t.count+'</td><td><span class="hrs-badge high">'+t.hrs.toFixed(1)+'</span></td></tr>';
+      });
+      teamSummary+='</tbody></table></div></div>';
+      area.innerHTML=teamSummary+(area.innerHTML||'');
+    }
     var html='';
 
     // แจ้งเตือนชั่วโมงน้อย
@@ -590,7 +613,7 @@ function buildCheckSection(){
 // STATE
 var prodMode='start', scannerProd=null, scannerHours=null, currentPlan=null;
 var machineVal='', orderVal='';
-var leaderCode='', leaderName='';
+var leaderCode='', leaderName='', userRole='';
 var teamMembers=[], extraMembers=[], selectedShift='';
 var whOrderId='', whOrderData=null, _successCb=null;
 
@@ -619,17 +642,30 @@ function doLogin(){
   callAPI('login',{leaderCode:code},function(res){
     hideLoading();btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
     if(res.success){
-      leaderCode=res.leaderCode;leaderName=res.leaderName;
-      document.getElementById('leaderNameBar').textContent='หัวหน้า: '+leaderName;
-      document.getElementById('whLeaderName').textContent='หัวหน้าทีม: '+leaderName;
+      leaderCode=res.leaderCode;leaderName=res.leaderName;userRole=res.role||'หัวหน้าทีม';
+      var roleLabel=userRole==='ผู้คุมงาน'?'ผู้คุมงาน: ':'หัวหน้า: ';
+      document.getElementById('leaderNameBar').textContent=roleLabel+leaderName;
+      document.getElementById('whLeaderName').textContent=(userRole==='ผู้คุมงาน'?'ผู้คุมงาน: ':'หัวหน้าทีม: ')+leaderName;
       document.getElementById('loginErr').style.display='none';
       document.getElementById('loginLeaderCode').value='';
-      loadTeamMembers();showScreen('mainScreen');
+      if(userRole==='ผู้คุมงาน'){
+        // ซ่อน tab การผลิตและชั่วโมงงาน ผู้คุมงานดูได้อย่างเดียว
+        document.getElementById('navStart').style.display='none';
+        document.getElementById('navStop').style.display='none';
+        document.getElementById('navHours').style.display='none';
+        loadTeamMembers();showScreen('mainScreen');
+        showTab('report');
+      } else {
+        document.getElementById('navStart').style.display='';
+        document.getElementById('navStop').style.display='';
+        document.getElementById('navHours').style.display='';
+        loadTeamMembers();showScreen('mainScreen');
+      }
     } else {showLoginErr(res.message||'รหัสไม่ถูกต้อง')}
   },function(e){hideLoading();btn.disabled=false;btn.textContent='เข้าสู่ระบบ';showLoginErr('เกิดข้อผิดพลาด: '+e)});
 }
 function showLoginErr(msg){document.getElementById('loginErrMsg').textContent=msg;document.getElementById('loginErr').style.display='flex'}
-function doLogout(){leaderCode='';leaderName='';teamMembers=[];extraMembers=[];resetProductionUI();resetHoursUI();showScreen('loginScreen')}
+function doLogout(){leaderCode='';leaderName='';userRole='';teamMembers=[];extraMembers=[];resetProductionUI();resetHoursUI();showScreen('loginScreen')}
 
 // TABS
 function showTab(tab){
@@ -688,13 +724,18 @@ function closeConfirm(ok){
 function loadHistory(){
   var area=document.getElementById('histContent');
   area.innerHTML='<div class="state-box"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
-  callAPI('getHistory',{leaderCode:leaderCode,date:todayISO()},function(res){
+  var histAction = userRole==='ผู้คุมงาน' ? 'getAllMachinesHistory' : 'getHistory';
+  var histData   = userRole==='ผู้คุมงาน' ? {date:todayISO()} : {leaderCode:leaderCode,date:todayISO()};
+  callAPI(histAction,histData,function(res){
     if(!res.success||!res.rows||!res.rows.length){
       area.innerHTML='<div class="state-box"><i class="fa-solid fa-inbox"></i>ยังไม่มีการบันทึกวันนี้</div>';return;
     }
     area.innerHTML=res.rows.map(function(r){
       var isSt=r.status==='เริ่มผลิต';
       var t=r.time||'';
+      var extraInfo = userRole==='ผู้คุมงาน' && r.leader1
+        ? '<div><div class="hist-item-label">หัวหน้ากะ</div><div class="hist-item-value">'+(r.leader1||'-')+'</div></div>'
+        : '';
       return '<div class="hist-card">'
         +'<div class="hist-header">'
         +'<span class="hist-status '+(isSt?'start':'stop')+'">'+r.status+'</span>'
@@ -704,6 +745,7 @@ function loadHistory(){
         +'<div class="hist-body">'
         +'<div><div class="hist-item-label">ใบสั่งผลิต</div><div class="hist-item-value">'+r.orderId+'</div></div>'
         +'<div><div class="hist-item-label">เกรด</div><div class="hist-item-value">'+r.grade+'</div></div>'
+        +extraInfo
         +(r.rounds&&r.rounds!=='-'?'<div><div class="hist-item-label">รอบ</div><div class="hist-item-value">'+r.rounds+'</div></div>':'')
         +(r.notes&&r.notes!=='-'?'<div><div class="hist-item-label">หมายเหตุ</div><div class="hist-item-value">'+r.notes+'</div></div>':'')
         +'</div></div>';
