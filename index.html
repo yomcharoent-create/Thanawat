@@ -478,8 +478,26 @@
             <input type="date" id="envDate">
           </div>
           <div class="ig">
-            <label class="field-label">เวลา</label>
-            <input type="time" id="envTime">
+            <label class="field-label">ช่วงเวลา</label>
+            <select class="team-select" id="envTime" style="margin-bottom:0;border-color:var(--border)">
+              <option value="07:00">07:00 น.</option>
+              <option value="08:00">08:00 น.</option>
+              <option value="09:00">09:00 น.</option>
+              <option value="10:00">10:00 น.</option>
+              <option value="11:00">11:00 น.</option>
+              <option value="12:00">12:00 น.</option>
+              <option value="13:00">13:00 น.</option>
+              <option value="14:00">14:00 น.</option>
+              <option value="15:00">15:00 น.</option>
+              <option value="16:00">16:00 น.</option>
+              <option value="17:00">17:00 น.</option>
+              <option value="18:00">18:00 น.</option>
+              <option value="19:00">19:00 น.</option>
+              <option value="20:00">20:00 น.</option>
+              <option value="21:00">21:00 น.</option>
+              <option value="22:00">22:00 น.</option>
+              <option value="23:00">23:00 น.</option>
+            </select>
           </div>
         </div>
 
@@ -776,7 +794,7 @@ function saveEnvData(){
           document.getElementById('envTemp').value='';
           document.getElementById('envHumidity').value='';
           var now=new Date();
-          document.getElementById('envTime').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+          var rH=new Date().getHours();var rStr=String(rH).padStart(2,'0')+':00';var rSel=document.getElementById('envTime');if(rSel){for(var ro=0;ro<rSel.options.length;ro++){if(rSel.options[ro].value===rStr){rSel.value=rStr;break}}}
           loadEnvHistory();
         });
       } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||''),'err')}
@@ -891,9 +909,15 @@ function showTab(tab){
     document.getElementById('navEnv').className='nav-tab active env-active';
     document.getElementById('envLeaderName').textContent='ผู้คุมงาน: '+leaderName;
     if(!document.getElementById('envDate').value)document.getElementById('envDate').value=todayISO();
-    if(!document.getElementById('envTime').value){
-      var now=new Date();
-      document.getElementById('envTime').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    // set ชั่วโมงปัจจุบัน
+    var nowH=new Date().getHours();
+    var hStr=String(nowH).padStart(2,'0')+':00';
+    var sel=document.getElementById('envTime');
+    if(sel){
+      // หา option ที่ใกล้ที่สุด
+      var found=false;
+      for(var o=0;o<sel.options.length;o++){if(sel.options[o].value===hStr){sel.value=hStr;found=true;break}}
+      if(!found) sel.selectedIndex=0;
     }
     loadEnvHistory();
   } else {
