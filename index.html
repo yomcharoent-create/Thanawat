@@ -292,9 +292,7 @@
     .dash-val-box.temp .dash-val-unit{color:#B45309}
     .dash-val-box.hum .dash-val-num{color:#0369A1}
     .dash-val-box.hum .dash-val-unit{color:#0369A1}
-    .dash-warn{background:#FEF3C7;border:1px solid #FDE68A}
-    .dash-warn .dash-machine-header{background:#FFFBEB}
-    .dash-warn .dash-machine-name::after{content:' ⚠️'}
+
     .dash-filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
     .dash-filter-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'Kodchasan',sans-serif;font-size:0.8rem;font-weight:500;color:var(--ink-mid);cursor:pointer;white-space:nowrap;flex-shrink:0}
     .dash-filter-btn.on{border-color:#7C3AED;background:#F5F3FF;color:#7C3AED;font-weight:600}
@@ -1038,20 +1036,11 @@ function loadDashboard(){
     var avgTemp=allTemps.length?allTemps.reduce(function(a,b){return a+b},0)/allTemps.length:null;
     var avgHum =allHums.length?allHums.reduce(function(a,b){return a+b},0)/allHums.length:null;
     var maxTemp=allTemps.length?Math.max.apply(null,allTemps):null;
-    var warnCount=machines.filter(function(m){
-      var r=latestMap[m];
-      return (r.temp!==''&&parseFloat(r.temp)>TEMP_WARN)||(r.humidity!==''&&parseFloat(r.humidity)>HUM_WARN);
-    }).length;
+
 
     var html='';
 
-    // Alert
-    if(warnCount>0){
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:13px 16px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:12px;margin-bottom:14px">'
-        +'<i class="fa-solid fa-triangle-exclamation" style="color:#B45309;font-size:1.2rem"></i>'
-        +'<div><div style="font-weight:600;color:#B45309">พบค่าเกินขีดจำกัด '+warnCount+' เครื่อง</div>'
-        +'<div style="font-size:0.78rem;color:#92400E">อุณหภูมิ &gt;'+TEMP_WARN+'°C หรือความชื้น &gt;'+HUM_WARN+'%</div></div></div>';
-    }
+
 
     // Summary cards
     html+='<div class="dash-stat-row">'
