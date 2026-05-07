@@ -235,6 +235,28 @@
     .alert-detail{font-size:0.75rem;color:var(--danger);opacity:0.8}
     .alert-hrs{margin-left:auto;font-size:0.85rem;font-weight:700;color:var(--danger);flex-shrink:0}
 
+    /* ── Environment Tab ── */
+    .env-header-card{background:linear-gradient(135deg,#0369A1,#075985);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(3,105,161,0.25);display:flex;align-items:center;gap:14px}
+    .env-header-icon{width:46px;height:46px;background:rgba(255,255,255,0.2);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;color:white;flex-shrink:0}
+    .env-header-title{font-size:1rem;font-weight:600;color:white}
+    .env-header-sub{font-size:0.75rem;color:rgba(255,255,255,0.75);margin-top:2px}
+    .env-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:1.05rem;font-weight:600;background:white;color:var(--ink);text-align:center;transition:border-color 0.15s;-webkit-appearance:none}
+    .env-input:focus{outline:none;border-color:#0369A1;box-shadow:0 0 0 3px rgba(3,105,161,0.1)}
+    .env-unit{font-size:0.75rem;color:var(--ink-muted);text-align:center;margin-top:4px}
+    .env-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+    .env-field{display:flex;flex-direction:column}
+    .env-field-label{font-size:0.78rem;font-weight:600;color:var(--ink-mid);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+    .btn-env-save{width:100%;padding:15px;background:linear-gradient(135deg,#0369A1,#075985);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:4px;box-shadow:0 4px 14px rgba(3,105,161,0.3);transition:opacity 0.15s}
+    .btn-env-save:active{opacity:0.8}
+    .env-history-item{background:white;border-radius:12px;border:1px solid var(--border);padding:13px 15px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+    .env-history-machine{font-size:0.85rem;font-weight:600;color:var(--ink);flex:1}
+    .env-history-time{font-size:0.72rem;color:var(--ink-muted)}
+    .env-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:0.82rem;font-weight:600}
+    .env-badge-temp{background:#FEF3C7;color:#B45309}
+    .env-badge-hum{background:#E0F2FE;color:#0369A1}
+    .nav-tab.env-active{color:#0369A1}
+    .nav-tab.env-active::before{background:#0369A1;opacity:1}
+
     .toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:white;padding:10px 22px;border-radius:30px;font-size:0.87rem;font-weight:500;font-family:'Kodchasan',sans-serif;opacity:0;pointer-events:none;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .toast.ok{background:var(--success)}
@@ -428,12 +450,81 @@
     </div>
   </div>
 
+  <!-- TAB: Environment -->
+  <div class="tab-page" id="tabEnv">
+    <div class="env-header-card">
+      <div class="env-header-icon"><i class="fa-solid fa-temperature-half"></i></div>
+      <div>
+        <div class="env-header-title">บันทึกอุณหภูมิ &amp; ความชื้น</div>
+        <div class="env-header-sub" id="envLeaderName">—</div>
+      </div>
+    </div>
+
+    <!-- เลือกเครื่องและเวลา -->
+    <div class="card">
+      <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
+        <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-sliders" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text">ข้อมูลการวัด</span>
+      </div>
+      <div class="card-body">
+        <label class="field-label">เครื่องจักร</label>
+        <select class="team-select" id="envMachine" style="margin-bottom:14px;border-color:var(--border)">
+          <option value="">กำลังโหลด...</option>
+        </select>
+
+        <div class="input-row">
+          <div class="ig">
+            <label class="field-label">วันที่</label>
+            <input type="date" id="envDate">
+          </div>
+          <div class="ig">
+            <label class="field-label">เวลา</label>
+            <input type="time" id="envTime">
+          </div>
+        </div>
+
+        <div class="env-grid">
+          <div class="env-field">
+            <div class="env-field-label">
+              <i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ
+            </div>
+            <input type="number" class="env-input" id="envTemp" placeholder="0.0" step="0.1" min="0" max="100">
+            <div class="env-unit">°C</div>
+          </div>
+          <div class="env-field">
+            <div class="env-field-label">
+              <i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น
+            </div>
+            <input type="number" class="env-input" id="envHumidity" placeholder="0.0" step="0.1" min="0" max="100">
+            <div class="env-unit">%RH</div>
+          </div>
+        </div>
+
+        <button class="btn-env-save" onclick="saveEnvData()">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+        </button>
+      </div>
+    </div>
+
+    <!-- ประวัติล่าสุด -->
+    <div class="card">
+      <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
+        <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-list" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text">บันทึกล่าสุดวันนี้</span>
+      </div>
+      <div class="card-body" style="padding:12px">
+        <div id="envHistArea"><div class="state-box"><i class="fa-solid fa-inbox"></i>ยังไม่มีข้อมูล</div></div>
+      </div>
+    </div>
+  </div>
+
   <nav class="nav-bar">
     <button class="nav-tab active" id="navStart" onclick="confirmSwitch('start')"><i class="fa-solid fa-circle-play"></i>เริ่มผลิต</button>
     <button class="nav-tab" id="navStop" onclick="confirmSwitch('stop')"><i class="fa-solid fa-circle-stop"></i>หยุดผลิต</button>
     <button class="nav-tab" id="navHours" onclick="confirmSwitch('hours')"><i class="fa-solid fa-clock"></i>ชั่วโมงงาน</button>
     <button class="nav-tab" id="navReport" onclick="showTab('report')"><i class="fa-solid fa-chart-bar"></i>รายงาน</button>
     <button class="nav-tab" id="navHistory" onclick="showTab('history')"><i class="fa-solid fa-clock-rotate-left"></i>ประวัติ</button>
+    <button class="nav-tab" id="navEnv" onclick="showTab('env')" style="display:none"><i class="fa-solid fa-temperature-half"></i>อุณหภูมิ</button>
   </nav>
 </div>
 
@@ -651,6 +742,70 @@ function buildCheckSection(){
     +'<div class="card-body"><div id="checkSection"><div style="color:var(--ink-muted);font-size:0.85rem"><i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...</div></div></div></div>';
 }
 
+// ── Environment ──
+function loadMachineList(){
+  callAPI('getMachines',{},function(res){
+    var sel=document.getElementById('envMachine');
+    if(!sel||!res.machines) return;
+    sel.innerHTML='<option value="">-- เลือกเครื่องจักร --</option>';
+    res.machines.forEach(function(m){
+      var opt=document.createElement('option');
+      opt.value=m; opt.textContent=m;
+      sel.appendChild(opt);
+    });
+  },function(){});
+}
+
+function saveEnvData(){
+  var machine=document.getElementById('envMachine').value;
+  var date=document.getElementById('envDate').value;
+  var time=document.getElementById('envTime').value;
+  var temp=document.getElementById('envTemp').value;
+  var hum=document.getElementById('envHumidity').value;
+  if(!machine){toast('กรุณาเลือกเครื่องจักร','warn');return}
+  if(!date||!time){toast('กรุณาเลือกวันที่และเวลา','warn');return}
+  if(temp===''&&hum===''){toast('กรุณากรอกอุณหภูมิหรือความชื้น','warn');return}
+  var btn=document.querySelector('.btn-env-save');
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  showLoading('กำลังบันทึกข้อมูล...');
+  callAPI('saveEnv',{machine:machine,date:date,time:time,temp:temp,humidity:hum,recorderCode:leaderCode,recorderName:leaderName},
+    function(res){
+      hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล';
+      if(res&&res.success){
+        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูล '+machine+' เรียบร้อย',function(){
+          document.getElementById('envTemp').value='';
+          document.getElementById('envHumidity').value='';
+          var now=new Date();
+          document.getElementById('envTime').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+          loadEnvHistory();
+        });
+      } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||''),'err')}
+    },
+    function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล'}
+  );
+}
+
+function loadEnvHistory(){
+  var area=document.getElementById('envHistArea');
+  area.innerHTML='<div style="color:var(--ink-muted);font-size:0.85rem;padding:8px"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div>';
+  callAPI('getEnvHistory',{date:todayISO()},function(res){
+    if(!res.rows||!res.rows.length){
+      area.innerHTML='<div class="state-box" style="padding:24px 0"><i class="fa-solid fa-inbox"></i>ยังไม่มีข้อมูลวันนี้</div>';return;
+    }
+    area.innerHTML=res.rows.map(function(r){
+      return '<div class="env-history-item">'
+        +'<i class="fa-solid fa-gauge" style="color:#0369A1;font-size:1.1rem;flex-shrink:0"></i>'
+        +'<div style="flex:1;min-width:0">'
+        +'<div class="env-history-machine">'+r.machine+'</div>'
+        +'<div class="env-history-time">'+r.date+' '+r.time+'</div></div>'
+        +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
+        +(r.temp!==''?'<span class="env-badge env-badge-temp"><i class="fa-solid fa-temperature-half"></i>'+r.temp+'°C</span>':'')
+        +(r.humidity!==''?'<span class="env-badge env-badge-hum"><i class="fa-solid fa-droplet"></i>'+r.humidity+'%</span>':'')
+        +'</div></div>';
+    }).join('');
+  },function(){area.innerHTML='<div class="state-box" style="padding:24px 0"><i class="fa-solid fa-circle-exclamation"></i>โหลดไม่สำเร็จ</div>'});
+}
+
 // STATE
 var prodMode='start', scannerProd=null, scannerHours=null, currentPlan=null;
 var machineVal='', orderVal='';
@@ -694,7 +849,8 @@ function doLogin(){
         document.getElementById('navStart').style.display='none';
         document.getElementById('navStop').style.display='none';
         document.getElementById('navHours').style.display='none';
-        loadTeamMembers();showScreen('mainScreen');
+        document.getElementById('navEnv').style.display='flex';
+        loadTeamMembers();loadMachineList();showScreen('mainScreen');
         showTab('report');
       } else {
         document.getElementById('navStart').style.display='';
@@ -706,12 +862,12 @@ function doLogin(){
   },function(e){hideLoading();btn.disabled=false;btn.textContent='เข้าสู่ระบบ';showLoginErr('เกิดข้อผิดพลาด: '+e)});
 }
 function showLoginErr(msg){document.getElementById('loginErrMsg').textContent=msg;document.getElementById('loginErr').style.display='flex'}
-function doLogout(){leaderCode='';leaderName='';userRole='';teamMembers=[];extraMembers=[];resetProductionUI();resetHoursUI();showScreen('loginScreen')}
+function doLogout(){leaderCode='';leaderName='';userRole='';teamMembers=[];extraMembers=[];var ne=document.getElementById('navEnv');if(ne)ne.style.display='none';resetProductionUI();resetHoursUI();showScreen('loginScreen')}
 
 // TABS
 function showTab(tab){
   document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active')});
-  ['navStart','navStop','navHours','navReport','navHistory'].forEach(function(id){
+  ['navStart','navStop','navHours','navReport','navHistory','navEnv'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.className='nav-tab';
   });
   killScan('prod');killScan('hours');
@@ -730,6 +886,16 @@ function showTab(tab){
     document.getElementById('navHistory').className='nav-tab active';
     document.getElementById('histLeaderName').textContent='หัวหน้า: '+leaderName;
     loadHistory();
+  } else if(tab==='env'){
+    document.getElementById('tabEnv').classList.add('active');
+    document.getElementById('navEnv').className='nav-tab active env-active';
+    document.getElementById('envLeaderName').textContent='ผู้คุมงาน: '+leaderName;
+    if(!document.getElementById('envDate').value)document.getElementById('envDate').value=todayISO();
+    if(!document.getElementById('envTime').value){
+      var now=new Date();
+      document.getElementById('envTime').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    }
+    loadEnvHistory();
   } else {
     document.getElementById('tabHours').classList.add('active');
     document.getElementById('navHours').className='nav-tab active hours-active';
