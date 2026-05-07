@@ -837,19 +837,39 @@ function saveEnvData(){
   btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
   showLoading('กำลังบันทึก '+rows.length+' เครื่อง...');
 
-  callAPI('saveEnvBatch',{date:date,time:time,rows:rows,recorderCode:leaderCode,recorderName:leaderName},
-    function(res){
+  // บันทึกทีละเครื่องผ่าน GET (หลีกเลี่ยง CORS)
+  var saved=0;var failed=0;var total=rows.length;
+
+  function saveNext(idx){
+    if(idx>=total){
       hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
-      if(res&&res.success){
-        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูล '+rows.length+' เครื่อง เรียบร้อยแล้ว',function(){
-          // reset ค่า temp/hum ทุก row แต่เก็บเครื่องไว้
+      if(failed===0){
+        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูล '+saved+' เครื่อง เรียบร้อยแล้ว',function(){
           document.querySelectorAll('[id^="mTemp_"],[id^="mHum_"]').forEach(function(el){el.value=''});
           loadEnvHistory();
         });
-      } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||''),'err')}
-    },
-    function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด'}
-  );
+      } else {
+        toast('บันทึกได้ '+saved+'/'+total+' เครื่อง (ผิดพลาด '+failed+' เครื่อง)','warn');
+      }
+      return;
+    }
+    var r=rows[idx];
+    document.getElementById('loadingText').textContent='กำลังบันทึก '+(idx+1)+'/'+total+' เครื่อง...';
+    callAPI('saveEnv',{machine:r.machine,date:date,time:time,temp:r.temp,humidity:r.humidity,recorderCode:leaderCode,recorderName:leaderName},
+      function(res){if(res&&res.success)saved++;else failed++;saveNext(idx+1);},
+      function(){failed++;saveNext(idx+1);}
+    );
+  }
+  saveNext(0);
+}
+
+function formatEnvDate(d){
+  if(!d) return '';
+  try{
+    var p=d.split('-');
+    if(p.length===3) return p[2]+'/'+p[1]+'/'+p[0];
+  }catch(e){}
+  return d;
 }
 
 function loadEnvHistory(){
@@ -864,7 +884,7 @@ function loadEnvHistory(){
         +'<i class="fa-solid fa-gauge" style="color:#0369A1;font-size:1.1rem;flex-shrink:0"></i>'
         +'<div style="flex:1;min-width:0">'
         +'<div class="env-history-machine">'+r.machine+'</div>'
-        +'<div class="env-history-time">'+r.date+' '+r.time+'</div></div>'
+        +'<div class="env-history-time">'+formatEnvDate(r.date)+' '+r.time+'</div></div>'
         +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
         +(r.temp!==''?'<span class="env-badge env-badge-temp"><i class="fa-solid fa-temperature-half"></i>'+r.temp+'°C</span>':'')
         +(r.humidity!==''?'<span class="env-badge env-badge-hum"><i class="fa-solid fa-droplet"></i>'+r.humidity+'%</span>':'')
