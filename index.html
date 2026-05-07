@@ -1094,10 +1094,10 @@ function loadDashboard(){
         +'<div class="dash-machine-body">'
         +'<div class="dash-val-box temp"><div class="dash-val-num">'+(t!==null?t.toFixed(1):'—')+'</div>'
         +'<div class="dash-val-unit">°C</div><div class="dash-val-label">อุณหภูมิ</div>'
-        +(t>TEMP_WARN?'<div style="font-size:0.65rem;color:var(--danger);margin-top:2px">⚠️ เกิน</div>':'')+'</div>'
+        +'</div>'
         +'<div class="dash-val-box hum"><div class="dash-val-num">'+(h!==null?h.toFixed(1):'—')+'</div>'
         +'<div class="dash-val-unit">%RH</div><div class="dash-val-label">ความชื้น</div>'
-        +(h>HUM_WARN?'<div style="font-size:0.65rem;color:var(--danger);margin-top:2px">⚠️ เกิน</div>':'')+'</div>'
+        +'</div>'
         +'</div>'
         +(hasTrend?'<div style="padding:0 12px 12px"><canvas id="miniChart_'+m.replace(/\s/g,'_')+'" height="80"></canvas></div>':'')
         +'</div>';
