@@ -263,6 +263,42 @@
     .btn-add-machine{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;border:1.5px dashed #0369A1;background:#E0F2FE;color:#0369A1;border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;margin-top:4px;transition:opacity 0.15s}
     .btn-add-machine:active{opacity:0.75}
     .nav-tab.env-active{color:#0369A1}
+    .nav-tab.dash-active{color:#7C3AED}
+    .nav-tab.dash-active::before{background:#7C3AED;opacity:1}
+    /* Dashboard */
+    .dash-header-card{background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:16px;padding:18px 20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(124,58,237,0.25);display:flex;align-items:center;gap:14px}
+    .dash-header-icon{width:46px;height:46px;background:rgba(255,255,255,0.2);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;color:white;flex-shrink:0}
+    .dash-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+    .dash-stat{background:white;border-radius:14px;border:1px solid var(--border);padding:16px;text-align:center;box-shadow:0 2px 8px rgba(26,60,120,0.06)}
+    .dash-stat-val{font-size:1.8rem;font-weight:700;line-height:1}
+    .dash-stat-unit{font-size:0.72rem;font-weight:500;margin-top:3px}
+    .dash-stat-label{font-size:0.72rem;color:var(--ink-muted);margin-top:6px}
+    .dash-stat.temp .dash-stat-val{color:#B45309}
+    .dash-stat.temp .dash-stat-unit{color:#B45309}
+    .dash-stat.hum .dash-stat-val{color:#0369A1}
+    .dash-stat.hum .dash-stat-unit{color:#0369A1}
+    .dash-machine-card{background:white;border-radius:14px;border:1px solid var(--border);margin-bottom:10px;overflow:hidden;box-shadow:0 2px 6px rgba(26,60,120,0.05)}
+    .dash-machine-header{display:flex;align-items:center;padding:12px 15px;border-bottom:1px solid var(--border);background:var(--bg)}
+    .dash-machine-name{font-size:0.92rem;font-weight:600;color:var(--ink);flex:1}
+    .dash-machine-time{font-size:0.72rem;color:var(--ink-muted)}
+    .dash-machine-body{display:flex;gap:0}
+    .dash-val-box{flex:1;padding:14px 12px;text-align:center;border-right:1px solid var(--border)}
+    .dash-val-box:last-child{border-right:none}
+    .dash-val-num{font-size:1.5rem;font-weight:700}
+    .dash-val-unit{font-size:0.7rem;font-weight:500;margin-top:2px}
+    .dash-val-label{font-size:0.68rem;color:var(--ink-muted);margin-top:4px}
+    .dash-val-box.temp .dash-val-num{color:#B45309}
+    .dash-val-box.temp .dash-val-unit{color:#B45309}
+    .dash-val-box.hum .dash-val-num{color:#0369A1}
+    .dash-val-box.hum .dash-val-unit{color:#0369A1}
+    .dash-warn{background:#FEF3C7;border:1px solid #FDE68A}
+    .dash-warn .dash-machine-header{background:#FFFBEB}
+    .dash-warn .dash-machine-name::after{content:' ⚠️'}
+    .dash-filter-row{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+    .dash-filter-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--border);background:white;font-family:'Kodchasan',sans-serif;font-size:0.8rem;font-weight:500;color:var(--ink-mid);cursor:pointer;white-space:nowrap;flex-shrink:0}
+    .dash-filter-btn.on{border-color:#7C3AED;background:#F5F3FF;color:#7C3AED;font-weight:600}
+    .dash-empty{text-align:center;padding:40px 20px;color:var(--ink-muted)}
+    .dash-empty i{font-size:2rem;margin-bottom:10px;display:block;opacity:0.35}
     .nav-tab.env-active::before{background:#0369A1;opacity:1}
 
     .toast{position:fixed;bottom:86px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:white;padding:10px 22px;border-radius:30px;font-size:0.87rem;font-weight:500;font-family:'Kodchasan',sans-serif;opacity:0;pointer-events:none;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;z-index:300;box-shadow:0 4px 16px rgba(0,0,0,0.2)}
@@ -530,6 +566,59 @@
     </div>
   </div>
 
+  <!-- TAB: Dashboard อุณหภูมิ-ความชื้น -->
+  <div class="tab-page" id="tabDash">
+    <div class="dash-header-card">
+      <div class="dash-header-icon"><i class="fa-solid fa-gauge-high"></i></div>
+      <div>
+        <div class="wh-header-title">Dashboard อุณหภูมิ &amp; ความชื้น</div>
+        <div class="wh-header-sub" id="dashSub">—</div>
+      </div>
+    </div>
+
+    <!-- Filter วันที่ + ช่วงเวลา -->
+    <div class="card">
+      <div class="card-header" style="background:#F5F3FF;border-bottom-color:#DDD6FE">
+        <div class="step-badge" style="background:#7C3AED"><i class="fa-solid fa-filter" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text">ตัวกรองข้อมูล</span>
+      </div>
+      <div class="card-body">
+        <div class="input-row" style="margin-bottom:10px">
+          <div class="ig"><label class="field-label">วันที่</label><input type="date" id="dashDate"></div>
+          <div class="ig"><label class="field-label">ช่วงเวลา</label>
+            <select class="team-select" id="dashTime" style="border-color:var(--border)">
+              <option value="all">ทั้งวัน</option>
+              <option value="07:00">07:00 น.</option>
+              <option value="08:00">08:00 น.</option>
+              <option value="09:00">09:00 น.</option>
+              <option value="10:00">10:00 น.</option>
+              <option value="11:00">11:00 น.</option>
+              <option value="12:00">12:00 น.</option>
+              <option value="13:00">13:00 น.</option>
+              <option value="14:00">14:00 น.</option>
+              <option value="15:00">15:00 น.</option>
+              <option value="16:00">16:00 น.</option>
+              <option value="17:00">17:00 น.</option>
+              <option value="18:00">18:00 น.</option>
+              <option value="19:00">19:00 น.</option>
+              <option value="20:00">20:00 น.</option>
+              <option value="21:00">21:00 น.</option>
+              <option value="22:00">22:00 น.</option>
+              <option value="23:00">23:00 น.</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-load-report" style="width:100%;background:#7C3AED" onclick="loadDashboard()">
+          <i class="fa-solid fa-chart-line"></i> ดู Dashboard
+        </button>
+      </div>
+    </div>
+
+    <div id="dashContent">
+      <div class="dash-empty"><i class="fa-solid fa-gauge-high"></i>เลือกวันที่แล้วกด "ดู Dashboard"</div>
+    </div>
+  </div>
+
   <nav class="nav-bar">
     <button class="nav-tab active" id="navStart" onclick="confirmSwitch('start')"><i class="fa-solid fa-circle-play"></i>เริ่มผลิต</button>
     <button class="nav-tab" id="navStop" onclick="confirmSwitch('stop')"><i class="fa-solid fa-circle-stop"></i>หยุดผลิต</button>
@@ -537,6 +626,7 @@
     <button class="nav-tab" id="navReport" onclick="showTab('report')"><i class="fa-solid fa-chart-bar"></i>รายงาน</button>
     <button class="nav-tab" id="navHistory" onclick="showTab('history')"><i class="fa-solid fa-clock-rotate-left"></i>ประวัติ</button>
     <button class="nav-tab" id="navEnv" onclick="showTab('env')" style="display:none"><i class="fa-solid fa-temperature-half"></i>อุณหภูมิ</button>
+    <button class="nav-tab" id="navDash" onclick="showTab('dash')" style="display:none"><i class="fa-solid fa-gauge-high"></i>Dashboard</button>
   </nav>
 </div>
 
@@ -893,6 +983,102 @@ function loadEnvHistory(){
   },function(){area.innerHTML='<div class="state-box" style="padding:24px 0"><i class="fa-solid fa-circle-exclamation"></i>โหลดไม่สำเร็จ</div>'});
 }
 
+// ── Dashboard ──
+// อุณหภูมิ/ความชื้น threshold
+var TEMP_WARN = 35;  // °C เกินนี้แจ้งเตือน
+var HUM_WARN  = 80;  // %RH เกินนี้แจ้งเตือน
+
+function loadDashboard(){
+  var date=document.getElementById('dashDate').value;
+  var time=document.getElementById('dashTime').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  var area=document.getElementById('dashContent');
+  area.innerHTML='<div class="dash-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+
+  callAPI('getDashboard',{date:date,time:time},function(res){
+    if(!res.success||!res.rows||!res.rows.length){
+      area.innerHTML='<div class="dash-empty"><i class="fa-solid fa-inbox"></i>ไม่พบข้อมูลในช่วงเวลานี้</div>';
+      return;
+    }
+
+    // จัดกลุ่มตามเครื่อง — ใช้ค่าล่าสุดของแต่ละเครื่อง
+    var machineMap={};
+    res.rows.forEach(function(r){
+      if(!machineMap[r.machine]||r.rawTime>=machineMap[r.machine].rawTime){
+        machineMap[r.machine]=r;
+      }
+    });
+    var machines=Object.values(machineMap).sort(function(a,b){return a.machine.localeCompare(b.machine)});
+
+    // summary: avg temp/hum
+    var temps=machines.filter(function(m){return m.temp!==''}).map(function(m){return parseFloat(m.temp)||0});
+    var hums =machines.filter(function(m){return m.humidity!==''}).map(function(m){return parseFloat(m.humidity)||0});
+    var avgTemp=temps.length?temps.reduce(function(a,b){return a+b},0)/temps.length:null;
+    var avgHum =hums.length?hums.reduce(function(a,b){return a+b},0)/hums.length:null;
+    var maxTemp=temps.length?Math.max.apply(null,temps):null;
+    var minHum =hums.length?Math.min.apply(null,hums):null;
+    var warnCount=machines.filter(function(m){
+      return (m.temp!==''&&parseFloat(m.temp)>TEMP_WARN)||(m.humidity!==''&&parseFloat(m.humidity)>HUM_WARN);
+    }).length;
+
+    var timeLabel=time==='all'?'ทั้งวัน':'ช่วง '+time+' น.';
+    var html='';
+
+    // Alert banner
+    if(warnCount>0){
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:13px 16px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:12px;margin-bottom:14px">'
+        +'<i class="fa-solid fa-triangle-exclamation" style="color:#B45309;font-size:1.2rem"></i>'
+        +'<div><div style="font-weight:600;color:#B45309">พบค่าเกินขีดจำกัด '+warnCount+' เครื่อง</div>'
+        +'<div style="font-size:0.78rem;color:#92400E">อุณหภูมิ &gt;'+TEMP_WARN+'°C หรือความชื้น &gt;'+HUM_WARN+'%RH</div></div></div>';
+    }
+
+    // Summary cards
+    html+='<div class="dash-stat-row">'
+      +'<div class="dash-stat temp"><div class="dash-stat-val">'+(avgTemp!==null?avgTemp.toFixed(1):'—')+'</div><div class="dash-stat-unit">°C</div><div class="dash-stat-label">อุณหภูมิเฉลี่ย</div></div>'
+      +'<div class="dash-stat hum"><div class="dash-stat-val">'+(avgHum!==null?avgHum.toFixed(1):'—')+'</div><div class="dash-stat-unit">%RH</div><div class="dash-stat-label">ความชื้นเฉลี่ย</div></div>'
+      +'</div>'
+      +'<div class="dash-stat-row" style="margin-bottom:16px">'
+      +'<div class="dash-stat temp"><div class="dash-stat-val">'+(maxTemp!==null?maxTemp.toFixed(1):'—')+'</div><div class="dash-stat-unit">°C</div><div class="dash-stat-label">สูงสุด</div></div>'
+      +'<div class="dash-stat" style="border-color:var(--border)"><div class="dash-stat-val" style="color:var(--ink);font-size:1.5rem">'+machines.length+'</div><div class="dash-stat-unit" style="color:var(--ink-muted)">เครื่อง</div><div class="dash-stat-label">ทั้งหมด</div></div>'
+      +'</div>';
+
+    // Section header
+    html+='<div style="font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">'
+      +'<i class="fa-solid fa-industry" style="margin-right:6px;color:#7C3AED"></i>รายละเอียดแต่ละเครื่อง · '+timeLabel+'</div>';
+
+    // Machine cards
+    machines.forEach(function(m){
+      var t=m.temp!==''?parseFloat(m.temp):null;
+      var h=m.humidity!==''?parseFloat(m.humidity):null;
+      var isWarn=(t!==null&&t>TEMP_WARN)||(h!==null&&h>HUM_WARN);
+      html+='<div class="dash-machine-card'+(isWarn?' dash-warn':'')+'">'
+        +'<div class="dash-machine-header">'
+        +'<i class="fa-solid fa-industry" style="color:#7C3AED;margin-right:8px;font-size:0.85rem"></i>'
+        +'<span class="dash-machine-name">'+m.machine+'</span>'
+        +'<span class="dash-machine-time">'+m.date+' '+m.time+'</span>'
+        +'</div>'
+        +'<div class="dash-machine-body">'
+        +'<div class="dash-val-box temp">'
+        +'<div class="dash-val-num">'+(t!==null?t.toFixed(1):'—')+'</div>'
+        +'<div class="dash-val-unit">°C</div>'
+        +'<div class="dash-val-label">อุณหภูมิ</div>'
+        +(t!==null&&t>TEMP_WARN?'<div style="font-size:0.65rem;color:var(--danger);margin-top:2px">⚠️ เกินกำหนด</div>':'')
+        +'</div>'
+        +'<div class="dash-val-box hum">'
+        +'<div class="dash-val-num">'+(h!==null?h.toFixed(1):'—')+'</div>'
+        +'<div class="dash-val-unit">%RH</div>'
+        +'<div class="dash-val-label">ความชื้น</div>'
+        +(h!==null&&h>HUM_WARN?'<div style="font-size:0.65rem;color:var(--danger);margin-top:2px">⚠️ เกินกำหนด</div>':'')
+        +'</div>'
+        +'</div></div>';
+    });
+
+    area.innerHTML=html;
+  },function(e){
+    area.innerHTML='<div class="dash-empty"><i class="fa-solid fa-circle-exclamation"></i>โหลดไม่สำเร็จ: '+e+'</div>';
+  });
+}
+
 // STATE
 var prodMode='start', scannerProd=null, scannerHours=null, currentPlan=null;
 var machineVal='', orderVal='';
@@ -937,6 +1123,7 @@ function doLogin(){
         document.getElementById('navStop').style.display='none';
         document.getElementById('navHours').style.display='none';
         document.getElementById('navEnv').style.display='flex';
+        document.getElementById('navDash').style.display='flex';
         loadTeamMembers();loadMachineList();showScreen('mainScreen');
         showTab('report');
       } else {
@@ -949,12 +1136,12 @@ function doLogin(){
   },function(e){hideLoading();btn.disabled=false;btn.textContent='เข้าสู่ระบบ';showLoginErr('เกิดข้อผิดพลาด: '+e)});
 }
 function showLoginErr(msg){document.getElementById('loginErrMsg').textContent=msg;document.getElementById('loginErr').style.display='flex'}
-function doLogout(){leaderCode='';leaderName='';userRole='';teamMembers=[];extraMembers=[];var ne=document.getElementById('navEnv');if(ne)ne.style.display='none';resetProductionUI();resetHoursUI();showScreen('loginScreen')}
+function doLogout(){leaderCode='';leaderName='';userRole='';teamMembers=[];extraMembers=[];var ne=document.getElementById('navEnv');if(ne)ne.style.display='none';var nd=document.getElementById('navDash');if(nd)nd.style.display='none';resetProductionUI();resetHoursUI();showScreen('loginScreen')}
 
 // TABS
 function showTab(tab){
   document.querySelectorAll('.tab-page').forEach(function(p){p.classList.remove('active')});
-  ['navStart','navStop','navHours','navReport','navHistory','navEnv'].forEach(function(id){
+  ['navStart','navStop','navHours','navReport','navHistory','navEnv','navDash'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.className='nav-tab';
   });
   killScan('prod');killScan('hours');
@@ -973,6 +1160,11 @@ function showTab(tab){
     document.getElementById('navHistory').className='nav-tab active';
     document.getElementById('histLeaderName').textContent='หัวหน้า: '+leaderName;
     loadHistory();
+  } else if(tab==='dash'){
+    document.getElementById('tabDash').classList.add('active');
+    document.getElementById('navDash').className='nav-tab active dash-active';
+    document.getElementById('dashSub').textContent='ผู้คุมงาน: '+leaderName;
+    if(!document.getElementById('dashDate').value)document.getElementById('dashDate').value=todayISO();
   } else if(tab==='env'){
     document.getElementById('tabEnv').classList.add('active');
     document.getElementById('navEnv').className='nav-tab active env-active';
