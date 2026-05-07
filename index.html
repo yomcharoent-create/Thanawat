@@ -254,6 +254,14 @@
     .env-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:0.82rem;font-weight:600}
     .env-badge-temp{background:#FEF3C7;color:#B45309}
     .env-badge-hum{background:#E0F2FE;color:#0369A1}
+    .machine-row{background:white;border:1.5px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:10px;transition:border-color 0.15s}
+    .machine-row:focus-within{border-color:#0369A1}
+    .machine-row-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .machine-row-name{font-size:0.88rem;font-weight:600;color:var(--ink)}
+    .machine-row-remove{background:none;border:none;color:var(--ink-muted);cursor:pointer;font-size:0.9rem;padding:2px 6px}
+    .machine-row-remove:active{color:var(--danger)}
+    .btn-add-machine{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;border:1.5px dashed #0369A1;background:#E0F2FE;color:#0369A1;border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;margin-top:4px;transition:opacity 0.15s}
+    .btn-add-machine:active{opacity:0.75}
     .nav-tab.env-active{color:#0369A1}
     .nav-tab.env-active::before{background:#0369A1;opacity:1}
 
@@ -460,66 +468,52 @@
       </div>
     </div>
 
-    <!-- เลือกเครื่องและเวลา -->
+    <!-- วันที่ + เวลา -->
+    <div class="card">
+      <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
+        <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-calendar" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text">วันที่และช่วงเวลา</span>
+      </div>
+      <div class="card-body">
+        <label class="field-label">วันที่</label>
+        <input type="date" id="envDate" style="margin-bottom:14px">
+        <label class="field-label">ช่วงเวลา</label>
+        <select class="team-select" id="envTime" style="border-color:var(--border)">
+          <option value="07:00">07:00 น.</option>
+          <option value="08:00">08:00 น.</option>
+          <option value="09:00">09:00 น.</option>
+          <option value="10:00">10:00 น.</option>
+          <option value="11:00">11:00 น.</option>
+          <option value="12:00">12:00 น.</option>
+          <option value="13:00">13:00 น.</option>
+          <option value="14:00">14:00 น.</option>
+          <option value="15:00">15:00 น.</option>
+          <option value="16:00">16:00 น.</option>
+          <option value="17:00">17:00 น.</option>
+          <option value="18:00">18:00 น.</option>
+          <option value="19:00">19:00 น.</option>
+          <option value="20:00">20:00 น.</option>
+          <option value="21:00">21:00 น.</option>
+          <option value="22:00">22:00 น.</option>
+          <option value="23:00">23:00 น.</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ข้อมูลเครื่องจักร (หลายเครื่อง) -->
     <div class="card">
       <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
         <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-sliders" style="font-size:0.7rem"></i></div>
-        <span class="card-header-text">ข้อมูลการวัด</span>
+        <span class="card-header-text">ข้อมูลเครื่องจักร</span>
+        <span style="font-size:0.72rem;color:#0369A1;margin-left:auto" id="envMachineCount">0 เครื่อง</span>
       </div>
       <div class="card-body">
-        <label class="field-label">เครื่องจักร</label>
-        <select class="team-select" id="envMachine" style="margin-bottom:14px;border-color:var(--border)">
-          <option value="">กำลังโหลด...</option>
-        </select>
-
-        <div class="input-row">
-          <div class="ig">
-            <label class="field-label">วันที่</label>
-            <input type="date" id="envDate">
-          </div>
-          <div class="ig">
-            <label class="field-label">ช่วงเวลา</label>
-            <select class="team-select" id="envTime" style="margin-bottom:0;border-color:var(--border)">
-              <option value="07:00">07:00 น.</option>
-              <option value="08:00">08:00 น.</option>
-              <option value="09:00">09:00 น.</option>
-              <option value="10:00">10:00 น.</option>
-              <option value="11:00">11:00 น.</option>
-              <option value="12:00">12:00 น.</option>
-              <option value="13:00">13:00 น.</option>
-              <option value="14:00">14:00 น.</option>
-              <option value="15:00">15:00 น.</option>
-              <option value="16:00">16:00 น.</option>
-              <option value="17:00">17:00 น.</option>
-              <option value="18:00">18:00 น.</option>
-              <option value="19:00">19:00 น.</option>
-              <option value="20:00">20:00 น.</option>
-              <option value="21:00">21:00 น.</option>
-              <option value="22:00">22:00 น.</option>
-              <option value="23:00">23:00 น.</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="env-grid">
-          <div class="env-field">
-            <div class="env-field-label">
-              <i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ
-            </div>
-            <input type="number" class="env-input" id="envTemp" placeholder="0.0" step="0.1" min="0" max="100">
-            <div class="env-unit">°C</div>
-          </div>
-          <div class="env-field">
-            <div class="env-field-label">
-              <i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น
-            </div>
-            <input type="number" class="env-input" id="envHumidity" placeholder="0.0" step="0.1" min="0" max="100">
-            <div class="env-unit">%RH</div>
-          </div>
-        </div>
-
-        <button class="btn-env-save" onclick="saveEnvData()">
-          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+        <div id="envMachineRows"></div>
+        <button class="btn-add-machine" onclick="addMachineRow()">
+          <i class="fa-solid fa-plus"></i> เพิ่มเครื่องจักร
+        </button>
+        <button class="btn-env-save" style="margin-top:16px" onclick="saveEnvData()">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด
         </button>
       </div>
     </div>
@@ -761,45 +755,100 @@ function buildCheckSection(){
 }
 
 // ── Environment ──
+var _machineOptions = []; // cache machine list
+var _machineRowCount = 0;
+
 function loadMachineList(){
   callAPI('getMachines',{},function(res){
-    var sel=document.getElementById('envMachine');
-    if(!sel||!res.machines) return;
-    sel.innerHTML='<option value="">-- เลือกเครื่องจักร --</option>';
-    res.machines.forEach(function(m){
-      var opt=document.createElement('option');
-      opt.value=m; opt.textContent=m;
-      sel.appendChild(opt);
-    });
+    if(!res.machines) return;
+    _machineOptions = res.machines;
+    // เพิ่ม row แรกอัตโนมัติ
+    if(document.getElementById('envMachineRows').children.length===0) addMachineRow();
   },function(){});
 }
 
+function buildMachineSelect(rowId, selectedVal){
+  var opts='<option value="">-- เลือกเครื่อง --</option>';
+  _machineOptions.forEach(function(m){
+    opts+='<option value="'+m+'"'+(m===selectedVal?' selected':'')+'>'+m+'</option>';
+  });
+  return '<select class="team-select" id="mSel_'+rowId+'" style="margin-bottom:10px;border-color:var(--border)">'+opts+'</select>';
+}
+
+function addMachineRow(){
+  _machineRowCount++;
+  var id=_machineRowCount;
+  var wrap=document.getElementById('envMachineRows');
+  var div=document.createElement('div');
+  div.className='machine-row';
+  div.id='mrow_'+id;
+  div.innerHTML='<div class="machine-row-header">'
+    +'<span class="machine-row-name"><i class="fa-solid fa-industry" style="margin-right:6px;color:#0369A1;font-size:0.8rem"></i>เครื่องที่ '+id+'</span>'
+    +(id>1?'<button class="machine-row-remove" onclick="removeMachineRow('+id+')"><i class="fa-solid fa-xmark"></i></button>':'')
+    +'</div>'
+    +buildMachineSelect(id,'')
+    +'<div class="env-grid">'
+    +'<div class="env-field"><div class="env-field-label"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>'
+    +'<input type="number" class="env-input" id="mTemp_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
+    +'<div class="env-unit">°C</div></div>'
+    +'<div class="env-field"><div class="env-field-label"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>'
+    +'<input type="number" class="env-input" id="mHum_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
+    +'<div class="env-unit">%RH</div></div>'
+    +'</div>';
+  wrap.appendChild(div);
+  updateMachineCount();
+}
+
+function removeMachineRow(id){
+  var el=document.getElementById('mrow_'+id);
+  if(el) el.remove();
+  updateMachineCount();
+}
+
+function updateMachineCount(){
+  var c=document.getElementById('envMachineRows').children.length;
+  var cnt=document.getElementById('envMachineCount');
+  if(cnt) cnt.textContent=c+' เครื่อง';
+}
+
 function saveEnvData(){
-  var machine=document.getElementById('envMachine').value;
   var date=document.getElementById('envDate').value;
   var time=document.getElementById('envTime').value;
-  var temp=document.getElementById('envTemp').value;
-  var hum=document.getElementById('envHumidity').value;
-  if(!machine){toast('กรุณาเลือกเครื่องจักร','warn');return}
-  if(!date||!time){toast('กรุณาเลือกวันที่และเวลา','warn');return}
-  if(temp===''&&hum===''){toast('กรุณากรอกอุณหภูมิหรือความชื้น','warn');return}
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  if(!time){toast('กรุณาเลือกช่วงเวลา','warn');return}
+
+  // เก็บข้อมูลทุก row
+  var rows=[];
+  var wrap=document.getElementById('envMachineRows');
+  var hasErr=false;
+  Array.from(wrap.children).forEach(function(row){
+    var id=row.id.replace('mrow_','');
+    var machine=(document.getElementById('mSel_'+id)||{}).value||'';
+    var temp=(document.getElementById('mTemp_'+id)||{}).value||'';
+    var hum=(document.getElementById('mHum_'+id)||{}).value||'';
+    if(!machine){hasErr=true;document.getElementById('mSel_'+id).style.borderColor='var(--danger)';return}
+    if(temp===''&&hum===''){hasErr=true;return}
+    rows.push({machine:machine,temp:temp,humidity:hum});
+  });
+  if(!rows.length){toast('กรุณากรอกข้อมูลอย่างน้อย 1 เครื่อง','warn');return}
+  if(hasErr){toast('กรุณากรอกข้อมูลให้ครบทุกเครื่อง','warn');return}
+
   var btn=document.querySelector('.btn-env-save');
   btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-  showLoading('กำลังบันทึกข้อมูล...');
-  callAPI('saveEnv',{machine:machine,date:date,time:time,temp:temp,humidity:hum,recorderCode:leaderCode,recorderName:leaderName},
+  showLoading('กำลังบันทึก '+rows.length+' เครื่อง...');
+
+  callAPI('saveEnvBatch',{date:date,time:time,rows:rows,recorderCode:leaderCode,recorderName:leaderName},
     function(res){
-      hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล';
+      hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
       if(res&&res.success){
-        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูล '+machine+' เรียบร้อย',function(){
-          document.getElementById('envTemp').value='';
-          document.getElementById('envHumidity').value='';
-          var now=new Date();
-          var rH=new Date().getHours();var rStr=String(rH).padStart(2,'0')+':00';var rSel=document.getElementById('envTime');if(rSel){for(var ro=0;ro<rSel.options.length;ro++){if(rSel.options[ro].value===rStr){rSel.value=rStr;break}}}
+        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูล '+rows.length+' เครื่อง เรียบร้อยแล้ว',function(){
+          // reset ค่า temp/hum ทุก row แต่เก็บเครื่องไว้
+          document.querySelectorAll('[id^="mTemp_"],[id^="mHum_"]').forEach(function(el){el.value=''});
           loadEnvHistory();
         });
       } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||''),'err')}
     },
-    function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล'}
+    function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด'}
   );
 }
 
@@ -912,13 +961,9 @@ function showTab(tab){
     // set ชั่วโมงปัจจุบัน
     var nowH=new Date().getHours();
     var hStr=String(nowH).padStart(2,'0')+':00';
-    var sel=document.getElementById('envTime');
-    if(sel){
-      // หา option ที่ใกล้ที่สุด
-      var found=false;
-      for(var o=0;o<sel.options.length;o++){if(sel.options[o].value===hStr){sel.value=hStr;found=true;break}}
-      if(!found) sel.selectedIndex=0;
-    }
+    var tSel=document.getElementById('envTime');
+    if(tSel){var found=false;for(var o=0;o<tSel.options.length;o++){if(tSel.options[o].value===hStr){tSel.value=hStr;found=true;break}}if(!found)tSel.selectedIndex=0;}
+    loadMachineList();
     loadEnvHistory();
   } else {
     document.getElementById('tabHours').classList.add('active');
