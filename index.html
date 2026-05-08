@@ -1512,7 +1512,7 @@ function renderBreakDashboard(res){
       +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#991B1B">'+(last.side2!=='-'?parseFloat(last.side2).toFixed(2):'—')+'</div><div class="dash-val-unit" style="color:#991B1B">ครั้ง</div><div class="dash-val-label">ฝั่ง 2</div></div>'
       +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#7C3AED">'+(last.totalAuk!=='-'?last.totalAuk:'—')+'</div><div class="dash-val-unit" style="color:#7C3AED">อัก</div><div class="dash-val-label">อักรวม</div></div>'
       +'</div>'
-      +'<div style="padding:0 12px 12px"><canvas id="miniBreak_'+m.replace(/[^a-zA-Z0-9]/g,'_')+'" height="100"></canvas></div>'
+      +'<div style="padding:0 12px 12px"><canvas id="miniBreak_'+m.replace(/[^a-zA-Z0-9]/g,'_')+'" height="200"></canvas></div>'
       +'</div>';
   });
 
@@ -1560,8 +1560,8 @@ function renderBreakDashboard(res){
       });
       var bActMin=bVals.length?Math.min.apply(null,bVals):0;
       var bActMax=bVals.length?Math.max.apply(null,bVals):50;
-      var bMin=Math.max(0,Math.floor((bActMin-10)/5)*5);
-      var bMax=Math.ceil((bActMax+10)/5)*5;
+      var bMin=Math.max(0,Math.floor((bActMin-3)/5)*5);
+      var bMax=Math.ceil((bActMax+3)/5)*5;
       var mc=new Chart(canvas,{type:'line',
         data:{labels:mData.map(function(r){return r.time}),datasets:[
           {label:'ฝั่ง 1',data:mData.map(function(r){return r.side1!=='-'&&r.side1!==''?parseFloat(r.side1):null}),
