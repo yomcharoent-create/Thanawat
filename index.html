@@ -586,40 +586,66 @@
   </div>
 
   <!-- TAB: Dashboard อุณหภูมิ-ความชื้น -->
-<div class="tab-page" id="tabDash">
-  <div class="dash-header-card">
-    <div class="dash-header-icon"><i class="fa-solid fa-gauge-high"></i></div>
-    <div>
-      <div class="wh-header-title">Dashboard ระบบสาวไหม</div>
-      <div class="wh-header-sub" id="dashSub">—</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header" style="background:#F5F3FF;border-bottom-color:#DDD6FE">
-      <div class="step-badge" style="background:#7C3AED"><i class="fa-solid fa-filter" style="font-size:0.7rem"></i></div>
-      <span class="card-header-text">ตัวกรองข้อมูลเเดชบอร์ด</span>
-    </div>
-    <div class="card-body">
-      <label class="field-label">วันที่</label>
-      <input type="date" id="dashDate" style="margin-bottom:14px;width:100%;">
-      
-      <label class="field-label">เลือกประเภทข้อมูล</label>
-      <div class="period-row" style="margin-bottom:14px">
-        <button class="period-btn on" id="viewEnv" onclick="switchDashView('env')">อุณหภูมิ/ความชื้น</button>
-        <button class="period-btn" id="viewBreak" onclick="switchDashView('break')">อัตราการเบรค</button>
+  <div class="tab-page" id="tabDash">
+    <div class="dash-header-card">
+      <div class="dash-header-icon"><i class="fa-solid fa-gauge-high"></i></div>
+      <div>
+        <div class="wh-header-title">Dashboard อุณหภูมิ &amp; ความชื้น</div>
+        <div class="wh-header-sub" id="dashSub">—</div>
       </div>
+    </div>
 
-      <button class="btn-load-report" style="width:100%;background:#7C3AED" onclick="loadDashboard()">
-        <i class="fa-solid fa-chart-line"></i> ดู Dashboard
+    <!-- Filter วันที่ + ช่วงเวลา -->
+    <div class="card">
+      <div class="card-header" style="background:#F5F3FF;border-bottom-color:#DDD6FE">
+        <div class="step-badge" style="background:#7C3AED"><i class="fa-solid fa-filter" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text">ตัวกรองข้อมูล</span>
+      </div>
+      <div class="card-body">
+        <label class="field-label">วันที่</label>
+        <input type="date" id="dashDate" style="margin-bottom:14px;width:100%;box-sizing:border-box;-webkit-appearance:none">
+        <label class="field-label">ช่วงเวลา</label>
+        <select class="team-select" id="dashTime" style="margin-bottom:14px;border-color:var(--border)">
+          <option value="all">ทั้งวัน</option>
+          <option value="07:00">07:00 น.</option>
+          <option value="08:00">08:00 น.</option>
+          <option value="09:00">09:00 น.</option>
+          <option value="10:00">10:00 น.</option>
+          <option value="11:00">11:00 น.</option>
+          <option value="12:00">12:00 น.</option>
+          <option value="13:00">13:00 น.</option>
+          <option value="14:00">14:00 น.</option>
+          <option value="15:00">15:00 น.</option>
+          <option value="16:00">16:00 น.</option>
+          <option value="17:00">17:00 น.</option>
+          <option value="18:00">18:00 น.</option>
+          <option value="19:00">19:00 น.</option>
+          <option value="20:00">20:00 น.</option>
+          <option value="21:00">21:00 น.</option>
+          <option value="22:00">22:00 น.</option>
+          <option value="23:00">23:00 น.</option>
+        </select>
+        <button class="btn-load-report" style="width:100%;background:#7C3AED" onclick="loadDashboard()">
+          <i class="fa-solid fa-chart-line"></i> ดู Dashboard
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Toggle Mode -->
+    <div style="display:flex;gap:8px;margin-bottom:14px" id="dashToggleRow" style="display:none">
+      <button class="period-btn on" id="dashModeEnv" onclick="setDashMode('env')" style="flex:1;border-color:#0369A1;background:#E0F2FE;color:#0369A1">
+        <i class="fa-solid fa-temperature-half" style="margin-right:5px"></i>อุณหภูมิ/ความชื้น
+      </button>
+      <button class="period-btn" id="dashModeBreak" onclick="setDashMode('break')" style="flex:1">
+        <i class="fa-solid fa-scissors" style="margin-right:5px"></i>อัตราการเบรค
       </button>
     </div>
-  </div>
 
-  <div id="dashContent">
-    <div class="dash-empty"><i class="fa-solid fa-gauge-high"></i>เลือกวันที่แล้วกด "ดู Dashboard"</div>
+    <div id="dashContent">
+      <div class="dash-empty"><i class="fa-solid fa-gauge-high"></i>เลือกวันที่แล้วกด "ดู Dashboard"</div>
+    </div>
   </div>
-</div>
 
   <!-- TAB: บันทึกการเบรคไหม -->
   <div class="tab-page" id="tabBreak">
@@ -1076,129 +1102,94 @@ function populateBreakMachines(){
   // ไม่ใช้แล้ว — ใช้ buildBreakMachineSelect แทน
 }
 
-function buildBreakMachineSelect(rowId, selected) {
-  var opts = '<option value="">-- เลือกเครื่อง --</option>';
-  _machineOptions.forEach(function(m) {
-    opts += '<option value="' + m + '"' + (m === selected ? ' selected' : '') + '>' + m + '</option>';
+function buildBreakMachineSelect(rowId, selected){
+  var opts='<option value="">-- เลือกเครื่อง --</option>';
+  _machineOptions.forEach(function(m){
+    opts+='<option value="'+m+'"'+(m===selected?' selected':'')+'>'+m+'</option>';
   });
-  return '<select class="team-select" id="bSel_' + rowId + '" style="margin-bottom:10px; border-color:var(--border)">' + opts + '</select>';
+  return '<select class="team-select" id="bSel_'+rowId+'" style="margin-bottom:10px;border-color:var(--border)">'+opts+'</select>';
 }
 
-function addBreakRow() {
+function addBreakRow(){
   _breakRowCount++;
-  var id = _breakRowCount;
-  var wrap = document.getElementById('breakMachineRows');
-  var div = document.createElement('div');
-  div.className = 'machine-row';
-  div.id = 'brow_' + id;
-  div.innerHTML = `
-    <div class="machine-row-header">
-      <span class="machine-row-name"><i class="fa-solid fa-industry" style="margin-right:6px;color:#DC2626;font-size:0.8rem"></i>เครื่องที่ ${id}</span>
-      ${id > 1 ? `<button class="machine-row-remove" onclick="removeBreakRow(${id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
-    </div>
-    ${buildBreakMachineSelect(id, '')}
-    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
-      <div>
-        <div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke" style="color:#DC2626"></i> ฝั่ง 1</div>
-        <input type="number" class="break-input" id="bS1_${id}" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">
-        <div class="break-unit">ครั้ง/100ม.</div>
-      </div>
-      <div>
-        <div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke fa-flip-horizontal" style="color:#991B1B"></i> ฝั่ง 2</div>
-        <input type="number" class="break-input" id="bS2_${id}" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">
-        <div class="break-unit">ครั้ง/100ม.</div>
-      </div>
-      <div>
-        <div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-layer-group" style="color:#7C3AED"></i> อักรวม</div>
-        <input type="number" class="break-input" id="bAuk_${id}" placeholder="0" step="1" min="0" style="font-size:0.95rem; border-color:rgba(124,58,237,0.2)">
-        <div class="break-unit">อัก</div>
-      </div>
-    </div>`;
+  var id=_breakRowCount;
+  var wrap=document.getElementById('breakMachineRows');
+  var div=document.createElement('div');
+  div.className='machine-row';div.id='brow_'+id;
+  div.innerHTML='<div class="machine-row-header">'
+    +'<span class="machine-row-name"><i class="fa-solid fa-industry" style="margin-right:6px;color:#DC2626;font-size:0.8rem"></i>เครื่องที่ '+id+'</span>'
+    +(id>1?'<button class="machine-row-remove" onclick="removeBreakRow('+id+')"><i class="fa-solid fa-xmark"></i></button>':'')
+    +'</div>'
+    +buildBreakMachineSelect(id,'')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">'
+    +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke" style="color:#DC2626"></i> ฝั่ง 1</div>'
+    +'<input type="number" class="break-input" id="bS1_'+id+'" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">'
+    +'<div class="break-unit">ครั้ง</div></div>'
+    +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke fa-flip-horizontal" style="color:#991B1B"></i> ฝั่ง 2</div>'
+    +'<input type="number" class="break-input" id="bS2_'+id+'" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">'
+    +'<div class="break-unit">ครั้ง</div></div>'
+    +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-layer-group" style="color:#7C3AED"></i> อักรวม</div>'
+    +'<input type="number" class="break-input" id="bAuk_'+id+'" placeholder="0" step="1" min="0" style="font-size:0.95rem;border-color:rgba(124,58,237,0.2)">'
+    +'<div class="break-unit">อัก</div></div>'
+    +'</div>';
   wrap.appendChild(div);
   updateBreakCount();
 }
 
-function removeBreakRow(id) {
-  var el = document.getElementById('brow_' + id);
-  if (el) el.remove();
+function removeBreakRow(id){
+  var el=document.getElementById('brow_'+id);if(el)el.remove();
   updateBreakCount();
 }
 
-function updateBreakCount() {
-  var c = document.getElementById('breakMachineRows').children.length;
-  var cnt = document.getElementById('breakMachineCount');
-  if (cnt) cnt.textContent = c + ' เครื่อง';
+function updateBreakCount(){
+  var c=document.getElementById('breakMachineRows').children.length;
+  var cnt=document.getElementById('breakMachineCount');
+  if(cnt) cnt.textContent=c+' เครื่อง';
 }
 
-function saveBreakData() {
-  var date = document.getElementById('breakDate').value;
-  var time = document.getElementById('breakTime').value;
-  if (!date) { toast('กรุณาเลือกวันที่', 'warn'); return; }
-
-  var wrap = document.getElementById('breakMachineRows');
-  var rows = [];
-  var hasErr = false;
-
-  Array.from(wrap.children).forEach(function(row) {
-    var id = row.id.replace('brow_', '');
-    var machine = document.getElementById('bSel_' + id).value;
-    var s1 = document.getElementById('bS1_' + id).value;
-    var s2 = document.getElementById('bS2_' + id).value;
-    var auk = document.getElementById('bAuk_' + id).value;
-
-    if (!machine) {
-      document.getElementById('bSel_' + id).style.borderColor = 'var(--danger)';
-      hasErr = true;
-    } else if (s1 === '' && s2 === '') {
-      hasErr = true;
-    } else {
-      rows.push({ machine: machine, side1: s1, side2: s2, totalAuk: auk });
-    }
+function saveBreakData(){
+  var date=document.getElementById('breakDate').value;
+  var time=document.getElementById('breakTime').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  var wrap=document.getElementById('breakMachineRows');
+  var rows=[];var hasErr=false;
+  Array.from(wrap.children).forEach(function(row){
+    var id=row.id.replace('brow_','');
+    var machine=(document.getElementById('bSel_'+id)||{}).value||'';
+    var s1=(document.getElementById('bS1_'+id)||{}).value||'';
+    var s2=(document.getElementById('bS2_'+id)||{}).value||'';
+    var auk=(document.getElementById('bAuk_'+id)||{}).value||'';
+    if(!machine){hasErr=true;var sel=document.getElementById('bSel_'+id);if(sel)sel.style.borderColor='var(--danger)';return}
+    if(s1===''&&s2===''){hasErr=true;return}
+    rows.push({machine:machine,side1:s1,side2:s2,totalAuk:auk});
   });
+  if(!rows.length){toast('กรุณากรอกข้อมูลอย่างน้อย 1 เครื่อง','warn');return}
+  if(hasErr){toast('กรุณากรอกข้อมูลให้ครบทุกเครื่อง','warn');return}
 
-  if (hasErr || rows.length === 0) {
-    toast('กรุณาเลือกเครื่องจักรและกรอกข้อมูลให้ครบ', 'warn');
-    return;
-  }
+  var btn=document.querySelector('.btn-break-save');
+  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  showLoading('กำลังบันทึก '+rows.length+' เครื่อง...');
 
-  var btn = document.querySelector('.btn-break-save');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-  showLoading('กำลังบันทึกข้อมูล ' + rows.length + ' เครื่อง...');
-
-  // ส่งบันทึกทีละแถว (Queue)
-  var saved = 0; var failed = 0;
-  function processQueue(idx) {
-    if (idx >= rows.length) {
-      hideLoading();
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
-      if (failed === 0) {
-        showSuccess('บันทึกสำเร็จ', 'บันทึกข้อมูลเบรคไหมจำนวน ' + saved + ' รายการเรียบร้อยแล้ว', function() {
-          // ล้างข้อมูลในช่อง input
-          document.querySelectorAll('[id^="bS1_"], [id^="bS2_"], [id^="bAuk_"]').forEach(el => el.value = '');
+  var saved=0,failed=0,total=rows.length;
+  function saveNext(idx){
+    if(idx>=total){
+      hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
+      if(failed===0){
+        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูลเบรค '+saved+' เครื่อง เรียบร้อยแล้ว',function(){
+          document.querySelectorAll('[id^="bS1_"],[id^="bS2_"],[id^="bAuk_"]').forEach(function(el){el.value=''});
           loadBreakHistory();
         });
-      } else {
-        toast('บันทึกสำเร็จ ' + saved + ' รายการ, ผิดพลาด ' + failed + ' รายการ', 'warn');
-      }
+      } else {toast('บันทึกได้ '+saved+'/'+total+' เครื่อง','warn')}
       return;
     }
-
-    var r = rows[idx];
-    callAPI('saveBreak', {
-      date: date, time: time, machine: r.machine,
-      side1: r.side1, side2: r.side2, totalAuk: r.totalAuk,
-      recorderCode: leaderCode, recorderName: leaderName
-    }, function(res) {
-      if (res.success) saved++; else failed++;
-      processQueue(idx + 1);
-    }, function() {
-      failed++;
-      processQueue(idx + 1);
-    });
+    var r=rows[idx];
+    document.getElementById('loadingText').textContent='กำลังบันทึก '+(idx+1)+'/'+total+' เครื่อง...';
+    callAPI('saveBreak',{machine:r.machine,date:date,time:time,side1:r.side1,side2:r.side2,totalAuk:r.totalAuk,recorderCode:leaderCode,recorderName:leaderName},
+      function(res){if(res&&res.success)saved++;else failed++;saveNext(idx+1);},
+      function(){failed++;saveNext(idx+1);}
+    );
   }
-  processQueue(0);
+  saveNext(0);
 }
 
 function loadBreakHistory(){
@@ -1231,173 +1222,402 @@ var TEMP_WARN = 35;  // °C เกินนี้แจ้งเตือน
 var HUM_WARN  = 80;  // %RH เกินนี้แจ้งเตือน
 
 var _dashCharts=[];
+var _dashMode='env'; // 'env' or 'break'
+var _lastDashDate='';
+var _lastDashTime='all';
+
+function setDashMode(mode){
+  _dashMode=mode;
+  document.getElementById('dashModeEnv').className='period-btn'+(mode==='env'?' on':'');
+  document.getElementById('dashModeBreak').className='period-btn'+(mode==='break'?' on':'');
+  if(mode==='env'){
+    document.getElementById('dashModeEnv').style.cssText='flex:1;border-color:#0369A1;background:#E0F2FE;color:#0369A1';
+    document.getElementById('dashModeBreak').style.cssText='flex:1';
+  } else {
+    document.getElementById('dashModeEnv').style.cssText='flex:1';
+    document.getElementById('dashModeBreak').style.cssText='flex:1;border-color:#DC2626;background:#FEF2F2;color:#DC2626';
+  }
+  if(_lastDashDate) renderDashboard();
+}
 
 function destroyCharts(){
   _dashCharts.forEach(function(c){try{c.destroy()}catch(e){}});
   _dashCharts=[];
 }
 
-var currentDashView = 'env'; 
+var _envData=null, _breakData=null;
 
-function switchDashView(v) {
-  currentDashView = v;
-  document.getElementById('viewEnv').classList.toggle('on', v === 'env');
-  document.getElementById('viewBreak').classList.toggle('on', v === 'break');
-  loadDashboard();
+function loadDashboard(){
+  var date=document.getElementById('dashDate').value;
+  var time=document.getElementById('dashTime').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  _lastDashDate=date; _lastDashTime=time;
+  var area=document.getElementById('dashContent');
+  destroyCharts();
+  area.innerHTML='<div class="dash-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+  // แสดง toggle
+  document.getElementById('dashToggleRow').style.display='flex';
+
+  var done1=false,done2=false;
+  _envData=null;_breakData=null;
+
+  function tryRender(){if(done1&&done2)renderDashboard();}
+
+  callAPI('getDashboard',{date:date,time:'all'},function(res){
+    _envData=res;done1=true;tryRender();
+  },function(){_envData={success:false,rows:[]};done1=true;tryRender()});
+
+  callAPI('getBreakDashboard',{date:date,time:time==='all'?'all':time},function(res){
+    _breakData=res;done2=true;tryRender();
+  },function(){_breakData={success:false,rows:[]};done2=true;tryRender()});
 }
 
-function loadDashboard() {
-  var date = document.getElementById('dashDate').value;
-  if (!date) { toast('กรุณาเลือกวันที่', 'warn'); return; }
-  
-  var area = document.getElementById('dashContent');
+function renderDashboard(){
+  if(_dashMode==='env') renderEnvDashboard(_envData);
+  else renderBreakDashboard(_breakData);
+}
+
+function renderEnvDashboard(res){
+  var area=document.getElementById('dashContent');
   destroyCharts();
-  area.innerHTML = '<div class="dash-empty"><i class="fa-solid fa-spinner fa-spin"></i>กำลังโหลด...</div>';
+  if(!res||!res.success||!res.rows||!res.rows.length){
+    area.innerHTML='<div class="dash-empty"><i class="fa-solid fa-inbox"></i>ไม่พบข้อมูลอุณหภูมิ</div>';return;
+  }
+  // ใช้ข้อมูลที่โหลดมาแล้ว ไม่ต้อง callAPI ซ้ำ
+  (function(res){
+    var time=_lastDashTime;
+    // กรองตาม time filter
+    var rows=time==='all'?res.rows:res.rows.filter(function(r){return r.time===time});
 
-  var apiAction = (currentDashView === 'env') ? 'getDashboard' : 'getBreakHistory';
-
-  callAPI(apiAction, { date: date, time: 'all' }, function(res) {
-    if (!res.success || !res.rows || !res.rows.length) {
-      area.innerHTML = '<div class="dash-empty"><i class="fa-solid fa-inbox"></i>ไม่พบข้อมูลในวันที่เลือก</div>';
-      return;
-    }
-
-    var machineMap = {};
-    res.rows.forEach(function(r) {
-      if (!machineMap[r.machine]) machineMap[r.machine] = [];
+    // จัดกลุ่มตามเครื่อง
+    var machineMap={};
+    res.rows.forEach(function(r){
+      if(!machineMap[r.machine]) machineMap[r.machine]=[];
       machineMap[r.machine].push(r);
     });
 
-    var machines = Object.keys(machineMap).sort();
-    var allTimes = [...new Set(res.rows.map(r => r.time))].sort();
-    var html = '';
+    // ค่าล่าสุดแต่ละเครื่อง (สำหรับ card)
+    var latestMap={};
+    Object.keys(machineMap).forEach(function(m){
+      var arr=machineMap[m];
+      latestMap[m]=arr[arr.length-1];
+    });
+    var machines=Object.keys(latestMap).sort();
 
-    // 1. Stats แถวบน
-    if (currentDashView === 'env') {
-      var temps = res.rows.filter(r => r.temp !== '').map(r => parseFloat(r.temp));
-      var hums = res.rows.filter(r => r.humidity !== '').map(r => parseFloat(r.humidity));
-      var avgT = temps.length ? (temps.reduce((a,b)=>a+b,0)/temps.length).toFixed(1) : '—';
-      var avgH = hums.length ? (hums.reduce((a,b)=>a+b,0)/hums.length).toFixed(1) : '—';
-      html += `<div class="dash-stat-row">
-                <div class="dash-stat temp"><div class="dash-stat-val">${avgT}</div><div class="dash-stat-unit">°C</div><div class="dash-stat-label">อุณหภูมิเฉลี่ย</div></div>
-                <div class="dash-stat hum"><div class="dash-stat-val">${avgH}</div><div class="dash-stat-unit">%RH</div><div class="dash-stat-label">ความชื้นเฉลี่ย</div></div>
-              </div>`;
-    } else {
-      var totalB = 0;
-      machines.forEach(m => {
-        var last = machineMap[m][machineMap[m].length-1];
-        totalB += (parseFloat(last.side1)||0 + parseFloat(last.side2)||0)/2;
-      });
-      var avgB = (totalB/machines.length).toFixed(2);
-      html += `<div class="dash-stat-row">
-                <div class="dash-stat" style="grid-column: span 2; border-left: 5px solid #DC2626;">
-                  <div class="dash-stat-val" style="color:#DC2626">${avgB}</div><div class="dash-stat-unit">ครั้ง/100ม.</div><div class="dash-stat-label">อัตราการเบรคเฉลี่ย (ล่าสุด)</div>
-                </div>
-              </div>`;
+    // summary
+    var allTemps=[],allHums=[];
+    machines.forEach(function(m){
+      var r=latestMap[m];
+      if(r.temp!=='') allTemps.push(parseFloat(r.temp)||0);
+      if(r.humidity!=='') allHums.push(parseFloat(r.humidity)||0);
+    });
+    var avgTemp=allTemps.length?allTemps.reduce(function(a,b){return a+b},0)/allTemps.length:null;
+    var avgHum =allHums.length?allHums.reduce(function(a,b){return a+b},0)/allHums.length:null;
+    var maxTemp=allTemps.length?Math.max.apply(null,allTemps):null;
+
+
+    var html='';
+
+
+
+    // Summary cards
+    html+='<div class="dash-stat-row">'
+      +'<div class="dash-stat temp"><div class="dash-stat-val">'+(avgTemp!==null?avgTemp.toFixed(1):'—')+'</div><div class="dash-stat-unit">°C</div><div class="dash-stat-label">อุณหภูมิเฉลี่ย</div></div>'
+      +'<div class="dash-stat hum"><div class="dash-stat-val">'+(avgHum!==null?avgHum.toFixed(1):'—')+'</div><div class="dash-stat-unit">%RH</div><div class="dash-stat-label">ความชื้นเฉลี่ย</div></div>'
+      +'</div>';
+
+    // กราฟรวมทุกเครื่อง (ถ้าดูทั้งวัน)
+    var allTimes=[...new Set(res.rows.map(function(r){return r.time}))].sort();
+    if(allTimes.length>1){
+      html+='<div class="card" style="margin-bottom:14px">'
+        +'<div class="card-header" style="background:#F5F3FF;border-bottom-color:#DDD6FE">'
+        +'<span class="card-header-text" style="color:#7C3AED"><i class="fa-solid fa-chart-line" style="margin-right:8px"></i>กราฟภาพรวมทุกเครื่อง</span>'
+        +'</div>'
+        +'<div class="card-body">'
+        +'<div style="font-size:0.75rem;color:var(--ink-muted);margin-bottom:6px">อุณหภูมิ (°C)</div>'
+        +'<div class="chart-wrap"><canvas id="chartTemp"></canvas></div>'
+        +'<div style="font-size:0.75rem;color:var(--ink-muted);margin:10px 0 6px">ความชื้น (%RH)</div>'
+        +'<div class="chart-wrap"><canvas id="chartHum"></canvas></div>'
+        +'</div></div>';
     }
 
-    // 2. กราฟหลัก
-    var hColor = (currentDashView === 'env') ? '#7C3AED' : '#DC2626';
-    html += `<div class="card" style="margin-bottom:14px">
-              <div class="card-header" style="background:#F5F3FF;"><span class="card-header-text" style="color:${hColor}"><i class="fa-solid fa-chart-line"></i> กราฟแนวโน้มรวม</span></div>
-              <div class="card-body">`;
-    if (currentDashView === 'env') {
-      html += `<div class="chart-wrap"><canvas id="chartTemp"></canvas></div><div class="chart-wrap"><canvas id="chartHum"></canvas></div>`;
-    } else {
-      html += `<div class="chart-wrap"><canvas id="chartBreak"></canvas></div>`;
-    }
-    html += `</div></div>`;
+    // Machine cards + mini chart
+    html+='<div style="font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">'
+      +'<i class="fa-solid fa-industry" style="margin-right:6px;color:#7C3AED"></i>รายละเอียดแต่ละเครื่อง</div>';
 
-    // 3. รายเครื่อง
-    html += '<div style="font-size:0.78rem;font-weight:600;color:var(--ink-mid);margin-bottom:10px;text-transform:uppercase">รายละเอียดรายเครื่อง</div>';
-    machines.forEach(function(m) {
-      var r = machineMap[m][machineMap[m].length - 1];
-      html += `<div class="dash-machine-card">
-                <div class="dash-machine-header"><span class="dash-machine-name">${m}</span><span class="dash-machine-time">${r.time}</span></div>
-                <div class="dash-machine-body">`;
-      if (currentDashView === 'env') {
-        html += `<div class="dash-val-box temp"><div class="dash-val-num">${parseFloat(r.temp).toFixed(1)}</div><div class="dash-val-label">°C</div></div>
-                 <div class="dash-val-box hum"><div class="dash-val-num">${parseFloat(r.humidity).toFixed(1)}</div><div class="dash-val-label">%RH</div></div>`;
-      } else {
-        html += `<div class="dash-val-box" style="color:#DC2626"><div class="dash-val-num">${r.side1}</div><div class="dash-val-label">ฝั่ง 1</div></div>
-                 <div class="dash-val-box" style="color:#991B1B"><div class="dash-val-num">${r.side2}</div><div class="dash-val-label">ฝั่ง 2</div></div>`;
-      }
-      html += `</div>
-                <div style="padding:0 12px 10px; height:80px; position:relative;">
-                  <div style="font-size:0.6rem; color:#ccc; margin-bottom:2px">แนวโน้ม</div>
-                  <canvas id="miniChart_${m.replace(/\s/g, '_')}"></canvas>
-                </div>
-              </div>`;
+    machines.forEach(function(m){
+      var r=latestMap[m];
+      var t=r.temp!==''?parseFloat(r.temp):null;
+      var h=r.humidity!==''?parseFloat(r.humidity):null;
+      var isWarn=(t!==null&&t>TEMP_WARN)||(h!==null&&h>HUM_WARN);
+      var mData=machineMap[m];
+      var hasTrend=mData.length>1;
+      html+='<div class="dash-machine-card'+(isWarn?' dash-warn':'')+'">'
+        +'<div class="dash-machine-header">'
+        +'<i class="fa-solid fa-industry" style="color:#7C3AED;margin-right:8px;font-size:0.85rem"></i>'
+        +'<span class="dash-machine-name">'+m+'</span>'
+        +'<span class="dash-machine-time">'+r.time+'</span>'
+        +'</div>'
+        +'<div class="dash-machine-body">'
+        +'<div class="dash-val-box temp"><div class="dash-val-num">'+(t!==null?t.toFixed(1):'—')+'</div>'
+        +'<div class="dash-val-unit">°C</div><div class="dash-val-label">อุณหภูมิ</div>'
+        +'</div>'
+        +'<div class="dash-val-box hum"><div class="dash-val-num">'+(h!==null?h.toFixed(1):'—')+'</div>'
+        +'<div class="dash-val-unit">%RH</div><div class="dash-val-label">ความชื้น</div>'
+        +'</div>'
+        +'</div>'
+        +(hasTrend?'<div style="padding:0 12px 12px"><canvas id="miniChart_'+m.replace(/\s/g,'_')+'" height="80"></canvas></div>':'')
+        +'</div>';
     });
 
-    area.innerHTML = html;
+    area.innerHTML=html;
 
-    setTimeout(function() {
-      var colors = ['#1A73E8', '#1D8A55', '#B45309', '#DC2626', '#7C3AED'];
-      if (currentDashView === 'env') {
-        drawEnvCharts(allTimes, machines, machineMap, colors);
-      } else {
-        drawBreakChart(allTimes, machines, machineMap, colors);
+    // วาดกราฟหลัง DOM render
+    setTimeout(function(){
+      // กราฟรวม
+      if(allTimes.length>1){
+        var colors=['#E53E3E','#DD6B20','#D69E2E','#38A169','#3182CE','#805AD5','#D53F8C','#00B5D8'];
+        var tempDatasets=machines.map(function(m,i){
+          return {
+            label:m,
+            data:allTimes.map(function(t){
+              var found=machineMap[m].find(function(r){return r.time===t});
+              return found&&found.temp!==''?parseFloat(found.temp):null;
+            }),
+            borderColor:colors[i%colors.length],
+            backgroundColor:'transparent',
+            tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2
+          };
+        });
+        var humDatasets=machines.map(function(m,i){
+          return {
+            label:m,
+            data:allTimes.map(function(t){
+              var found=machineMap[m].find(function(r){return r.time===t});
+              return found&&found.humidity!==''?parseFloat(found.humidity):null;
+            }),
+            borderColor:colors[i%colors.length],
+            backgroundColor:'transparent',
+            tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2
+          };
+        });
+        var chartOpts=function(unit,warn){return{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Kodchasan'}}},
+            annotation:{annotations:{warnLine:{type:'line',yMin:warn,yMax:warn,borderColor:'rgba(192,57,43,0.4)',borderWidth:1.5,borderDash:[4,4]}}}},
+          scales:{x:{ticks:{font:{size:10,family:'Kodchasan'}}},y:{ticks:{font:{size:10,family:'Kodchasan'}},title:{display:true,text:unit,font:{size:10}}}}
+        }};
+        var ct=document.getElementById('chartTemp');
+        var ch=document.getElementById('chartHum');
+        if(ct){var c=new Chart(ct,{type:'line',data:{labels:allTimes,datasets:tempDatasets},options:chartOpts('°C',TEMP_WARN)});_dashCharts.push(c)}
+        if(ch){var c2=new Chart(ch,{type:'line',data:{labels:allTimes,datasets:humDatasets},options:chartOpts('%RH',HUM_WARN)});_dashCharts.push(c2)}
       }
-      machines.forEach(m => drawMiniChart(m, machineMap[m]));
-    }, 150);
+      // mini charts รายเครื่อง
+      machines.forEach(function(m,idx){
+        var mData=machineMap[m];
+        if(mData.length<=1) return;
+        var canvasId='miniChart_'+m.replace(/\s/g,'_');
+        var canvas=document.getElementById(canvasId);
+        if(!canvas) return;
+        var times=mData.map(function(r){return r.time});
+        var mc=new Chart(canvas,{type:'line',
+          data:{labels:times,datasets:[
+            {label:'°C',data:mData.map(function(r){return r.temp!==''?parseFloat(r.temp):null}),
+              borderColor:'#B45309',backgroundColor:'rgba(180,83,9,0.08)',fill:true,tension:0.3,spanGaps:true,pointRadius:3,borderWidth:1.5,yAxisID:'y'},
+            {label:'%RH',data:mData.map(function(r){return r.humidity!==''?parseFloat(r.humidity):null}),
+              borderColor:'#0369A1',backgroundColor:'rgba(3,105,161,0.08)',fill:true,tension:0.3,spanGaps:true,pointRadius:3,borderWidth:1.5,yAxisID:'y2'}
+          ]},
+          options:{responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:false}},
+            scales:{
+              x:{ticks:{font:{size:9},maxTicksLimit:6}},
+              y:{position:'left',ticks:{font:{size:9}},title:{display:true,text:'°C',font:{size:9}}},
+              y2:{position:'right',ticks:{font:{size:9}},title:{display:true,text:'%',font:{size:9}},grid:{drawOnChartArea:false}}
+            }}
+        });
+        _dashCharts.push(mc);
+      });
+    },100);
 
-  }, function(e) { toast('Error: ' + e, 'err'); });
-}
+  })(res);
+} // end renderEnvDashboard
 
-function drawEnvCharts(times, machines, machineMap, colors) {
-  var ct = document.getElementById('chartTemp');
-  var ch = document.getElementById('chartHum');
-  if(!ct || !ch) return;
-  var datasets = (type) => machines.map((m, i) => ({
-    label: m,
-    data: times.map(t => {
-      var f = machineMap[m].find(r => r.time === t);
-      return f && f[type] !== '' ? parseFloat(f[type]) : null;
-    }),
-    borderColor: colors[i % colors.length],
-    backgroundColor: colors[i % colors.length] + '15',
-    fill: true, tension: 0.4, pointRadius: 3
-  }));
-  _dashCharts.push(new Chart(ct, { type: 'line', data: { labels: times, datasets: datasets('temp') }, options: { responsive: true, maintainAspectRatio: false } }));
-  _dashCharts.push(new Chart(ch, { type: 'line', data: { labels: times, datasets: datasets('humidity') }, options: { responsive: true, maintainAspectRatio: false } }));
-}
-
-function drawBreakChart(times, machines, machineMap, colors) {
-  var ctx = document.getElementById('chartBreak');
-  if(!ctx) return;
-  var datasets = machines.map((m, i) => ({
-    label: m,
-    data: times.map(t => {
-      var f = machineMap[m].find(r => r.time === t);
-      return f ? (parseFloat(f.side1) + parseFloat(f.side2))/2 : null;
-    }),
-    borderColor: colors[i % colors.length],
-    backgroundColor: colors[i % colors.length] + '15',
-    fill: true, tension: 0.4, pointRadius: 4
-  }));
-  _dashCharts.push(new Chart(ctx, { type: 'line', data: { labels: times, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false } }));
-}
-
-function drawMiniChart(m, data) {
-  var canvas = document.getElementById('miniChart_' + m.replace(/\s/g, '_'));
-  if (!canvas) return;
-  // เรียงลำดับเวลา
-  var sorted = data.slice().sort((a,b) => a.time.localeCompare(b.time));
-  var ds = [];
-  if (currentDashView === 'env') {
-    ds = [
-      { label: 'T', data: sorted.map(r => parseFloat(r.temp)), borderColor: '#B45309', backgroundColor: '#B4530910' },
-      { label: 'H', data: sorted.map(r => parseFloat(r.humidity)), borderColor: '#0369A1', backgroundColor: '#0369A110' }
-    ];
-  } else {
-    ds = [{ label: 'B', data: sorted.map(r => (parseFloat(r.side1) + parseFloat(r.side2))/2), borderColor: '#DC2626', backgroundColor: '#DC262610' }];
+function renderBreakDashboard(res){
+  var area=document.getElementById('dashContent');
+  destroyCharts();
+  if(!res||!res.success||!res.rows||!res.rows.length){
+    area.innerHTML='<div class="dash-empty"><i class="fa-solid fa-scissors" style="color:#DC2626"></i>ไม่พบข้อมูลการเบรคในช่วงนี้</div>';return;
   }
-  _dashCharts.push(new Chart(canvas, { 
-    type: 'line', 
-    data: { labels: sorted.map(r => r.time), datasets: ds.map(d => Object.assign(d, {fill:true, tension:0.4, pointRadius:3, borderWidth:1.5})) },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks:{font:{size:8}}}, y: { ticks:{font:{size:8}}} } }
-  }));
+  var rows=res.rows;
+  // จัดกลุ่มตามเครื่อง
+  var machineMap={};
+  rows.forEach(function(r){
+    if(!machineMap[r.machine]) machineMap[r.machine]=[];
+    machineMap[r.machine].push(r);
+  });
+  var machines=Object.keys(machineMap).sort();
+  var allTimes=[...new Set(rows.map(function(r){return r.time}))].sort();
+
+  // summary
+  var allS1=[],allS2=[];
+  rows.forEach(function(r){
+    if(r.side1!=='-'&&r.side1!=='') allS1.push(parseFloat(r.side1)||0);
+    if(r.side2!=='-'&&r.side2!=='') allS2.push(parseFloat(r.side2)||0);
+  });
+  var avgS1=allS1.length?allS1.reduce(function(a,b){return a+b},0)/allS1.length:null;
+  var avgS2=allS2.length?allS2.reduce(function(a,b){return a+b},0)/allS2.length:null;
+  var maxS1=allS1.length?Math.max.apply(null,allS1):null;
+  var maxS2=allS2.length?Math.max.apply(null,allS2):null;
+
+  var html='';
+  // Summary cards
+  html+='<div class="dash-stat-row">'
+    +'<div class="dash-stat" style="border-color:#FECACA"><div class="dash-stat-val" style="color:#DC2626">'+(avgS1!==null?avgS1.toFixed(2):'—')+'</div><div class="dash-stat-unit" style="color:#DC2626">ครั้ง</div><div class="dash-stat-label">เบรคฝั่ง 1 (เฉลี่ย)</div></div>'
+    +'<div class="dash-stat" style="border-color:#FECACA"><div class="dash-stat-val" style="color:#991B1B">'+(avgS2!==null?avgS2.toFixed(2):'—')+'</div><div class="dash-stat-unit" style="color:#991B1B">ครั้ง</div><div class="dash-stat-label">เบรคฝั่ง 2 (เฉลี่ย)</div></div>'
+    +'</div>'
+    +'<div class="dash-stat-row" style="margin-bottom:16px">'
+    +'<div class="dash-stat" style="border-color:#FECACA"><div class="dash-stat-val" style="color:#DC2626">'+(maxS1!==null?maxS1.toFixed(2):'—')+'</div><div class="dash-stat-unit" style="color:#DC2626">ครั้ง</div><div class="dash-stat-label">ฝั่ง 1 สูงสุด</div></div>'
+    +'<div class="dash-stat" style="border-color:var(--border)"><div class="dash-stat-val" style="color:var(--ink);font-size:1.5rem">'+machines.length+'</div><div class="dash-stat-unit" style="color:var(--ink-muted)">เครื่อง</div><div class="dash-stat-label">ทั้งหมด</div></div>'
+    +'</div>';
+
+  // กราฟรวมถ้ามีหลายช่วงเวลา
+  if(allTimes.length>1){
+    html+='<div class="card" style="margin-bottom:14px">'
+      +'<div class="card-header" style="background:#FEF2F2;border-bottom-color:#FECACA">'
+      +'<span class="card-header-text" style="color:#DC2626"><i class="fa-solid fa-chart-line" style="margin-right:8px"></i>กราฟอัตราการเบรค</span>'
+      +'</div><div class="card-body">'
+      +'<div style="font-size:0.75rem;color:var(--ink-muted);margin-bottom:6px">ฝั่งที่ 1 (ครั้ง)</div>'
+      +'<div class="chart-wrap"><canvas id="chartBreak1"></canvas></div>'
+      +'<div style="font-size:0.75rem;color:var(--ink-muted);margin:10px 0 6px">ฝั่งที่ 2 (ครั้ง)</div>'
+      +'<div class="chart-wrap"><canvas id="chartBreak2"></canvas></div>'
+      +'</div></div>';
+  }
+
+  // Machine cards
+  html+='<div style="font-size:0.78rem;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px">'
+    +'<i class="fa-solid fa-industry" style="margin-right:6px;color:#DC2626"></i>รายละเอียดแต่ละเครื่อง</div>';
+
+  machines.forEach(function(m){
+    var mData=machineMap[m];
+    var last=mData[mData.length-1];
+    var hasTrend=mData.length>1;
+    html+='<div class="dash-machine-card">'
+      +'<div class="dash-machine-header">'
+      +'<i class="fa-solid fa-industry" style="color:#DC2626;margin-right:8px;font-size:0.85rem"></i>'
+      +'<span class="dash-machine-name">'+m+'</span>'
+      +'<span class="dash-machine-time">'+last.time+'</span>'
+      +'</div>'
+      +'<div class="dash-machine-body">'
+      +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#DC2626">'+(last.side1!=='-'?parseFloat(last.side1).toFixed(2):'—')+'</div><div class="dash-val-unit" style="color:#DC2626">ครั้ง</div><div class="dash-val-label">ฝั่ง 1</div></div>'
+      +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#991B1B">'+(last.side2!=='-'?parseFloat(last.side2).toFixed(2):'—')+'</div><div class="dash-val-unit" style="color:#991B1B">ครั้ง</div><div class="dash-val-label">ฝั่ง 2</div></div>'
+      +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#7C3AED">'+(last.totalAuk!=='-'?last.totalAuk:'—')+'</div><div class="dash-val-unit" style="color:#7C3AED">อัก</div><div class="dash-val-label">อักรวม</div></div>'
+      +'</div>'
+      +(hasTrend?'<div style="padding:0 12px 12px"><canvas id="miniBreak_'+m.replace(/\s/g,'_')+'" height="70"></canvas></div>':'')
+      +'</div>';
+  });
+
+  area.innerHTML=html;
+
+  // กราฟเปรียบเทียบกับอุณหภูมิ-ความชื้น
+  var envRows=(_envData&&_envData.rows)||[];
+  var envMachineMap={};
+  envRows.forEach(function(r){
+    if(!envMachineMap[r.machine])envMachineMap[r.machine]=[];
+    envMachineMap[r.machine].push(r);
+  });
+
+  // เพิ่ม section กราฟเปรียบเทียบ
+  if(allTimes.length>=1 && envRows.length>0){
+    var compareHtml='<div class="card" style="margin-top:14px">'
+      +'<div class="card-header" style="background:#F5F3FF;border-bottom-color:#DDD6FE">'
+      +'<span class="card-header-text" style="color:#7C3AED"><i class="fa-solid fa-chart-line" style="margin-right:8px"></i>เปรียบเทียบเบรค vs อุณหภูมิ/ความชื้น</span>'
+      +'</div><div class="card-body">';
+    machines.forEach(function(m){
+      compareHtml+='<div style="font-size:0.8rem;font-weight:600;color:var(--ink);margin-bottom:8px;margin-top:8px">'
+        +'<i class="fa-solid fa-industry" style="color:#DC2626;margin-right:5px"></i>'+m+'</div>'
+        +'<div class="chart-wrap" style="height:180px"><canvas id="cmpChart_'+m.replace(/[^a-zA-Z0-9]/g,'_')+'"></canvas></div>';
+    });
+    compareHtml+='</div></div>';
+    area.innerHTML+=compareHtml;
+  }
+
+  setTimeout(function(){
+    var colors=['#DC2626','#DD6B20','#D69E2E','#38A169','#3182CE','#805AD5','#D53F8C','#00B5D8'];
+    if(allTimes.length>1){
+      var bOpts=function(title){return{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Kodchasan'}}},
+          title:{display:!!title,text:title,font:{size:11}}},
+        scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}};};
+      // กราฟฝั่ง 1 + ฝั่ง 2 รวมกัน (dual y-axis)
+      var cb1=document.getElementById('chartBreak1');
+      if(cb1){
+        var dsAll=[];
+        machines.forEach(function(m,i){
+          dsAll.push({label:m+' ฝั่ง1',data:allTimes.map(function(t){var f=machineMap[m].find(function(r){return r.time===t});return f&&f.side1!=='-'?parseFloat(f.side1):null}),
+            borderColor:colors[i%colors.length],backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2,borderDash:[]});
+          dsAll.push({label:m+' ฝั่ง2',data:allTimes.map(function(t){var f=machineMap[m].find(function(r){return r.time===t});return f&&f.side2!=='-'?parseFloat(f.side2):null}),
+            borderColor:colors[i%colors.length],backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2,borderDash:[5,5],borderDash:[5,3]});
+        });
+        var c=new Chart(cb1,{type:'line',data:{labels:allTimes,datasets:dsAll},options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Kodchasan'}}}},
+          scales:{
+            x:{ticks:{font:{size:10}}},
+            y:{beginAtZero:false,ticks:{font:{size:10}},grace:'10%',title:{display:true,text:'จำนวน (ครั้ง)',font:{size:10}}}
+          }
+        }});_dashCharts.push(c);
+      }
+      // ซ่อน chartBreak2 เพราะรวมแล้ว
+      var cb2=document.getElementById('chartBreak2');if(cb2)cb2.parentElement.style.display='none';
+    }
+    // mini chart รายเครื่อง (แสดงถ้ามี >1 จุด)
+    machines.forEach(function(m){
+      var mData=machineMap[m];
+      var cid='miniBreak_'+m.replace(/[^a-zA-Z0-9]/g,'_');
+      var canvas=document.getElementById(cid);if(!canvas)return;
+      if(mData.length<2){canvas.parentElement.style.display='none';return;}
+      var mc=new Chart(canvas,{type:'line',
+        data:{labels:mData.map(function(r){return r.time}),datasets:[
+          {label:'ฝั่ง 1',data:mData.map(function(r){return r.side1!=='-'?parseFloat(r.side1):null}),
+            borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,0.1)',fill:false,tension:0.4,spanGaps:true,pointRadius:5,borderWidth:2.5},
+          {label:'ฝั่ง 2',data:mData.map(function(r){return r.side2!=='-'?parseFloat(r.side2):null}),
+            borderColor:'#991B1B',backgroundColor:'rgba(153,27,27,0.1)',fill:false,tension:0.4,spanGaps:true,pointRadius:5,borderWidth:2.5,borderDash:[5,3]}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Kodchasan'}}}},
+          scales:{
+            x:{ticks:{font:{size:10},maxTicksLimit:6}},
+            y:{beginAtZero:false,ticks:{font:{size:10}},grace:'10%'}
+          }}
+      });_dashCharts.push(mc);
+    });
+
+    // กราฟเปรียบเทียบ เบรค vs อุณหภูมิ-ความชื้น รายเครื่อง
+    machines.forEach(function(m){
+      var cid='cmpChart_'+m.replace(/[^a-zA-Z0-9]/g,'_');
+      var canvas=document.getElementById(cid);if(!canvas)return;
+      var bData=machineMap[m];
+      var eData=envMachineMap[m]||[];
+      var allT=[...new Set(bData.map(function(r){return r.time}).concat(eData.map(function(r){return r.time})))].sort();
+      if(allT.length<1)return;
+      var mc=new Chart(canvas,{type:'line',data:{labels:allT,datasets:[
+        {label:'เบรคฝั่ง1',data:allT.map(function(t){var f=bData.find(function(r){return r.time===t});return f&&f.side1!=='-'?parseFloat(f.side1):null}),
+          borderColor:'#DC2626',backgroundColor:'transparent',tension:0.4,spanGaps:true,pointRadius:4,borderWidth:2,yAxisID:'y'},
+        {label:'เบรคฝั่ง2',data:allT.map(function(t){var f=bData.find(function(r){return r.time===t});return f&&f.side2!=='-'?parseFloat(f.side2):null}),
+          borderColor:'#991B1B',backgroundColor:'transparent',tension:0.4,spanGaps:true,pointRadius:4,borderWidth:2,borderDash:[4,4],yAxisID:'y'},
+        {label:'อุณหภูมิ°C',data:allT.map(function(t){var f=eData.find(function(r){return r.time===t});return f&&f.temp!==''?parseFloat(f.temp):null}),
+          borderColor:'#B45309',backgroundColor:'transparent',tension:0.4,spanGaps:true,pointRadius:4,borderWidth:2,yAxisID:'y2'},
+        {label:'ความชื้น%',data:allT.map(function(t){var f=eData.find(function(r){return r.time===t});return f&&f.humidity!==''?parseFloat(f.humidity):null}),
+          borderColor:'#0369A1',backgroundColor:'transparent',tension:0.4,spanGaps:true,pointRadius:4,borderWidth:2,borderDash:[4,4],yAxisID:'y2'}
+      ]},options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:9,family:'Kodchasan'}}}},
+        scales:{x:{ticks:{font:{size:9}}},
+          y:{position:'left',title:{display:true,text:'เบรค(ครั้ง)',font:{size:9}},ticks:{font:{size:9}}},
+          y2:{position:'right',title:{display:true,text:'°C / %RH',font:{size:9}},ticks:{font:{size:9}},grid:{drawOnChartArea:false}}
+        }}
+      });_dashCharts.push(mc);
+    });
+  },100);
 }
 
 // STATE
