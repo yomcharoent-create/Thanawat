@@ -646,23 +646,10 @@
       </div>
     </div>
 
-    <!-- เลือกเครื่อง -->
-    <div class="card">
-      <div class="card-header" style="background:#FEF2F2;border-bottom-color:#FECACA">
-        <div class="step-badge" style="background:#DC2626">1</div>
-        <span class="card-header-text">เลือกเครื่องจักร</span>
-      </div>
-      <div class="card-body">
-        <select class="team-select" id="breakMachine" style="border-color:var(--border)">
-          <option value="">-- เลือกเครื่องจักร --</option>
-        </select>
-      </div>
-    </div>
-
     <!-- วันที่และเวลา -->
     <div class="card">
       <div class="card-header" style="background:#FEF2F2;border-bottom-color:#FECACA">
-        <div class="step-badge" style="background:#DC2626">2</div>
+        <div class="step-badge" style="background:#DC2626">1</div>
         <span class="card-header-text">วันที่และเวลา</span>
       </div>
       <div class="card-body">
@@ -691,36 +678,20 @@
       </div>
     </div>
 
-    <!-- กรอกข้อมูลเบรค -->
+    <!-- เครื่องจักร (หลายเครื่อง) -->
     <div class="card">
       <div class="card-header" style="background:#FEF2F2;border-bottom-color:#FECACA">
-        <div class="step-badge" style="background:#DC2626">3</div>
-        <span class="card-header-text">อัตราการเบรค</span>
+        <div class="step-badge" style="background:#DC2626">2</div>
+        <span class="card-header-text">ข้อมูลการเบรค</span>
+        <span style="font-size:0.72rem;color:#DC2626;margin-left:auto" id="breakMachineCount">0 เครื่อง</span>
       </div>
       <div class="card-body">
-        <div class="side-card">
-          <div class="side-card-label">
-            <i class="fa-solid fa-circle-half-stroke" style="color:#DC2626"></i> ฝั่งที่ 1
-          </div>
-          <input type="number" class="break-input" id="breakSide1" placeholder="0.00" step="0.01" min="0">
-          <div class="break-unit">ครั้ง / 100 เมตร</div>
-        </div>
-        <div class="side-card">
-          <div class="side-card-label">
-            <i class="fa-solid fa-circle-half-stroke fa-flip-horizontal" style="color:#991B1B"></i> ฝั่งที่ 2
-          </div>
-          <input type="number" class="break-input" id="breakSide2" placeholder="0.00" step="0.01" min="0">
-          <div class="break-unit">ครั้ง / 100 เมตร</div>
-        </div>
-        <div class="side-card">
-          <div class="side-card-label">
-            <i class="fa-solid fa-layer-group" style="color:#7C3AED"></i> จำนวนอักรวม 2 ฝั่ง
-          </div>
-          <input type="number" class="break-input" id="breakTotalAuk" placeholder="0" step="1" min="0" style="border-color:#7C3AED20">
-          <div class="break-unit">อัก</div>
-        </div>
-        <button class="btn-break-save" onclick="saveBreakData()">
-          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+        <div id="breakMachineRows"></div>
+        <button class="btn-add-machine" style="border-color:#DC2626;background:#FEF2F2;color:#DC2626" onclick="addBreakRow()">
+          <i class="fa-solid fa-plus"></i> เพิ่มเครื่องจักร
+        </button>
+        <button class="btn-break-save" style="margin-top:16px" onclick="saveBreakData()">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด
         </button>
       </div>
     </div>
@@ -973,8 +944,17 @@ function loadMachineList(){
     _machineOptions = res.machines;
     // เพิ่ม row แรกอัตโนมัติ
     if(document.getElementById('envMachineRows').children.length===0) addMachineRow();
-    // populate break machine dropdown ด้วย
-    populateBreakMachines();
+    // เพิ่ม break row แรกถ้ายังไม่มี
+    if(document.getElementById('breakMachineRows')&&document.getElementById('breakMachineRows').children.length===0) addBreakRow();
+    else{
+      // update dropdowns ที่มีอยู่แล้ว
+      var bWrap=document.getElementById('breakMachineRows');
+      if(bWrap) Array.from(bWrap.children).forEach(function(row){
+        var id=row.id.replace('brow_','');
+        var sel=document.getElementById('bSel_'+id);
+        if(sel){var cur=sel.value;sel.innerHTML='<option value="">-- เลือกเครื่อง --</option>';_machineOptions.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)});if(cur)sel.value=cur;}
+      });
+    }
   },function(){});
 }
 
@@ -1105,46 +1085,135 @@ function loadEnvHistory(){
 }
 
 // ── Break Data ──
+var _breakRowCount=0;
+
 function populateBreakMachines(){
-  var sel=document.getElementById('breakMachine');
-  if(!sel) return;
-  var cur=sel.value;
-  sel.innerHTML='<option value="">-- เลือกเครื่องจักร --</option>';
-  _machineOptions.forEach(function(m){
-    var opt=document.createElement('option');
-    opt.value=m;opt.textContent=m;
-    sel.appendChild(opt);
-  });
-  if(cur) sel.value=cur;
+  // ไม่ใช้แล้ว — ใช้ buildBreakMachineSelect แทน
 }
 
-function saveBreakData(){
-  var machine=document.getElementById('breakMachine').value;
-  var date=document.getElementById('breakDate').value;
-  var time=document.getElementById('breakTime').value;
-  var s1=document.getElementById('breakSide1').value;
-  var s2=document.getElementById('breakSide2').value;
-  var auk=document.getElementById('breakTotalAuk').value;
-  if(!machine){toast('กรุณาเลือกเครื่องจักร','warn');return}
-  if(!date){toast('กรุณาเลือกวันที่','warn');return}
-  if(s1===''&&s2===''){toast('กรุณากรอกอัตราการเบรคอย่างน้อย 1 ฝั่ง','warn');return}
-  var btn=document.querySelector('.btn-break-save');
-  btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-  showLoading('กำลังบันทึกข้อมูล...');
-  callAPI('saveBreak',{machine:machine,date:date,time:time,side1:s1,side2:s2,totalAuk:auk,recorderCode:leaderCode,recorderName:leaderName},
-    function(res){
-      hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล';
-      if(res&&res.success){
-        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูลเบรค '+machine+' เรียบร้อย',function(){
-          document.getElementById('breakSide1').value='';
-          document.getElementById('breakSide2').value='';
-          document.getElementById('breakTotalAuk').value='';
+function buildBreakMachineSelect(rowId, selected) {
+  var opts = '<option value="">-- เลือกเครื่อง --</option>';
+  _machineOptions.forEach(function(m) {
+    opts += '<option value="' + m + '"' + (m === selected ? ' selected' : '') + '>' + m + '</option>';
+  });
+  return '<select class="team-select" id="bSel_' + rowId + '" style="margin-bottom:10px; border-color:var(--border)">' + opts + '</select>';
+}
+
+function addBreakRow() {
+  _breakRowCount++;
+  var id = _breakRowCount;
+  var wrap = document.getElementById('breakMachineRows');
+  var div = document.createElement('div');
+  div.className = 'machine-row';
+  div.id = 'brow_' + id;
+  div.innerHTML = `
+    <div class="machine-row-header">
+      <span class="machine-row-name"><i class="fa-solid fa-industry" style="margin-right:6px;color:#DC2626;font-size:0.8rem"></i>เครื่องที่ ${id}</span>
+      ${id > 1 ? `<button class="machine-row-remove" onclick="removeBreakRow(${id})"><i class="fa-solid fa-xmark"></i></button>` : ''}
+    </div>
+    ${buildBreakMachineSelect(id, '')}
+    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+      <div>
+        <div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke" style="color:#DC2626"></i> ฝั่ง 1</div>
+        <input type="number" class="break-input" id="bS1_${id}" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">
+        <div class="break-unit">ครั้ง/100ม.</div>
+      </div>
+      <div>
+        <div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke fa-flip-horizontal" style="color:#991B1B"></i> ฝั่ง 2</div>
+        <input type="number" class="break-input" id="bS2_${id}" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">
+        <div class="break-unit">ครั้ง/100ม.</div>
+      </div>
+      <div>
+        <div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-layer-group" style="color:#7C3AED"></i> อักรวม</div>
+        <input type="number" class="break-input" id="bAuk_${id}" placeholder="0" step="1" min="0" style="font-size:0.95rem; border-color:rgba(124,58,237,0.2)">
+        <div class="break-unit">อัก</div>
+      </div>
+    </div>`;
+  wrap.appendChild(div);
+  updateBreakCount();
+}
+
+function removeBreakRow(id) {
+  var el = document.getElementById('brow_' + id);
+  if (el) el.remove();
+  updateBreakCount();
+}
+
+function updateBreakCount() {
+  var c = document.getElementById('breakMachineRows').children.length;
+  var cnt = document.getElementById('breakMachineCount');
+  if (cnt) cnt.textContent = c + ' เครื่อง';
+}
+
+function saveBreakData() {
+  var date = document.getElementById('breakDate').value;
+  var time = document.getElementById('breakTime').value;
+  if (!date) { toast('กรุณาเลือกวันที่', 'warn'); return; }
+
+  var wrap = document.getElementById('breakMachineRows');
+  var rows = [];
+  var hasErr = false;
+
+  Array.from(wrap.children).forEach(function(row) {
+    var id = row.id.replace('brow_', '');
+    var machine = document.getElementById('bSel_' + id).value;
+    var s1 = document.getElementById('bS1_' + id).value;
+    var s2 = document.getElementById('bS2_' + id).value;
+    var auk = document.getElementById('bAuk_' + id).value;
+
+    if (!machine) {
+      document.getElementById('bSel_' + id).style.borderColor = 'var(--danger)';
+      hasErr = true;
+    } else if (s1 === '' && s2 === '') {
+      hasErr = true;
+    } else {
+      rows.push({ machine: machine, side1: s1, side2: s2, totalAuk: auk });
+    }
+  });
+
+  if (hasErr || rows.length === 0) {
+    toast('กรุณาเลือกเครื่องจักรและกรอกข้อมูลให้ครบ', 'warn');
+    return;
+  }
+
+  var btn = document.querySelector('.btn-break-save');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+  showLoading('กำลังบันทึกข้อมูล ' + rows.length + ' เครื่อง...');
+
+  // ส่งบันทึกทีละแถว (Queue)
+  var saved = 0; var failed = 0;
+  function processQueue(idx) {
+    if (idx >= rows.length) {
+      hideLoading();
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
+      if (failed === 0) {
+        showSuccess('บันทึกสำเร็จ', 'บันทึกข้อมูลเบรคไหมจำนวน ' + saved + ' รายการเรียบร้อยแล้ว', function() {
+          // ล้างข้อมูลในช่อง input
+          document.querySelectorAll('[id^="bS1_"], [id^="bS2_"], [id^="bAuk_"]').forEach(el => el.value = '');
           loadBreakHistory();
         });
-      } else {toast('เกิดข้อผิดพลาด: '+(res&&res.message||''),'err')}
-    },
-    function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล'}
-  );
+      } else {
+        toast('บันทึกสำเร็จ ' + saved + ' รายการ, ผิดพลาด ' + failed + ' รายการ', 'warn');
+      }
+      return;
+    }
+
+    var r = rows[idx];
+    callAPI('saveBreak', {
+      date: date, time: time, machine: r.machine,
+      side1: r.side1, side2: r.side2, totalAuk: r.totalAuk,
+      recorderCode: leaderCode, recorderName: leaderName
+    }, function(res) {
+      if (res.success) saved++; else failed++;
+      processQueue(idx + 1);
+    }, function() {
+      failed++;
+      processQueue(idx + 1);
+    });
+  }
+  processQueue(0);
 }
 
 function loadBreakHistory(){
@@ -1446,7 +1515,7 @@ function showTab(tab){
     var bH=new Date().getHours();var bStr=String(bH).padStart(2,'0')+':00';
     var bSel=document.getElementById('breakTime');if(bSel){for(var bo=0;bo<bSel.options.length;bo++){if(bSel.options[bo].value===bStr){bSel.value=bStr;break}}}
     if(_machineOptions.length===0)loadMachineList();
-    else populateBreakMachines();
+    else if(document.getElementById('breakMachineRows').children.length===0)addBreakRow();
     loadBreakHistory();
   } else if(tab==='dash'){
     document.getElementById('tabDash').classList.add('active');
