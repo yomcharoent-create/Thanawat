@@ -1512,7 +1512,7 @@ function renderBreakDashboard(res){
       +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#991B1B">'+(last.side2!=='-'?parseFloat(last.side2).toFixed(2):'—')+'</div><div class="dash-val-unit" style="color:#991B1B">ครั้ง</div><div class="dash-val-label">ฝั่ง 2</div></div>'
       +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#7C3AED">'+(last.totalAuk!=='-'?last.totalAuk:'—')+'</div><div class="dash-val-unit" style="color:#7C3AED">อัก</div><div class="dash-val-label">อักรวม</div></div>'
       +'</div>'
-      +(hasTrend?'<div style="padding:0 12px 12px"><canvas id="miniBreak_'+m.replace(/\s/g,'_')+'" height="70"></canvas></div>':'')
+      +'<div style="padding:0 12px 12px"><canvas id="miniBreak_'+m.replace(/[^a-zA-Z0-9]/g,'_')+'" height="100"></canvas></div>'
       +'</div>';
   });
 
@@ -1575,19 +1575,29 @@ function renderBreakDashboard(res){
       var mData=machineMap[m];
       var cid='miniBreak_'+m.replace(/[^a-zA-Z0-9]/g,'_');
       var canvas=document.getElementById(cid);if(!canvas)return;
-      if(mData.length<2){canvas.parentElement.style.display='none';return;}
+      // คำนวณ min/max จากข้อมูลจริงเพื่อให้ scale ถูกต้อง
+      var bVals=[];
+      mData.forEach(function(r){
+        if(r.side1!=='-'&&r.side1!=='')bVals.push(parseFloat(r.side1));
+        if(r.side2!=='-'&&r.side2!=='')bVals.push(parseFloat(r.side2));
+      });
+      var bMin=bVals.length?Math.max(0,Math.floor(Math.min.apply(null,bVals)-5)):0;
+      var bMax=bVals.length?Math.ceil(Math.max.apply(null,bVals)+5):100;
       var mc=new Chart(canvas,{type:'line',
         data:{labels:mData.map(function(r){return r.time}),datasets:[
-          {label:'ฝั่ง 1',data:mData.map(function(r){return r.side1!=='-'?parseFloat(r.side1):null}),
-            borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,0.1)',fill:false,tension:0.4,spanGaps:true,pointRadius:5,borderWidth:2.5},
-          {label:'ฝั่ง 2',data:mData.map(function(r){return r.side2!=='-'?parseFloat(r.side2):null}),
-            borderColor:'#991B1B',backgroundColor:'rgba(153,27,27,0.1)',fill:false,tension:0.4,spanGaps:true,pointRadius:5,borderWidth:2.5,borderDash:[5,3]}
+          {label:'ฝั่ง 1',data:mData.map(function(r){return r.side1!=='-'&&r.side1!==''?parseFloat(r.side1):null}),
+            borderColor:'#DC2626',backgroundColor:'rgba(220,38,38,0.08)',fill:true,
+            tension:0.3,spanGaps:true,pointRadius:5,pointHoverRadius:7,borderWidth:2.5},
+          {label:'ฝั่ง 2',data:mData.map(function(r){return r.side2!=='-'&&r.side2!==''?parseFloat(r.side2):null}),
+            borderColor:'#991B1B',backgroundColor:'rgba(153,27,27,0.08)',fill:true,
+            tension:0.3,spanGaps:true,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,borderDash:[5,3]}
         ]},
         options:{responsive:true,maintainAspectRatio:false,
           plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Kodchasan'}}}},
           scales:{
-            x:{ticks:{font:{size:10},maxTicksLimit:6}},
-            y:{beginAtZero:false,ticks:{font:{size:10}},grace:'10%'}
+            x:{ticks:{font:{size:10},maxTicksLimit:8}},
+            y:{min:bMin,max:bMax,ticks:{font:{size:10}},
+               title:{display:true,text:'ครั้ง',font:{size:9}}}
           }}
       });_dashCharts.push(mc);
     });
