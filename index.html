@@ -1071,13 +1071,23 @@ function addMachineRow(){
     +(id>1?'<button class="machine-row-remove" onclick="removeMachineRow('+id+')"><i class="fa-solid fa-xmark"></i></button>':'')
     +'</div>'
     +buildMachineSelect(id,'')
-    +'<div class="env-grid">'
-    +'<div class="env-field"><div class="env-field-label"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>'
-    +'<input type="number" class="env-input" id="mTemp_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
+    +'<div style="font-size:0.75rem;font-weight:600;color:#B45309;margin-bottom:6px"><i class="fa-solid fa-temperature-half" style="margin-right:4px"></i>อ่างหาใย</div>'
+    +'<div class="env-grid" style="margin-bottom:10px">'
+    +'<div class="env-field"><div class="env-field-label" style="font-size:0.7rem">🔺 บน</div>'
+    +'<input type="number" class="env-input" id="mT1b_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
     +'<div class="env-unit">°C</div></div>'
-    +'<div class="env-field"><div class="env-field-label"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>'
-    +'<input type="number" class="env-input" id="mHum_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
-    +'<div class="env-unit">%RH</div></div>'
+    +'<div class="env-field"><div class="env-field-label" style="font-size:0.7rem">🔻 ล่าง</div>'
+    +'<input type="number" class="env-input" id="mT1l_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
+    +'<div class="env-unit">°C</div></div>'
+    +'</div>'
+    +'<div style="font-size:0.75rem;font-weight:600;color:#0369A1;margin-bottom:6px"><i class="fa-solid fa-temperature-half" style="margin-right:4px"></i>อ่างพักใย</div>'
+    +'<div class="env-grid">'
+    +'<div class="env-field"><div class="env-field-label" style="font-size:0.7rem">🔺 บน</div>'
+    +'<input type="number" class="env-input" id="mT2b_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
+    +'<div class="env-unit">°C</div></div>'
+    +'<div class="env-field"><div class="env-field-label" style="font-size:0.7rem">🔻 ล่าง</div>'
+    +'<input type="number" class="env-input" id="mT2l_'+id+'" placeholder="0.0" step="0.1" min="0" max="100">'
+    +'<div class="env-unit">°C</div></div>'
     +'</div>';
   wrap.appendChild(div);
   updateMachineCount();
@@ -1129,7 +1139,7 @@ function saveEnvData(){
       hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
       if(failed===0){
         showSuccess('บันทึกสำเร็จ','บันทึกข้อมูล '+saved+' เครื่อง เรียบร้อยแล้ว',function(){
-          document.querySelectorAll('[id^="mTemp_"],[id^="mHum_"]').forEach(function(el){el.value=''});
+          document.querySelectorAll('[id^="mT1b_"],[id^="mT1l_"],[id^="mT2b_"],[id^="mT2l_"]').forEach(function(el){el.value=''});
           loadEnvHistory();
         });
       } else {
@@ -1139,7 +1149,7 @@ function saveEnvData(){
     }
     var r=rows[idx];
     document.getElementById('loadingText').textContent='กำลังบันทึก '+(idx+1)+'/'+total+' เครื่อง...';
-    callAPI('saveEnv',{machine:r.machine,date:date,time:time,temp:r.temp,humidity:r.humidity,recorderCode:leaderCode,recorderName:leaderName},
+    callAPI('saveEnv',{machine:r.machine,date:date,time:time,t1b:r.t1b,t1l:r.t1l,t2b:r.t2b,t2l:r.t2l,recorderCode:leaderCode,recorderName:leaderName},
       function(res){if(res&&res.success)saved++;else failed++;saveNext(idx+1);},
       function(){failed++;saveNext(idx+1);}
     );
@@ -1169,9 +1179,11 @@ function loadEnvHistory(){
         +'<div style="flex:1;min-width:0">'
         +'<div class="env-history-machine">'+r.machine+'</div>'
         +'<div class="env-history-time">'+formatEnvDate(r.date)+' '+r.time+'</div></div>'
-        +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
-        +(r.temp!==''?'<span class="env-badge env-badge-temp"><i class="fa-solid fa-temperature-half"></i>'+r.temp+'°C</span>':'')
-        +(r.humidity!==''?'<span class="env-badge env-badge-hum"><i class="fa-solid fa-droplet"></i>'+r.humidity+'%</span>':'')
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;align-items:start">'
+        +(r.t1b!==''?'<span class="env-badge env-badge-temp" style="font-size:0.7rem"><i class="fa-solid fa-temperature-half"></i>หาใย🔺'+r.t1b+'°</span>':'')
+        +(r.t1l!==''?'<span class="env-badge env-badge-temp" style="font-size:0.7rem"><i class="fa-solid fa-temperature-half"></i>หาใย🔻'+r.t1l+'°</span>':'')
+        +(r.t2b!==''?'<span class="env-badge env-badge-hum" style="font-size:0.7rem"><i class="fa-solid fa-temperature-half"></i>พักใย🔺'+r.t2b+'°</span>':'')
+        +(r.t2l!==''?'<span class="env-badge env-badge-hum" style="font-size:0.7rem"><i class="fa-solid fa-temperature-half"></i>พักใย🔻'+r.t2l+'°</span>':'')
         +'</div></div>';
     }).join('');
   },function(){area.innerHTML='<div class="state-box" style="padding:24px 0"><i class="fa-solid fa-circle-exclamation"></i>โหลดไม่สำเร็จ</div>'});
@@ -1436,9 +1448,7 @@ function renderEnvDashboard(res){
 
     machines.forEach(function(m){
       var r=latestMap[m];
-      var t=r.temp!==''?parseFloat(r.temp):null;
-      var h=r.humidity!==''?parseFloat(r.humidity):null;
-      var isWarn=(t!==null&&t>TEMP_WARN)||(h!==null&&h>HUM_WARN);
+      var isWarn=false;
       var mData=machineMap[m];
       var hasTrend=mData.length>1;
       html+='<div class="dash-machine-card'+(isWarn?' dash-warn':'')+'">'
@@ -1447,13 +1457,11 @@ function renderEnvDashboard(res){
         +'<span class="dash-machine-name">'+m+'</span>'
         +'<span class="dash-machine-time">'+r.time+'</span>'
         +'</div>'
-        +'<div class="dash-machine-body">'
-        +'<div class="dash-val-box temp"><div class="dash-val-num">'+(t!==null?t.toFixed(1):'—')+'</div>'
-        +'<div class="dash-val-unit">°C</div><div class="dash-val-label">อุณหภูมิ</div>'
-        +'</div>'
-        +'<div class="dash-val-box hum"><div class="dash-val-num">'+(h!==null?h.toFixed(1):'—')+'</div>'
-        +'<div class="dash-val-unit">%RH</div><div class="dash-val-label">ความชื้น</div>'
-        +'</div>'
+        +'<div class="dash-machine-body" style="flex-wrap:wrap">'
+        +'<div class="dash-val-box temp" style="min-width:50%"><div class="dash-val-num" style="font-size:1.2rem">'+(r.t1b!==''?parseFloat(r.t1b).toFixed(1):'—')+'</div><div class="dash-val-unit">°C</div><div class="dash-val-label">หาใย🔺บน</div></div>'
+        +'<div class="dash-val-box temp" style="min-width:50%"><div class="dash-val-num" style="font-size:1.2rem">'+(r.t1l!==''?parseFloat(r.t1l).toFixed(1):'—')+'</div><div class="dash-val-unit">°C</div><div class="dash-val-label">หาใย🔻ล่าง</div></div>'
+        +'<div class="dash-val-box hum" style="min-width:50%"><div class="dash-val-num" style="font-size:1.2rem">'+(r.t2b!==''?parseFloat(r.t2b).toFixed(1):'—')+'</div><div class="dash-val-unit">°C</div><div class="dash-val-label">พักใย🔺บน</div></div>'
+        +'<div class="dash-val-box hum" style="min-width:50%"><div class="dash-val-num" style="font-size:1.2rem">'+(r.t2l!==''?parseFloat(r.t2l).toFixed(1):'—')+'</div><div class="dash-val-unit">°C</div><div class="dash-val-label">พักใย🔻ล่าง</div></div>'
         +'</div>'
         +(hasTrend?'<div style="padding:0 12px 12px"><canvas id="miniChart_'+m.replace(/\s/g,'_')+'" height="80"></canvas></div>':'')
         +'</div>';
