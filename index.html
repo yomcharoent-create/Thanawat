@@ -1203,15 +1203,20 @@ function addBreakRow(){
     +(id>1?'<button class="machine-row-remove" onclick="removeBreakRow('+id+')"><i class="fa-solid fa-xmark"></i></button>':'')
     +'</div>'
     +buildBreakMachineSelect(id,'')
-    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
     +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke" style="color:#DC2626"></i> ฝั่ง 1</div>'
     +'<input type="number" class="break-input" id="bS1_'+id+'" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">'
     +'<div class="break-unit">ครั้ง</div></div>'
     +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-circle-half-stroke fa-flip-horizontal" style="color:#991B1B"></i> ฝั่ง 2</div>'
     +'<input type="number" class="break-input" id="bS2_'+id+'" placeholder="0.00" step="0.01" min="0" style="font-size:0.95rem">'
     +'<div class="break-unit">ครั้ง</div></div>'
-    +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-layer-group" style="color:#7C3AED"></i> อักรวม</div>'
-    +'<input type="number" class="break-input" id="bAuk_'+id+'" placeholder="0" step="1" min="0" style="font-size:0.95rem;border-color:rgba(124,58,237,0.2)">'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+    +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-layer-group" style="color:#7C3AED"></i> อัก ฝั่ง 1</div>'
+    +'<input type="number" class="break-input" id="bAuk1_'+id+'" placeholder="0" step="1" min="0" style="font-size:0.95rem;border-color:rgba(124,58,237,0.2)">'
+    +'<div class="break-unit">อัก</div></div>'
+    +'<div><div class="side-card-label" style="font-size:0.72rem"><i class="fa-solid fa-layer-group" style="color:#5B21B6"></i> อัก ฝั่ง 2</div>'
+    +'<input type="number" class="break-input" id="bAuk2_'+id+'" placeholder="0" step="1" min="0" style="font-size:0.95rem;border-color:rgba(91,33,182,0.2)">'
     +'<div class="break-unit">อัก</div></div>'
     +'</div>';
   wrap.appendChild(div);
@@ -1240,10 +1245,11 @@ function saveBreakData(){
     var machine=(document.getElementById('bSel_'+id)||{}).value||'';
     var s1=(document.getElementById('bS1_'+id)||{}).value||'';
     var s2=(document.getElementById('bS2_'+id)||{}).value||'';
-    var auk=(document.getElementById('bAuk_'+id)||{}).value||'';
+    var auk1=(document.getElementById('bAuk1_'+id)||{}).value||'';
+    var auk2=(document.getElementById('bAuk2_'+id)||{}).value||'';
     if(!machine){hasErr=true;var sel=document.getElementById('bSel_'+id);if(sel)sel.style.borderColor='var(--danger)';return}
     if(s1===''&&s2===''){hasErr=true;return}
-    rows.push({machine:machine,side1:s1,side2:s2,totalAuk:auk});
+    rows.push({machine:machine,side1:s1,side2:s2,auk1:auk1,auk2:auk2});
   });
   if(!rows.length){toast('กรุณากรอกข้อมูลอย่างน้อย 1 เครื่อง','warn');return}
   if(hasErr){toast('กรุณากรอกข้อมูลให้ครบทุกเครื่อง','warn');return}
@@ -1258,7 +1264,7 @@ function saveBreakData(){
       hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด';
       if(failed===0){
         showSuccess('บันทึกสำเร็จ','บันทึกข้อมูลเบรค '+saved+' เครื่อง เรียบร้อยแล้ว',function(){
-          document.querySelectorAll('[id^="bS1_"],[id^="bS2_"],[id^="bAuk_"]').forEach(function(el){el.value=''});
+          document.querySelectorAll('[id^="bS1_"],[id^="bS2_"],[id^="bAuk1_"],[id^="bAuk2_"]').forEach(function(el){el.value=''});
           loadBreakHistory();
         });
       } else {toast('บันทึกได้ '+saved+'/'+total+' เครื่อง','warn')}
@@ -1266,7 +1272,7 @@ function saveBreakData(){
     }
     var r=rows[idx];
     document.getElementById('loadingText').textContent='กำลังบันทึก '+(idx+1)+'/'+total+' เครื่อง...';
-    callAPI('saveBreak',{machine:r.machine,date:date,time:time,side1:r.side1,side2:r.side2,totalAuk:r.totalAuk,recorderCode:leaderCode,recorderName:leaderName},
+    callAPI('saveBreak',{machine:r.machine,date:date,time:time,side1:r.side1,side2:r.side2,auk1:r.auk1,auk2:r.auk2,recorderCode:leaderCode,recorderName:leaderName},
       function(res){if(res&&res.success)saved++;else failed++;saveNext(idx+1);},
       function(){failed++;saveNext(idx+1);}
     );
@@ -1286,10 +1292,11 @@ function loadBreakHistory(){
       return '<div class="break-hist-item">'
         +'<div class="break-hist-machine"><i class="fa-solid fa-industry" style="color:#DC2626;margin-right:6px;font-size:0.8rem"></i>'+r.machine+'</div>'
         +'<div class="break-hist-time">'+r.date+' '+r.time+'</div>'
-        +'<div class="break-stat-row">'
-        +'<div class="break-stat"><div class="break-stat-val">'+r.side1+'</div><div class="break-stat-label">ฝั่งที่ 1</div></div>'
-        +'<div class="break-stat"><div class="break-stat-val">'+r.side2+'</div><div class="break-stat-label">ฝั่งที่ 2</div></div>'
-        +'<div class="break-stat"><div class="break-stat-val" style="color:#7C3AED">'+r.totalAuk+'</div><div class="break-stat-label">อักรวม</div></div>'
+        +'<div class="break-stat-row" style="grid-template-columns:1fr 1fr 1fr 1fr">'
+        +'<div class="break-stat"><div class="break-stat-val">'+r.side1+'</div><div class="break-stat-label">เบรคฝั่ง 1</div></div>'
+        +'<div class="break-stat"><div class="break-stat-val">'+r.side2+'</div><div class="break-stat-label">เบรคฝั่ง 2</div></div>'
+        +'<div class="break-stat"><div class="break-stat-val" style="color:#7C3AED">'+(r.auk1||'-')+'</div><div class="break-stat-label">อัก ฝั่ง 1</div></div>'
+        +'<div class="break-stat"><div class="break-stat-val" style="color:#5B21B6">'+(r.auk2||'-')+'</div><div class="break-stat-label">อัก ฝั่ง 2</div></div>'
         +'</div></div>';
     }).join('');
   },function(){area.innerHTML='<div class="state-box" style="padding:24px 0"><i class="fa-solid fa-circle-exclamation"></i>โหลดไม่สำเร็จ</div>'});
@@ -1592,7 +1599,7 @@ function renderBreakDashboard(res){
       +'<div class="dash-machine-body">'
       +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#DC2626">'+(last.side1!=='-'?parseFloat(last.side1).toFixed(2):'—')+'</div><div class="dash-val-unit" style="color:#DC2626">ครั้ง</div><div class="dash-val-label">ฝั่ง 1</div></div>'
       +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#991B1B">'+(last.side2!=='-'?parseFloat(last.side2).toFixed(2):'—')+'</div><div class="dash-val-unit" style="color:#991B1B">ครั้ง</div><div class="dash-val-label">ฝั่ง 2</div></div>'
-      +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#7C3AED">'+(last.totalAuk!=='-'?last.totalAuk:'—')+'</div><div class="dash-val-unit" style="color:#7C3AED">อัก</div><div class="dash-val-label">อักรวม</div></div>'
+      +'<div class="dash-val-box" style="color:inherit"><div class="dash-val-num" style="color:#7C3AED;font-size:1rem">'+(last.auk1&&last.auk1!=='-'?last.auk1:'—')+' / '+(last.auk2&&last.auk2!=='-'?last.auk2:'—')+'</div><div class="dash-val-unit" style="color:#7C3AED">อัก</div><div class="dash-val-label">ฝั่ง 1 / ฝั่ง 2</div></div>'
       +'</div>'
       +'<div style="padding:0 12px 12px"><canvas id="miniBreak_'+m.replace(/[^a-zA-Z0-9]/g,'_')+'" height="200"></canvas></div>'
       +'</div>';
