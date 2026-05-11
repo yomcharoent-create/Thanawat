@@ -313,12 +313,49 @@
     .env-field-label{font-size:0.78rem;font-weight:600;color:var(--ink-mid);margin-bottom:7px;display:flex;align-items:center;gap:6px}
     .btn-env-save{width:100%;padding:15px;background:linear-gradient(135deg,#0369A1,#075985);color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:4px;box-shadow:0 4px 14px rgba(3,105,161,0.3);transition:opacity 0.15s}
     .btn-env-save:active{opacity:0.8}
-    .env-history-item{background:white;border-radius:12px;border:1px solid var(--border);padding:13px 15px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
-    .env-history-machine{font-size:0.85rem;font-weight:600;color:var(--ink);flex:1}
-    .env-history-time{font-size:1rem;color:var(--ink-muted)}
-    .env-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:0.85rem;font-weight:600}
-    .env-badge-temp{background:#FEF3C7;color:#B45309}
-    .env-badge-hum{background:#E0F2FE;color:#0369A1}
+    .env-history-item {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column; /* ปรับเป็นแนวตั้งเพื่อแยกชื่อเครื่องกับค่าต่างๆ ออกจากกัน */
+    gap: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+    .env-history-machine {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.env-history-time {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    font-weight: 400;
+}
+
+/* ส่วนของป้ายค่าอุณหภูมิ/ความชื้น */
+.env-badge-group {
+    display: flex;
+    flex-wrap: wrap; /* สำคัญ: ให้ Badge ขึ้นบรรทัดใหม่ได้ถ้าที่จอดไม่พอ */
+    gap: 6px;
+}
+
+.env-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap; /* ป้องกันตัวเลขแยกกับหน่วย */
+}
     .machine-row{background:white;border:1.5px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:10px;transition:border-color 0.15s}
     .machine-row:focus-within{border-color:#0369A1}
     .machine-row-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
