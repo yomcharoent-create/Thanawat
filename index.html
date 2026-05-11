@@ -597,47 +597,55 @@
 
   <!-- TAB: Environment -->
   <div class="tab-page" id="tabEnv">
-    <div class="env-header-card">
-      <div class="env-header-icon"><i class="fa-solid fa-temperature-half"></i></div>
-      <div>
-        <div class="env-header-title">บันทึกอุณหภูมิ &amp; ความชื้น</div>
-        <div class="env-header-sub" id="envLeaderName">—</div>
-      </div>
+  <div class="env-header-card">
+    <div class="env-header-icon"><i class="fa-solid fa-temperature-half"></i></div>
+    <div>
+      <div class="env-header-title">บันทึกอุณหภูมิ & ความชื้น</div>
+      <div class="env-header-sub" id="envLeaderName">—</div>
     </div>
+  </div>
 
-    <!-- วันที่ + เวลา -->
-    <div class="card">
-      <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
-        <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-calendar" style="font-size:0.7rem"></i></div>
-        <span class="card-header-text">วันที่และช่วงเวลา</span>
-      </div>
-      <div class="card-body">
-        <label class="field-label">วันที่</label>
-        <input type="date" id="envDate" style="margin-bottom:14px;width:100%;max-width:100%;box-sizing:border-box;-webkit-appearance:none">
-        <label class="field-label">ช่วงเวลา</label>
-        <select class="team-select" id="envTime" style="border-color:var(--border)">
-          <option value="07:00">07:00 น.</option>
-          <option value="08:00">08:00 น.</option>
-          <option value="09:00">09:00 น.</option>
-          <option value="10:00">10:00 น.</option>
-          <option value="11:00">11:00 น.</option>
-          <option value="12:00">12:00 น.</option>
-          <option value="13:00">13:00 น.</option>
-          <option value="14:00">14:00 น.</option>
-          <option value="15:00">15:00 น.</option>
-          <option value="16:00">16:00 น.</option>
-          <option value="17:00">17:00 น.</option>
-          <option value="18:00">18:00 น.</option>
-          <option value="19:00">19:00 น.</option>
-          <option value="20:00">20:00 น.</option>
-          <option value="21:00">21:00 น.</option>
-          <option value="22:00">22:00 น.</option>
-          <option value="23:00">23:00 น.</option>
-        </select>
-      </div>
+  <div class="period-row" style="margin-bottom: 20px;">
+    <button class="period-btn on" id="btnSubEnvMachine" onclick="switchEnvSubTab('machine')">
+      <i class="fa-solid fa-industry"></i> อุณหภูมิเครื่อง
+    </button>
+    <button class="period-btn" id="btnSubEnvFactory" onclick="switchEnvSubTab('factory')">
+      <i class="fa-solid fa-building"></i> บริเวณโรงงาน
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
+      <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-calendar" style="font-size:0.7rem"></i></div>
+      <span class="card-header-text">วันที่และช่วงเวลา</span>
     </div>
+    <div class="card-body">
+      <label class="field-label">วันที่</label>
+      <input type="date" id="envDate" style="margin-bottom:14px;width:100%;box-sizing:border-box;-webkit-appearance:none">
+      <label class="field-label">ช่วงเวลา</label>
+      <select class="team-select" id="envTime" style="border-color:var(--border)">
+        <option value="07:00">07:00 น.</option>
+        <option value="08:00">08:00 น.</option>
+        <option value="09:00">09:00 น.</option>
+        <option value="10:00">10:00 น.</option>
+        <option value="11:00">11:00 น.</option>
+        <option value="12:00">12:00 น.</option>
+        <option value="13:00">13:00 น.</option>
+        <option value="14:00">14:00 น.</option>
+        <option value="15:00">15:00 น.</option>
+        <option value="16:00">16:00 น.</option>
+        <option value="17:00">17:00 น.</option>
+        <option value="18:00">18:00 น.</option>
+        <option value="19:00">19:00 น.</option>
+        <option value="20:00">20:00 น.</option>
+        <option value="21:00">21:00 น.</option>
+        <option value="22:00">22:00 น.</option>
+        <option value="23:00">23:00 น.</option>
+      </select>
+    </div>
+  </div>
 
-    <!-- ข้อมูลเครื่องจักร (หลายเครื่อง) -->
+  <div id="subTabMachine">
     <div class="card">
       <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
         <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-sliders" style="font-size:0.7rem"></i></div>
@@ -650,63 +658,55 @@
           <i class="fa-solid fa-plus"></i> เพิ่มเครื่องจักร
         </button>
         <button class="btn-env-save" style="margin-top:16px" onclick="saveEnvData()">
-          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลทั้งหมด
+          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลเครื่องจักร
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- อุณหภูมิ-ความชื้นโรงงาน -->
+  <div id="subTabFactory" style="display: none;">
     <div class="card">
       <div class="card-header" style="background:#F0FDF4;border-bottom-color:#BBF7D0">
         <div class="step-badge" style="background:#16A34A"><i class="fa-solid fa-building" style="font-size:0.7rem"></i></div>
         <span class="card-header-text" style="color:#15803D">อุณหภูมิ-ความชื้นบริเวณโรงงาน</span>
       </div>
       <div class="card-body">
-        <!-- หน้าประตูแดง -->
-        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px">
-          <i class="fa-solid fa-door-open" style="margin-right:5px"></i>หน้าประตูแดง
-        </div>
+        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px"><i class="fa-solid fa-door-open" style="margin-right:5px"></i>หน้าประตูแดง</div>
         <div class="env-grid" style="margin-bottom:14px">
           <div class="env-field">
             <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>
-            <input type="number" class="env-input" id="fac1Temp" placeholder="0.0" step="0.1" min="0" max="60">
+            <input type="number" class="env-input" id="fac1Temp" placeholder="0.0" step="0.1">
             <div class="env-unit">°C</div>
           </div>
           <div class="env-field">
             <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>
-            <input type="number" class="env-input" id="fac1Hum" placeholder="0.0" step="0.1" min="0" max="100">
+            <input type="number" class="env-input" id="fac1Hum" placeholder="0.0" step="0.1">
             <div class="env-unit">%RH</div>
           </div>
         </div>
-        <!-- หน้าหม้อต้ม -->
-        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px">
-          <i class="fa-solid fa-fire-burner" style="margin-right:5px"></i>หน้าหม้อต้ม
-        </div>
+        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px"><i class="fa-solid fa-fire-burner" style="margin-right:5px"></i>หน้าหม้อต้ม</div>
         <div class="env-grid" style="margin-bottom:14px">
           <div class="env-field">
             <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>
-            <input type="number" class="env-input" id="fac2Temp" placeholder="0.0" step="0.1" min="0" max="60">
+            <input type="number" class="env-input" id="fac2Temp" placeholder="0.0" step="0.1">
             <div class="env-unit">°C</div>
           </div>
           <div class="env-field">
             <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>
-            <input type="number" class="env-input" id="fac2Hum" placeholder="0.0" step="0.1" min="0" max="100">
+            <input type="number" class="env-input" id="fac2Hum" placeholder="0.0" step="0.1">
             <div class="env-unit">%RH</div>
           </div>
         </div>
-        <!-- ปั๊มลม -->
-        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px">
-          <i class="fa-solid fa-wind" style="margin-right:5px"></i>ปั๊มลม
-        </div>
+        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px"><i class="fa-solid fa-wind" style="margin-right:5px"></i>ปั๊มลม</div>
         <div class="env-grid" style="margin-bottom:14px">
           <div class="env-field">
             <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>
-            <input type="number" class="env-input" id="fac3Temp" placeholder="0.0" step="0.1" min="0" max="60">
+            <input type="number" class="env-input" id="fac3Temp" placeholder="0.0" step="0.1">
             <div class="env-unit">°C</div>
           </div>
           <div class="env-field">
             <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>
-            <input type="number" class="env-input" id="fac3Hum" placeholder="0.0" step="0.1" min="0" max="100">
+            <input type="number" class="env-input" id="fac3Hum" placeholder="0.0" step="0.1">
             <div class="env-unit">%RH</div>
           </div>
         </div>
@@ -715,18 +715,18 @@
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- ประวัติล่าสุด -->
-    <div class="card">
-      <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
-        <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-list" style="font-size:0.7rem"></i></div>
-        <span class="card-header-text">บันทึกล่าสุดวันนี้</span>
-      </div>
-      <div class="card-body" style="padding:12px">
-        <div id="envHistArea"><div class="state-box"><i class="fa-solid fa-inbox"></i>ยังไม่มีข้อมูล</div></div>
-      </div>
+  <div class="card">
+    <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
+      <div class="step-badge" style="background:#0369A1"><i class="fa-solid fa-list" style="font-size:0.7rem"></i></div>
+      <span class="card-header-text">บันทึกล่าสุดวันนี้</span>
+    </div>
+    <div class="card-body" style="padding:12px">
+      <div id="envHistArea"><div class="state-box"><i class="fa-solid fa-inbox"></i>ยังไม่มีข้อมูล</div></div>
     </div>
   </div>
+</div>
 
   <!-- TAB: Dashboard อุณหภูมิ-ความชื้น -->
   <div class="tab-page" id="tabDash">
@@ -2186,6 +2186,25 @@ function saveWorkHours(){
   callAPI('saveHours',{payload:{date:date,shift:selectedShift,leaderCode:leaderCode,leaderName:leaderName,orderId:whOrderId,orderData:whOrderData,rows:rows}},
     function(){hideLoading();btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน';showSuccess('บันทึกสำเร็จ','บันทึกชั่วโมงทำงานเรียบร้อยแล้ว',function(){resetHoursUI();document.getElementById('whDate').value=todayISO()})},
     function(e){hideLoading();toast('เกิดข้อผิดพลาด: '+e,'err');btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกชั่วโมงทำงาน'});
+}
+
+function switchEnvSubTab(target) {
+  const machineTab = document.getElementById('subTabMachine');
+  const factoryTab = document.getElementById('subTabFactory');
+  const btnMachine = document.getElementById('btnSubEnvMachine');
+  const btnFactory = document.getElementById('btnSubEnvFactory');
+
+  if (target === 'machine') {
+    machineTab.style.display = 'block';
+    factoryTab.style.display = 'none';
+    btnMachine.classList.add('on');
+    btnFactory.classList.remove('on');
+  } else {
+    machineTab.style.display = 'none';
+    factoryTab.style.display = 'block';
+    btnMachine.classList.remove('on');
+    btnFactory.classList.add('on');
+  }
 }
 </script>
 </body>
