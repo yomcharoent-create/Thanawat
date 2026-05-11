@@ -1128,11 +1128,15 @@ function saveEnvData(){
   Array.from(wrap.children).forEach(function(row){
     var id=row.id.replace('mrow_','');
     var machine=(document.getElementById('mSel_'+id)||{}).value||'';
-    var temp=(document.getElementById('mTemp_'+id)||{}).value||'';
+    var t1b=(document.getElementById('mT1b_'+id)||{}).value||'';
+    var t1l=(document.getElementById('mT1l_'+id)||{}).value||'';
+    var t2b=(document.getElementById('mT2b_'+id)||{}).value||'';
+    var t2l=(document.getElementById('mT2l_'+id)||{}).value||'';
     var hum=(document.getElementById('mHum_'+id)||{}).value||'';
+    var tenv=(document.getElementById('mTenv_'+id)||{}).value||'';
     if(!machine){hasErr=true;document.getElementById('mSel_'+id).style.borderColor='var(--danger)';return}
-    if(temp===''&&hum===''){hasErr=true;return}
-    rows.push({machine:machine,temp:temp,humidity:hum});
+    if(t1b===''&&t1l===''&&t2b===''&&t2l===''&&hum===''&&tenv===''){hasErr=true;return}
+    rows.push({machine:machine,t1b:t1b,t1l:t1l,t2b:t2b,t2l:t2l,humidity:hum,tenv:tenv});
   });
   if(!rows.length){toast('กรุณากรอกข้อมูลอย่างน้อย 1 เครื่อง','warn');return}
   if(hasErr){toast('กรุณากรอกข้อมูลให้ครบทุกเครื่อง','warn');return}
