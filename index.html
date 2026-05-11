@@ -655,6 +655,67 @@
       </div>
     </div>
 
+    <!-- อุณหภูมิ-ความชื้นโรงงาน -->
+    <div class="card">
+      <div class="card-header" style="background:#F0FDF4;border-bottom-color:#BBF7D0">
+        <div class="step-badge" style="background:#16A34A"><i class="fa-solid fa-building" style="font-size:0.7rem"></i></div>
+        <span class="card-header-text" style="color:#15803D">อุณหภูมิ-ความชื้นบริเวณโรงงาน</span>
+      </div>
+      <div class="card-body">
+        <!-- หน้าประตูแดง -->
+        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px">
+          <i class="fa-solid fa-door-open" style="margin-right:5px"></i>หน้าประตูแดง
+        </div>
+        <div class="env-grid" style="margin-bottom:14px">
+          <div class="env-field">
+            <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>
+            <input type="number" class="env-input" id="fac1Temp" placeholder="0.0" step="0.1" min="0" max="60">
+            <div class="env-unit">°C</div>
+          </div>
+          <div class="env-field">
+            <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>
+            <input type="number" class="env-input" id="fac1Hum" placeholder="0.0" step="0.1" min="0" max="100">
+            <div class="env-unit">%RH</div>
+          </div>
+        </div>
+        <!-- หน้าหม้อต้ม -->
+        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px">
+          <i class="fa-solid fa-fire-burner" style="margin-right:5px"></i>หน้าหม้อต้ม
+        </div>
+        <div class="env-grid" style="margin-bottom:14px">
+          <div class="env-field">
+            <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>
+            <input type="number" class="env-input" id="fac2Temp" placeholder="0.0" step="0.1" min="0" max="60">
+            <div class="env-unit">°C</div>
+          </div>
+          <div class="env-field">
+            <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>
+            <input type="number" class="env-input" id="fac2Hum" placeholder="0.0" step="0.1" min="0" max="100">
+            <div class="env-unit">%RH</div>
+          </div>
+        </div>
+        <!-- ปั๊มลม -->
+        <div style="font-size:0.8rem;font-weight:700;color:#15803D;margin-bottom:8px">
+          <i class="fa-solid fa-wind" style="margin-right:5px"></i>ปั๊มลม
+        </div>
+        <div class="env-grid" style="margin-bottom:14px">
+          <div class="env-field">
+            <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-temperature-half" style="color:#B45309"></i> อุณหภูมิ</div>
+            <input type="number" class="env-input" id="fac3Temp" placeholder="0.0" step="0.1" min="0" max="60">
+            <div class="env-unit">°C</div>
+          </div>
+          <div class="env-field">
+            <div class="env-field-label" style="font-size:0.72rem"><i class="fa-solid fa-droplet" style="color:#0369A1"></i> ความชื้น</div>
+            <input type="number" class="env-input" id="fac3Hum" placeholder="0.0" step="0.1" min="0" max="100">
+            <div class="env-unit">%RH</div>
+          </div>
+        </div>
+        <button class="btn-env-save" style="background:linear-gradient(135deg,#16A34A,#15803D);box-shadow:0 4px 14px rgba(22,163,74,0.3)" onclick="saveFactoryEnv()">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลโรงงาน
+        </button>
+      </div>
+    </div>
+
     <!-- ประวัติล่าสุด -->
     <div class="card">
       <div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">
@@ -1178,6 +1239,55 @@ function formatEnvDate(d){
     if(p.length===3) return p[2]+'/'+p[1]+'/'+p[0];
   }catch(e){}
   return d;
+}
+
+function saveFactoryEnv(){
+  var date=document.getElementById('envDate').value;
+  var time=document.getElementById('envTime').value;
+  if(!date){toast('กรุณาเลือกวันที่','warn');return}
+  if(!time){toast('กรุณาเลือกช่วงเวลา','warn');return}
+
+  var spots=[
+    {key:'fac1',name:'หน้าประตูแดง'},
+    {key:'fac2',name:'หน้าหม้อต้ม'},
+    {key:'fac3',name:'ปั๊มลม'}
+  ];
+  var rows=[];
+  spots.forEach(function(s){
+    var t=(document.getElementById(s.key+'Temp')||{}).value||'';
+    var h=(document.getElementById(s.key+'Hum')||{}).value||'';
+    if(t!==''||h!=='') rows.push({spot:s.name,temp:t,humidity:h});
+  });
+  if(!rows.length){toast('กรุณากรอกข้อมูลอย่างน้อย 1 จุด','warn');return}
+
+  var btn=document.querySelectorAll('.btn-env-save')[1];
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';}
+  showLoading('กำลังบันทึกข้อมูลโรงงาน...');
+
+  var saved=0,failed=0,total=rows.length;
+  function saveNext(idx){
+    if(idx>=total){
+      hideLoading();
+      if(btn){btn.disabled=false;btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลโรงงาน';}
+      if(failed===0){
+        showSuccess('บันทึกสำเร็จ','บันทึกข้อมูลโรงงาน '+saved+' จุด เรียบร้อยแล้ว',function(){
+          spots.forEach(function(s){
+            var te=document.getElementById(s.key+'Temp');var he=document.getElementById(s.key+'Hum');
+            if(te)te.value='';if(he)he.value='';
+          });
+          loadEnvHistory();
+        });
+      } else {toast('บันทึกได้ '+saved+'/'+total+' จุด','warn')}
+      return;
+    }
+    var r=rows[idx];
+    document.getElementById('loadingText').textContent='กำลังบันทึก '+(idx+1)+'/'+total+' จุด...';
+    callAPI('saveFactoryEnv',{spot:r.spot,date:date,time:time,temp:r.temp,humidity:r.humidity,recorderCode:leaderCode,recorderName:leaderName},
+      function(res){if(res&&res.success)saved++;else failed++;saveNext(idx+1);},
+      function(){failed++;saveNext(idx+1);}
+    );
+  }
+  saveNext(0);
 }
 
 function loadEnvHistory(){
