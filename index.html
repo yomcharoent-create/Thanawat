@@ -478,13 +478,11 @@
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="รังเกรด 1"><div class="check-dot"></div><span class="check-text">รังเกรด 1</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="รังเกรด 2"><div class="check-dot"></div><span class="check-text">รังเกรด 2</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="รังไม่ระบุเกรด"><div class="check-dot"></div><span class="check-text">รังไม่ระบุเกรด</span></div>
-          <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="รังคล้ำ"><div class="check-dot"></div><span class="check-text">รังคล้ำ</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="น้ำดี"><div class="check-dot"></div><span class="check-text">น้ำดี</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="น้ำรีไซเคิล"><div class="check-dot"></div><span class="check-text">น้ำรีไซเคิล</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="เร่งผ่านสลับ"><div class="check-dot"></div><span class="check-text">เร่งผ่านสลับ</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="ดีสด"><div class="check-dot"></div><span class="check-text">ดีสด</span></div>
           <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="ดีแห้ง"><div class="check-dot"></div><span class="check-text">ดีแห้ง</span></div>
-          <div class="check-pill" onclick="togglePill(this)"><input type="checkbox" value="ดีหมาด"><div class="check-dot"></div><span class="check-text">ดีหมาด</span></div>
         </div>
         <div class="section-label" style="margin-top:18px;">หมายเหตุเพิ่มเติม</div>
         <textarea class="note-input" id="extraNote" rows="3" placeholder="กรอกหมายเหตุ (ถ้ามี)..."></textarea>
@@ -772,6 +770,9 @@
         </select>
         <button class="btn-load-report" style="width:100%;background:#7C3AED" onclick="loadDashboard()">
           <i class="fa-solid fa-chart-line"></i> ดู Dashboard
+        </button>
+        <button onclick="window.open('report.html','_blank')" style="width:100%;margin-top:10px;padding:13px;background:white;border:1.5px solid #16A34A;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.92rem;font-weight:700;color:#16A34A;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+          <i class="fa-solid fa-file-lines"></i> ดูรายงาน / Export Excel
         </button>
 
       </div>
