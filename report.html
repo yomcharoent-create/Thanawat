@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>รายงานข้อมูล — ระบบสาวไหม</title>
+<link href="https://fonts.googleapis.com/css2?family=Kodchasan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --blue:#1A73E8;--blue-dark:#1557B0;--blue-soft:#EBF3FE;
+    --green:#16A34A;--green-soft:#F0FDF4;
+    --red:#DC2626;--red-soft:#FEF2F2;
+    --purple:#7C3AED;--purple-soft:#F5F3FF;
+    --ink:#1A2B4A;--ink-mid:#4A5568;--ink-muted:#9AA5B4;
+    --border:#E2E8F0;--bg:#F7F9FC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Kodchasan',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+  /* App Bar */
+  .app-bar{background:linear-gradient(135deg,#1557B0,#1A73E8);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(26,60,120,0.2)}
+  .app-bar-back{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+  .app-bar-title{font-size:1rem;font-weight:600;color:white;flex:1}
+  .app-bar-sub{font-size:0.75rem;color:rgba(255,255,255,0.8);margin-top:1px}
+
+  .main{padding:16px;max-width:600px;margin:0 auto}
+
+  /* Filter card */
+  .filter-card{background:white;border-radius:16px;border:1px solid var(--border);padding:18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(26,60,120,0.06)}
+  .filter-title{font-size:0.88rem;font-weight:700;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .filter-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  .filter-label{font-size:0.8rem;font-weight:600;color:var(--ink-mid);margin-bottom:6px;display:block}
+  .filter-input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Kodchasan',sans-serif;font-size:0.9rem;background:white;color:var(--ink);-webkit-appearance:none}
+  .filter-input:focus{outline:none;border-color:var(--blue)}
+
+  /* Type tabs */
+  .type-row{display:flex;gap:8px;margin-bottom:12px}
+  .type-btn{flex:1;padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:white;font-family:'Kodchasan',sans-serif;font-size:0.8rem;font-weight:600;color:var(--ink-mid);cursor:pointer;transition:all 0.15s;text-align:center}
+  .type-btn.on-env{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}
+  .type-btn.on-fac{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+  .type-btn.on-break{border-color:var(--red);background:var(--red-soft);color:var(--red)}
+
+  .btn-load{width:100%;padding:14px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;border:none;border-radius:12px;font-family:'Kodchasan',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(26,115,232,0.3);transition:opacity 0.15s}
+  .btn-load:active{opacity:0.85}
+
+  /* Result section */
+  .result-card{background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 8px rgba(26,60,120,0.06);margin-bottom:16px}
+  .result-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+  .result-title{font-size:0.9rem;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
+  .result-count{font-size:0.75rem;color:var(--ink-muted)}
+  .btn-export{padding:8px 14px;background:var(--green);color:white;border:none;border-radius:8px;font-family:'Kodchasan',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:opacity 0.15s}
+  .btn-export:active{opacity:0.8}
+
+  /* Table */
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.rpt-tbl{width:100%;border-collapse:collapse;font-size:0.78rem;min-width:600px}
+  table.rpt-tbl th{padding:10px 12px;text-align:left;font-weight:700;color:white;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap}
+  table.rpt-tbl td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--ink);white-space:nowrap}
+  table.rpt-tbl tr:last-child td{border-bottom:none}
+  table.rpt-tbl tr:nth-child(even) td{background:#FAFBFF}
+  .th-env{background:#1A73E8}
+  .th-fac{background:#16A34A}
+  .th-break{background:#DC2626}
+
+  /* Value badge */
+  .val{font-weight:600;color:var(--ink)}
+  .val-temp{color:#B45309;font-weight:700}
+  .val-hum{color:#0369A1;font-weight:700}
+  .val-break{color:#DC2626;font-weight:700}
+
+  /* Empty / loading */
+  .state-box{text-align:center;padding:40px 20px;color:var(--ink-muted)}
+  .state-box i{font-size:2rem;margin-bottom:10px;display:block;opacity:0.3}
+
+  /* Summary row */
+  .summary-row{display:grid;gap:10px;margin-bottom:16px}
+  .summary-card{background:white;border-radius:12px;border:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;gap:12px}
+  .summary-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+  .summary-num{font-size:1.4rem;font-weight:700}
+  .summary-label{font-size:0.72rem;color:var(--ink-muted);margin-top:2px}
+
+  .loading-overlay{position:fixed;inset:0;background:rgba(26,43,74,0.5);z-index:500;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+  .loading-overlay.show{display:flex}
+  .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:white;font-size:0.95rem;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- App Bar -->
+<div class="app-bar">
+  <button class="app-bar-back" onclick="history.back()"><i class="fa-solid fa-chevron-left"></i></button>
+  <div>
+    <div class="app-bar-title">รายงานข้อมูล</div>
+    <div class="app-bar-sub">ระบบสาวไหม</div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">กำลังโหลด...</div>
+</div>
+
+<div class="main">
+
+  <!-- Filter -->
+  <div class="filter-card">
+    <div class="filter-title"><i class="fa-solid fa-filter" style="color:var(--blue)"></i> ตัวกรองข้อมูล</div>
+
+    <!-- ประเภทรายงาน -->
+    <div class="filter-label">ประเภทรายงาน</div>
+    <div class="type-row">
+      <button class="type-btn on-env" id="typeEnv" onclick="setType('env')">
+        <i class="fa-solid fa-temperature-half"></i><br>เครื่อง
+      </button>
+      <button class="type-btn" id="typeFac" onclick="setType('fac')">
+        <i class="fa-solid fa-building"></i><br>โรงงาน
+      </button>
+      <button class="type-btn" id="typeBreak" onclick="setType('break')">
+        <i class="fa-solid fa-scissors"></i><br>การเบรค
+      </button>
+    </div>
+
+    <div class="filter-row">
+      <div>
+        <label class="filter-label">วันที่เริ่มต้น</label>
+        <input type="date" class="filter-input" id="dateFrom">
+      </div>
+      <div>
+        <label class="filter-label">วันที่สิ้นสุด</label>
+        <input type="date" class="filter-input" id="dateTo">
+      </div>
+    </div>
+
+    <div id="machineFilterWrap" style="margin-bottom:12px">
+      <label class="filter-label">เครื่องจักร</label>
+      <select class="filter-input" id="machineFilter">
+        <option value="all">ทุกเครื่อง</option>
+      </select>
+    </div>
+
+    <button class="btn-load" onclick="loadReport()">
+      <i class="fa-solid fa-magnifying-glass"></i> ดูรายงาน
+    </button>
+  </div>
+
+  <!-- Result -->
+  <div id="resultArea">
+    <div class="state-box"><i class="fa-solid fa-chart-bar"></i>เลือกเงื่อนไขแล้วกด "ดูรายงาน"</div>
+  </div>
+
+</div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbz1KTAgNzjKQw_ReGlUU8U8lcArmkaFrrk7k37MP4N6nwskNJ77I0suStDtH82bGSDr/exec';
+var reportType = 'env';
+var reportData = [];
+
+function callAPI(action, data, onSuccess, onError){
+  var params='?action='+encodeURIComponent(action)+'&data='+encodeURIComponent(JSON.stringify(data));
+  fetch(GAS_URL+params,{method:'GET'})
+  .then(function(r){return r.json()})
+  .then(function(res){onSuccess(res)})
+  .catch(function(e){onError(e.message||'เชื่อมต่อไม่ได้')});
+}
+
+function todayISO(){var d=new Date();return d.toFullYear?d.toFullYear():d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmtDate(d){if(!d)return'';var p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d}
+
+// Init dates
+window.onload = function(){
+  var today = new Date();
+  var yyyy = today.getFullYear();
+  var mm = String(today.getMonth()+1).padStart(2,'0');
+  var dd = String(today.getDate()).padStart(2,'0');
+  var iso = yyyy+'-'+mm+'-'+dd;
+  document.getElementById('dateFrom').value = iso;
+  document.getElementById('dateTo').value = iso;
+  loadMachines();
+};
+
+function loadMachines(){
+  callAPI('getMachines',{},function(res){
+    var sel=document.getElementById('machineFilter');
+    sel.innerHTML='<option value="all">ทุกเครื่อง</option>';
+    (res.machines||[]).forEach(function(m){
+      var o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);
+    });
+  },function(){});
+}
+
+function setType(t){
+  reportType=t;
+  ['env','fac','break'].forEach(function(x){
+    var btn=document.getElementById('type'+x.charAt(0).toUpperCase()+x.slice(1));
+    btn.className='type-btn'+(x===t?' on-'+t:'');
+  });
+  document.getElementById('machineFilterWrap').style.display=(t==='fac')?'none':'block';
+}
+
+function showLoading(txt){
+  document.getElementById('loadingText').textContent=txt||'กำลังโหลด...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+
+function loadReport(){
+  var from=document.getElementById('dateFrom').value;
+  var to=document.getElementById('dateTo').value;
+  var machine=document.getElementById('machineFilter').value;
+  if(!from||!to){alert('กรุณาเลือกวันที่');return}
+  showLoading('กำลังดึงข้อมูล...');
+  var action=reportType==='env'?'getReportData':reportType==='fac'?'getFactoryReportData':'getBreakReportData';
+  callAPI(action,{dateFrom:from,dateTo:to,machine:machine},function(res){
+    hideLoading();
+    if(!res.success){
+      document.getElementById('resultArea').innerHTML='<div class="state-box"><i class="fa-solid fa-circle-exclamation"></i>'+(res.message||'ข้อผิดพลาด')+'</div>';
+      return;
+    }
+    reportData=res.rows||[];
+    renderTable(reportData,from,to,machine);
+  },function(e){hideLoading();document.getElementById('resultArea').innerHTML='<div class="state-box"><i class="fa-solid fa-circle-exclamation"></i>'+e+'</div>'});
+}
+
+function renderTable(rows,from,to,machine){
+  var area=document.getElementById('resultArea');
+  if(!rows.length){
+    area.innerHTML='<div class="state-box"><i class="fa-solid fa-inbox"></i>ไม่พบข้อมูลในช่วงนี้</div>';
+    return;
+  }
+
+  var titles={env:'อุณหภูมิ & ความชื้น (เครื่อง)',fac:'อุณหภูมิ & ความชื้น (โรงงาน)',break:'การเบรคของเส้นไหม'};
+  var icons={env:'fa-temperature-half',fac:'fa-building',break:'fa-scissors'};
+  var thClass={env:'th-env',fac:'th-fac',break:'th-break'};
+  var colors={env:'var(--blue)',fac:'var(--green)',break:'var(--red)'};
+
+  var html='<div class="result-card">'
+    +'<div class="result-header">'
+    +'<div class="result-title"><i class="fa-solid '+icons[reportType]+'" style="color:'+colors[reportType]+'"></i>'+titles[reportType]+'</div>'
+    +'<div style="display:flex;align-items:center;gap:8px">'
+    +'<span class="result-count">'+rows.length+' รายการ</span>'
+    +'<button class="btn-export" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i> Excel</button>'
+    +'<button class="btn-export" style="background:var(--blue)" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>'
+    +'</div></div>';
+
+  html+='<div class="tbl-wrap"><table class="rpt-tbl">';
+
+  if(reportType==='env'){
+    html+='<thead><tr class="'+thClass[reportType]+'">'
+      +'<th>วันที่</th><th>เวลา</th><th>เครื่อง</th>'
+      +'<th>หาใย🔺</th><th>หาใย🔻</th><th>พักใย🔺</th><th>พักใย🔻</th>'
+      +'<th>ความชื้น</th><th>รอบเครื่อง</th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      html+='<tr>'
+        +'<td>'+fmtDate(r.date)+'</td>'
+        +'<td>'+r.time+'</td>'
+        +'<td style="font-weight:600">'+r.machine+'</td>'
+        +'<td class="val-temp">'+(r.t1b||'—')+'°</td>'
+        +'<td class="val-temp">'+(r.t1l||'—')+'°</td>'
+        +'<td class="val-temp">'+(r.t2b||'—')+'°</td>'
+        +'<td class="val-temp">'+(r.t2l||'—')+'°</td>'
+        +'<td class="val-hum">'+(r.humidity||'—')+'%</td>'
+        +'<td class="val-temp">'+(r.tenv||'—')+'°</td>'
+        +'</tr>';
+    });
+  } else if(reportType==='fac'){
+    html+='<thead><tr class="'+thClass[reportType]+'">'
+      +'<th>วันที่</th><th>เวลา</th><th>จุดวัด</th>'
+      +'<th>อุณหภูมิ</th><th>ความชื้น</th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      html+='<tr>'
+        +'<td>'+fmtDate(r.date)+'</td>'
+        +'<td>'+r.time+'</td>'
+        +'<td style="font-weight:600">'+r.spot+'</td>'
+        +'<td class="val-temp">'+(r.temp||'—')+'°C</td>'
+        +'<td class="val-hum">'+(r.humidity||'—')+'%RH</td>'
+        +'</tr>';
+    });
+  } else {
+    html+='<thead><tr class="'+thClass[reportType]+'">'
+      +'<th>วันที่</th><th>เวลา</th><th>เครื่อง</th>'
+      +'<th>เบรคฝั่ง 1</th><th>เบรคฝั่ง 2</th>'
+      +'<th>อัก ฝั่ง 1</th><th>อัก ฝั่ง 2</th>'
+      +'</tr></thead><tbody>';
+    rows.forEach(function(r){
+      html+='<tr>'
+        +'<td>'+fmtDate(r.date)+'</td>'
+        +'<td>'+r.time+'</td>'
+        +'<td style="font-weight:600">'+r.machine+'</td>'
+        +'<td class="val-break">'+(r.side1||'—')+'</td>'
+        +'<td class="val-break">'+(r.side2||'—')+'</td>'
+        +'<td>'+(r.auk1||'—')+'</td>'
+        +'<td>'+(r.auk2||'—')+'</td>'
+        +'</tr>';
+    });
+  }
+
+  html+='</tbody></table></div></div>';
+  area.innerHTML=html;
+}
+
+function exportExcel(){
+  if(!reportData.length){alert('ไม่มีข้อมูล');return}
+  var wb=XLSX.utils.book_new();
+  var headers, rows;
+
+  if(reportType==='env'){
+    headers=['วันที่','เวลา','เครื่องจักร','อ่างหาใย บน (°C)','อ่างหาใย ล่าง (°C)','อ่างพักใย บน (°C)','อ่างพักใย ล่าง (°C)','ความชื้น (%RH)','อุณหภูมิรอบเครื่อง (°C)'];
+    rows=reportData.map(function(r){return[fmtDate(r.date),r.time,r.machine,r.t1b,r.t1l,r.t2b,r.t2l,r.humidity,r.tenv]});
+  } else if(reportType==='fac'){
+    headers=['วันที่','เวลา','จุดวัด','อุณหภูมิ (°C)','ความชื้น (%RH)'];
+    rows=reportData.map(function(r){return[fmtDate(r.date),r.time,r.spot,r.temp,r.humidity]});
+  } else {
+    headers=['วันที่','เวลา','เครื่องจักร','เบรคฝั่ง 1 (ครั้ง)','เบรคฝั่ง 2 (ครั้ง)','อัก ฝั่ง 1','อัก ฝั่ง 2'];
+    rows=reportData.map(function(r){return[fmtDate(r.date),r.time,r.machine,r.side1,r.side2,r.auk1,r.auk2]});
+  }
+
+  var ws=XLSX.utils.aoa_to_sheet([headers].concat(rows));
+  // Style header row
+  var range=XLSX.utils.decode_range(ws['!ref']);
+  for(var c=range.s.c;c<=range.e.c;c++){
+    var cell=ws[XLSX.utils.encode_cell({r:0,c:c})];
+    if(cell) cell.s={font:{bold:true}};
+  }
+  ws['!cols']=headers.map(function(){return{wch:18}});
+
+  var names={env:'อุณหภูมิเครื่อง',fac:'อุณหภูมิโรงงาน',break:'การเบรค'};
+  XLSX.utils.book_append_sheet(wb,ws,names[reportType]);
+
+  var from=document.getElementById('dateFrom').value;
+  var to=document.getElementById('dateTo').value;
+  XLSX.writeFile(wb,'รายงาน_'+names[reportType]+'_'+from+'_to_'+to+'.xlsx');
+}
+
+function exportCSV(){
+  if(!reportData.length){alert('ไม่มีข้อมูล');return}
+  var headers, rows;
+  if(reportType==='env'){
+    headers=['วันที่','เวลา','เครื่องจักร','อ่างหาใย บน','อ่างหาใย ล่าง','อ่างพักใย บน','อ่างพักใย ล่าง','ความชื้น','รอบเครื่อง'];
+    rows=reportData.map(function(r){return[fmtDate(r.date),r.time,r.machine,r.t1b,r.t1l,r.t2b,r.t2l,r.humidity,r.tenv]});
+  } else if(reportType==='fac'){
+    headers=['วันที่','เวลา','จุดวัด','อุณหภูมิ','ความชื้น'];
+    rows=reportData.map(function(r){return[fmtDate(r.date),r.time,r.spot,r.temp,r.humidity]});
+  } else {
+    headers=['วันที่','เวลา','เครื่องจักร','เบรคฝั่ง 1','เบรคฝั่ง 2','อัก ฝั่ง 1','อัก ฝั่ง 2'];
+    rows=reportData.map(function(r){return[fmtDate(r.date),r.time,r.machine,r.side1,r.side2,r.auk1,r.auk2]});
+  }
+  var csv='\uFEFF'+[headers].concat(rows).map(function(row){return row.map(function(v){return'"'+(v||'')+'"'}).join(',')}).join('\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;
+  var names={env:'อุณหภูมิเครื่อง',fac:'อุณหภูมิโรงงาน',break:'การเบรค'};
+  var from=document.getElementById('dateFrom').value;
+  a.download='รายงาน_'+names[reportType]+'_'+from+'.csv';
+  a.click();URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
