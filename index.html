@@ -1567,24 +1567,29 @@ function renderEnvDashboard(res){
 
     var allTimes=[...new Set(res.rows.map(function(r){return r.time}))].sort();
     if(allTimes.length>=1){
-      var envFields=[
-        {key:'t1b',label:'อ่างหาใย 🔺 บน',color:'#DC2626'},
-        {key:'t1l',label:'อ่างหาใย 🔻 ล่าง',color:'#F97316'},
-        {key:'t2b',label:'อ่างพักใย 🔺 บน',color:'#0369A1'},
-        {key:'t2l',label:'อ่างพักใย 🔻 ล่าง',color:'#7C3AED'},
-        {key:'tenv',label:'รอบเครื่อง',color:'#6B7280'}
-      ];
       html+='<div class="card" style="margin-bottom:14px">'
-        +'<div class="card-header" style="background:#F5F3FF;border-bottom-color:#DDD6FE">'
-        +'<span class="card-header-text" style="color:#7C3AED"><i class="fa-solid fa-temperature-half" style="margin-right:8px"></i>อุณหภูมิอ่าง &amp; รอบเครื่อง (°C)</span>'
+        +'<div class="card-header" style="background:#FEF2F2;border-bottom-color:#FECACA">'
+        +'<span class="card-header-text" style="color:#DC2626"><i class="fa-solid fa-temperature-half" style="margin-right:8px"></i>อ่างหาใย 🔺บน / 🔻ล่าง (°C)</span>'
         +'</div><div class="card-body">'
-        +'<div class="chart-wrap" style="height:240px"><canvas id="chartTempAll"></canvas></div>'
+        +'<div class="chart-wrap" style="height:220px"><canvas id="chartT1"></canvas></div>'
+        +'</div></div>';
+      html+='<div class="card" style="margin-bottom:14px">'
+        +'<div class="card-header" style="background:#EFF6FF;border-bottom-color:#BFDBFE">'
+        +'<span class="card-header-text" style="color:#0369A1"><i class="fa-solid fa-temperature-half" style="margin-right:8px"></i>อ่างพักใย 🔺บน / 🔻ล่าง (°C)</span>'
+        +'</div><div class="card-body">'
+        +'<div class="chart-wrap" style="height:220px"><canvas id="chartT2"></canvas></div>'
+        +'</div></div>';
+      html+='<div class="card" style="margin-bottom:14px">'
+        +'<div class="card-header" style="background:#F0FDF4;border-bottom-color:#BBF7D0">'
+        +'<span class="card-header-text" style="color:#16A34A"><i class="fa-solid fa-circle-notch" style="margin-right:8px"></i>อุณหภูมิรอบเครื่อง (°C)</span>'
+        +'</div><div class="card-body">'
+        +'<div class="chart-wrap" style="height:180px"><canvas id="chartTenv"></canvas></div>'
         +'</div></div>';
       html+='<div class="card" style="margin-bottom:14px">'
         +'<div class="card-header" style="background:#E0F2FE;border-bottom-color:#BAE6FD">'
         +'<span class="card-header-text" style="color:#0369A1"><i class="fa-solid fa-droplet" style="margin-right:8px"></i>ความชื้น (%RH)</span>'
         +'</div><div class="card-body">'
-        +'<div class="chart-wrap" style="height:200px"><canvas id="chartHumAll"></canvas></div>'
+        +'<div class="chart-wrap" style="height:180px"><canvas id="chartHumAll"></canvas></div>'
         +'</div></div>';
     }
 
@@ -1619,39 +1624,53 @@ function renderEnvDashboard(res){
 
     // วาดกราฟหลัง DOM render
     setTimeout(function(){
-      // กราฟอุณหภูมิอ่าง (t1b, t1l, t2b, t2l, tenv) รายเครื่อง
-      var envFields=[
-        {key:'t1b',label:'หาใย🔺บน',color:'#DC2626'},
-        {key:'t1l',label:'หาใย🔻ล่าง',color:'#F97316'},
-        {key:'t2b',label:'พักใย🔺บน',color:'#0369A1'},
-        {key:'t2l',label:'พักใย🔻ล่าง',color:'#7C3AED'},
-        {key:'tenv',label:'รอบเครื่อง',color:'#6B7280'}
-      ];
       var mColors=['#DC2626','#F97316','#16A34A','#0369A1','#7C3AED','#D53F8C','#00B5D8','#B45309'];
-      var baseOpts=function(title){return{responsive:true,maintainAspectRatio:false,
+      var baseOpts=function(unit){return{responsive:true,maintainAspectRatio:false,
         plugins:{legend:{position:'bottom',labels:{boxWidth:10,font:{size:10,family:'Kodchasan'}}}},
-        scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:false,ticks:{font:{size:10}},title:{display:true,text:title,font:{size:10}},grace:'10%'}}
+        scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:false,ticks:{font:{size:10}},title:{display:true,text:unit,font:{size:10}},grace:'10%'}}
       };};
-      // กราฟรวมอุณหภูมิทุก field ทุกเครื่อง
-      var tempDs=[];
-      envFields.forEach(function(f){
-        machines.forEach(function(m,mi){
-          var ds={label:m+' '+f.label,
-            data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r[f.key]!==''?parseFloat(r[f.key]):null}),
-            borderColor:f.color,backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2,
-            borderDash:mi>0?[mi*3,2]:[]
-          };
-          if(ds.data.some(function(v){return v!==null})) tempDs.push(ds);
-        });
+
+      function makeDs(key,solid){
+        return machines.map(function(m,i){return{
+          label:m,
+          data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r[key]!==''?parseFloat(r[key]):null}),
+          borderColor:mColors[i%mColors.length],backgroundColor:'transparent',
+          tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2,
+          borderDash:solid?[]:[4,3]
+        };});
+      }
+
+      // กราฟ 1: อ่างหาใย (บน=ทึบ, ล่าง=ประ)
+      var ds1=[];
+      machines.forEach(function(m,i){
+        var c=mColors[i%mColors.length];
+        var r1={label:m+' บน',data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r.t1b!==''?parseFloat(r.t1b):null}),borderColor:c,backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2.5};
+        var r2={label:m+' ล่าง',data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r.t1l!==''?parseFloat(r.t1l):null}),borderColor:c,backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:1.5,borderDash:[5,3]};
+        if(r1.data.some(function(v){return v!==null}))ds1.push(r1);
+        if(r2.data.some(function(v){return v!==null}))ds1.push(r2);
       });
-      var humDs=machines.map(function(m,i){return{label:m,
-        data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r.humidity!==''?parseFloat(r.humidity):null}),
-        borderColor:mColors[i%mColors.length],backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2.5
-      };});
-      var cta=document.getElementById('chartTempAll');
+      // กราฟ 2: อ่างพักใย
+      var ds2=[];
+      machines.forEach(function(m,i){
+        var c=mColors[i%mColors.length];
+        var r1={label:m+' บน',data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r.t2b!==''?parseFloat(r.t2b):null}),borderColor:c,backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:2.5};
+        var r2={label:m+' ล่าง',data:allTimes.map(function(t){var r=machineMap[m].find(function(r){return r.time===t});return r&&r.t2l!==''?parseFloat(r.t2l):null}),borderColor:c,backgroundColor:'transparent',tension:0.3,spanGaps:true,pointRadius:4,borderWidth:1.5,borderDash:[5,3]};
+        if(r1.data.some(function(v){return v!==null}))ds2.push(r1);
+        if(r2.data.some(function(v){return v!==null}))ds2.push(r2);
+      });
+      // กราฟ 3: รอบเครื่อง
+      var ds3=makeDs('tenv',true).filter(function(d){return d.data.some(function(v){return v!==null})});
+      // กราฟ 4: ความชื้น
+      var ds4=makeDs('humidity',true).filter(function(d){return d.data.some(function(v){return v!==null})});
+
+      var ct1=document.getElementById('chartT1');
+      var ct2=document.getElementById('chartT2');
+      var ct3=document.getElementById('chartTenv');
       var cha=document.getElementById('chartHumAll');
-      if(cta&&tempDs.length){_dashCharts.push(new Chart(cta,{type:'line',data:{labels:allTimes,datasets:tempDs},options:baseOpts('°C')}))}
-      if(cha&&humDs.length){_dashCharts.push(new Chart(cha,{type:'line',data:{labels:allTimes,datasets:humDs},options:baseOpts('%RH')}))}
+      if(ct1&&ds1.length){_dashCharts.push(new Chart(ct1,{type:'line',data:{labels:allTimes,datasets:ds1},options:baseOpts('°C')}))}
+      if(ct2&&ds2.length){_dashCharts.push(new Chart(ct2,{type:'line',data:{labels:allTimes,datasets:ds2},options:baseOpts('°C')}))}
+      if(ct3&&ds3.length){_dashCharts.push(new Chart(ct3,{type:'line',data:{labels:allTimes,datasets:ds3},options:baseOpts('°C')}))}
+      if(cha &&ds4.length){_dashCharts.push(new Chart(cha, {type:'line',data:{labels:allTimes,datasets:ds4},options:baseOpts('%RH')}))}
       // mini charts รายเครื่อง
       machines.forEach(function(m,idx){
         var mData=machineMap[m];
